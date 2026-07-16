@@ -27,7 +27,7 @@ public class JwtPrincipalMapper {
     private static final Pattern SAFE_SUBJECT = Pattern.compile("[A-Za-z0-9][A-Za-z0-9-:.]{0,127}");
     private static final Pattern SAFE_AUTHORITY = Pattern.compile("[A-Za-z0-9][A-Za-z0-9-:.]{0,127}");
 
-    AccountStatusProvider.CurrentUserPrincipal map(Jwt jwt) { // 1 usage
+    CurrentUserPrincipal map(Jwt jwt) { // 1 usage
         if (jwt == null) throw new BadCredentialsException("JWT must not be null");
         String subject = jwt.getSubject();
         // 校验 SUB 主题（通常是用户ID）是否包含非法字符
@@ -35,7 +35,7 @@ public class JwtPrincipalMapper {
             throw new BadCredentialsException("JWT subject is missing or unsafe");
         }
         // 解析角色和权限
-        return new AccountStatusProvider.CurrentUserPrincipal(
+        return new CurrentUserPrincipal(
                 subject,
                 claimSet(jwt, "roles"),
                 claimSet(jwt, "permissions"));

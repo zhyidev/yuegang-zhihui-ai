@@ -22,7 +22,11 @@ public enum ErrorCode { // 定义错误码枚举
         this.defaultMessage = defaultMessage; // 赋值消息
     }
 
-    public String defaultMessage(){ //获取默认消息
+    public String code() {
+        return code;
+    }
+
+    public String defaultMessage() { //获取默认消息
         return defaultMessage;//返回消息内容
     }
 }

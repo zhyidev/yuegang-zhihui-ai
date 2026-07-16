@@ -1,7 +1,7 @@
 package com.yuegang.zhihui.gateway;
 
-import com.yuegang.zhihui.common.api.ApiResponse;
-import com.yuegang.zhihui.common.api.ErrorCode;
+import com.yuegang.zhihui.common.core.ApiResponse;
+import com.yuegang.zhihui.common.core.ErrorCode;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -50,7 +50,7 @@ public class GatewaySecurityErrorWriter {
      * @return 异步完成信号
      */
     Mono<Void> unauthenticated(ServerWebExchange exchange) {
-        return write(exchange, HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHORIZED);
+        return write(exchange, HttpStatus.UNAUTHORIZED, ErrorCode.UNAUTHENTICATED);
     }
 
     /**

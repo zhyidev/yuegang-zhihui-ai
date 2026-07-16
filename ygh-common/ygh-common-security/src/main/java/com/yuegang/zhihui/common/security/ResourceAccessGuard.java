@@ -1,5 +1,8 @@
 package com.yuegang.zhihui.common.security;
 
+import com.yuegang.zhihui.common.core.BusinessException;
+import com.yuegang.zhihui.common.core.ErrorCode;
+
 public final class ResourceAccessGuard {
     public void requireOwnerOrPermission( // 检查是否拥有者是否拥有权限 no usages
                                           CurrentUserPrincipal principal, // 当前操作的用户主体
@@ -7,7 +10,7 @@ public final class ResourceAccessGuard {
                                           String crossOwnerPermission // 允许跨主体访问所需的指定权限码
     ) {
         if (principal == null) {
-            throw new BusinessException(ErrorCode.UNAUTHENTICATION); // 抛出未认证异常
+            throw new BusinessException(ErrorCode.UNAUTHENTICATED); // 抛出未认证异常
         }
 
         boolean owner = ownerUserId != null && ownerUserId.equals(principal.userId()); // 逻辑判断：资源所属 ID 是否匹配当前用户 ID
@@ -24,7 +27,7 @@ public final class ResourceAccessGuard {
                                               String crossOwnerPermission // 跨资源权限码
     ) {
         if (principal == null) { // 登录检验
-            throw new BusinessException(ErrorCode.UNAUTHEXTICATED); // 拦截未登录
+            throw new BusinessException(ErrorCode.UNAUTHENTICATED); // 拦截未登录
         }
         if (ownershipChecker == null) { // 检查器不能为空
             throw new IllegalArgumentException("ownershipChecker must not be null"); // 参数错误报告

@@ -3,7 +3,7 @@ package com.yuegang.zhihui.gateway;
 /**
  * 网关安全属性键常量定义。
  *
- * <p>定义在 {@link ServerWebExchange#getAttributes()} 中使用的键名，
+ * <p>定义在 {@link ServerWebExchange # getAttributes()} 中使用的键名，
  * 用于在请求处理链路中传递安全上下文（TraceId、RequestId、认证主体等）。</p>
  *
  * <p>使用类全限定名作为前缀，确保键名唯一，避免与 Spring 内部属性冲突。</p>
