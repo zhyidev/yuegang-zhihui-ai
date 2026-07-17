@@ -5,6 +5,7 @@ package com.yuegang.zhihui.gateway;
  **/
 
 import com.yuegang.zhihui.common.security.AccountStatusProvider;
+import com.yuegang.zhihui.common.security.CurrentUserPrincipal;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;

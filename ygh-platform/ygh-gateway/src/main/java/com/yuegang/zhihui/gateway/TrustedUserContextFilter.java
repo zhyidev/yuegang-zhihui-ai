@@ -18,8 +18,6 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.regex.Pattern;
 
-import static com.sun.tools.jdeprscan.CSV.split;
-
 
 /**
  * 仅从服务器认证后的交换属性中提取身份信息，并签名传播到下游服务。
@@ -30,7 +28,7 @@ public class TrustedUserContextFilter implements GlobalFilter, Ordered {
     private static final int MAX_AUTHORITY_HEADER_LENGTH = 4096;
     private static final Pattern SAFE_USER_TO = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._:-]{0,127}");
     private static final Pattern SAFE_AUTHORITY = Pattern.compile("[A-Za-z0-9][A-Za-z0-9._:-]{0,127}");
-    private static final InternalUserContextSignature signatures;
+    private final InternalUserContextSignature signatures;
     private final Clock clock;
 
     // 默认构造逻辑
@@ -54,7 +52,7 @@ public class TrustedUserContextFilter implements GlobalFilter, Ordered {
         // 从属性种获取刚才的JwtPrincipalBridge 塞进去的的 principal 对象
         CurrentUserPrincipal principal = exchange.getAttribute(GatewaySecurityAttributes.AUTHENTICATION_PRINCIPAL);
 
-        String userId = principal == null ? null : validateUsreId(principal.userId());
+        String userId = principal == null ? null : validateUserId(principal.userId());
         String roles = principal == null ? "" : encodedAuthorities(principal.roles(), "roles");
         String permissions = principal == null ? "" : encodedAuthorities(principal.permissions(), "permissions");
         Instant timestamp = clock.instant();
