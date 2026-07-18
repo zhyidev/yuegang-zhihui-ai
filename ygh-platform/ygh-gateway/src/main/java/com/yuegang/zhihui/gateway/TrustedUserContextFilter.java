@@ -16,6 +16,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.List;
 import java.util.regex.Pattern;
 
 
@@ -23,7 +24,7 @@ import java.util.regex.Pattern;
  * 仅从服务器认证后的交换属性中提取身份信息，并签名传播到下游服务。
  */
 @Component
-public class TrustedUserContextFilter implements GlobalFilter, Ordered {
+final class TrustedUserContextFilter implements GlobalFilter, Ordered {
     // 限制用户上下文中可传播的角色/权限数量，避免头部膨胀。
     private static final int MAX_AUTHORITIES = 128;
     // 限制编码后的角色/权限头长度，避免超过请求头安全阈值。
@@ -90,6 +91,10 @@ public class TrustedUserContextFilter implements GlobalFilter, Ordered {
             }
         }).build();
         return chain.filter(exchange.mutate().request(request).build());
+    }
+
+    private static List<String> split(String encoded){
+        return encoded.isEmpty() ? List.of() : List.of(encoded.split(",",-1));
     }
 
     @Override
