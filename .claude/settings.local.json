@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mvn package *)",
+      "Bash(mvn install:install-file -Dfile=ygh-common/ygh-common-security/target/ygh-common-security-1.0.0-SNAPSHOT.jar -DpomFile=ygh-common/ygh-common-security/pom.xml)",
+      "Bash(mvn install:install -Denforcer.skip=true -pl ygh-common/ygh-common-security)",
+      "Bash(mvn install:install-file -DgroupId=com.yuegang.zhihui -DartifactId=ygh-common-security -Dversion=1.0.0-SNAPSHOT -Dpackaging=jar -Dfile=ygh-common/ygh-common-security/target/ygh-common-security-1.0.0-SNAPSHOT.jar)",
+      "Bash(ls \"C:/ProgrammingEnvironment/Maven/apache-maven-3.9.12/repository/com/yuegang/zhihui/ygh-common/1.0.0-SNAPSHOT/\" 2>/dev/null || echo \"NOT FOUND\")",
+      "Read(//c/ProgrammingEnvironment/Maven/apache-maven-3.9.12/repository/com/yuegang/zhihui/ygh-common/1.0.0-SNAPSHOT/**)"
+    ]
+  }
+}
