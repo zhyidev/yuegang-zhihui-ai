@@ -17,7 +17,9 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 /**
@@ -101,6 +103,32 @@ final class TrustedUserContextFilter implements GlobalFilter, Ordered {
     public int getOrder() {
         // 当前与认证桥接过滤器同级排序，后续若需要稳定链路顺序可再调整。
         return 0;
+    }
+/** 验证用户 ID 的安全性，防止注入非法字符 */
+    private static String validateUserId(String userId) {
+        if (userId == null || !SAFE_USER_TO.matcher(userId).matches()) { //使用正则验证
+            throw new IllegalStateException("unsafe userId: " + userId); //验证失败抛出异常
+        }
+        return userId; //返回安全的ID
+    }
+
+    /** 将权限/角色集合编码为排序后的安全字符串 */
+    private static String encodedAuthorities(Set<String> authorities, String fieldName) {
+        if (authorities.size() > MAX_AUTHORITIES) { // 检查数量是否超限
+            throw new IllegalArgumentException(fieldName + " exceeds authority count limit"); // 超限报错
+        }
+        String encoded = authorities.stream() // 开启流处理
+                .peek( value -> { // 检查每一个元素的安全性
+                    if (!SAFE_AUTHORITY.matcher(value).matches()) {
+                        throw new IllegalArgumentException(fieldName + " contains an unsafe authority"); // 元素非法报错
+                    }
+                })
+                .sorted() // 字母序排序，确保生成规范化 (Canonical) 的字符串以供签名
+                .collect(Collectors.joining(",")); // 使用逗号连接
+        if (encoded.length() > MAX_AUTHORITY_HEADER_LENGTH) { // 检查总长度是否超限
+            throw new IllegalArgumentException(fieldName + " exceeds header length limit"); // 超长报错
+        }
+        return encoded; // 返回编码后的字符串
     }
 
 
