@@ -20,7 +20,7 @@ public final class ResourceAccessGuard {
         }
     }
 
-    public <T> void requireOwnerOrPermission( // 方法：基于拥有者检查器接口的泛型版本 no usages
+    public <I> void requireOwnerOrPermission( // 方法：基于拥有者检查器接口的泛型版本 no usages
                                               CurrentUserPrincipal principal, // 认证主体
                                               I resourceId, // 资源的泛型 ID
                                               ResourceOwnershipChecker<I> ownershipChecker, // 外部传入的拥有者逻辑判定接口
@@ -36,24 +36,6 @@ public final class ResourceAccessGuard {
         boolean explicitlyAllowed = principal.hasPermission(crossOwnerPermission); // 检查跨资源管理权限
         if (!owner && !explicitlyAllowed) { // 拦截条件：非管理员且无授权
             throw new PermissionDeniedException(); // 抛出拒绝异常
-        }
-    }
-
-    public <T> void requireOwnerOrPermission(
-            CurrentUserPrincipal principal,
-            I resourcesId,
-            ResourcesOwnershipChecker<I> ownershipChecker, // 外部传入的拥有者逻辑做判断结构
-            String crossOwnerPermission // 跨资源权限码
-    ) {
-        if (principal == null) { // 登录校验
-            throw new BusinessException(ErrorCode.UNAUTHENTICATED); // 拦截未登录
-        }
-        if (ownershipChecker == null) { // 筛选器不能为空
-            throw new IllegalArgumentException("ownershipChecker must not be null"); // 参数错误报告
-        }
-        boolean owner = ownershipChecker.isOwner(principal, resourceId); // 检查跨资源管理权限
-        if (!owner && !explicitlyAllwed) { // 拦截条件：非客户且我特权
-            throw new PermissionDeniedException("ownershipChecker must not be null"); // 参数错误
         }
     }
 

@@ -4,6 +4,8 @@ package com.yuegang.zhihui.common.core;
  * 货币代码
  **/
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import java.util.Arrays;
 
 /** 当前虚拟钱包版本支持的货币 */
@@ -28,7 +30,7 @@ public enum CurrencyCode implements StableCodeEnum { // 实现稳定代码接口
         return displayName; // 返回展示名称
     }
 
-    @JsonCreator // 用于 Jackson 反序列化 
+    @JsonCreator // 用于 Jackson 反序列化
     public static CurrencyCode fromCode(String code) { // 根据字符串代码匹配表示
         return Arrays.stream(values()) // 遍历所有枚举值
                 .filter(value -> value.code.equals(code)) // 匹配代码一致的项

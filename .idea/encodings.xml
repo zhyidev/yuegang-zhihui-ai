@@ -9,12 +9,22 @@
     <file url="file://$PROJECT_DIR$/ygh-common/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-core/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-core/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-redis/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-redis/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-security/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-security/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-test/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-common/ygh-common-test/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-dependencies/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-dependencies/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-deploy/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-deploy/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-platform/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-platform/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-platform/ygh-auth-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-platform/ygh-auth-service/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-platform/ygh-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ygh-platform/ygh-gateway/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-platfrom/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-platfrom/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ygh-platfrom/ygh-auth-service/src/main/java" charset="UTF-8" />

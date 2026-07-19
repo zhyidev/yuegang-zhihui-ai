@@ -3,15 +3,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.yuegang.zhihui</groupId>
-        <artifactId>yuegang-zhihui-ai</artifactId>
+        <artifactId>ygh-platform</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>ygh-deploy</artifactId>
+    <artifactId>ygh-auth-service</artifactId>
     <packaging>jar</packaging>
 
-    <name>ygh-deploy</name>
+    <name>ygh-auth-service</name>
     <url>http://maven.apache.org</url>
 
     <properties>
