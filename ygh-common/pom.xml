@@ -35,6 +35,5 @@
         <module>ygh-common-redis</module>
 <!--        <module>ygh-common-mq</module>-->
         <module>ygh-common-test</module>
-        <module>ygh-common-redis</module>
     </modules>
 </project>
