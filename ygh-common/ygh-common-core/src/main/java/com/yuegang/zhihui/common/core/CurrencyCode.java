@@ -1,13 +1,12 @@
 package com.yuegang.zhihui.common.core;
 
-/**
- * 货币代码
- **/
+
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import java.util.Arrays;
-
+/**
+ * 货币代码
 /** 当前虚拟钱包版本支持的货币 */
 public enum CurrencyCode implements StableCodeEnum { // 实现稳定代码接口 
     CNY("CNY", "人民币"); // 定义人民币常量 

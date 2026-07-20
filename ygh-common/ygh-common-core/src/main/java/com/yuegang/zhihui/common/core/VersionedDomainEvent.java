@@ -2,7 +2,9 @@ package com.yuegang.zhihui.common.core;
 
 import java.util.*;
 
-/** 领域事件契约的默认类型安全实现。 */
+/**
+ * 领域事件契约的默认类型安全实现。
+ */
 public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现领域事件接口
 
     private final EventMetadata metadata; // 持有元数据
@@ -29,6 +31,15 @@ public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现
         return new VersionedDomainEvent<>(metadata, immutableMap(payload)); // 递归转换为深度不可比拟的 Map 后返回
     }
 
+    public static <T> VersionedDomainEvent<T> ofDto( //
+                                                     EventMetadata metadata, T payload
+    ) {
+        if (payload == null) {
+            throw new IllegalArgumentException("payload must not be null");
+        }
+        return new VersionedDomainEvent<>(metadata, payload);
+    }
+
     @Override
     public EventMetadata metadata() { // 实现接口方法
         return metadata; // 返回内部元数据
@@ -48,7 +59,7 @@ public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现
     private static Object immutableNestedValue(Object value) { // 递归处理嵌套集合的工具方法
         if (value instanceof Map<?, ?> map) { // 如果值是 Map
             LinkedHashMap<Object, Object> copy = new LinkedHashMap<>(map.size()); // 递归转换
-            map.forEach(( key,  item) -> copy.put(key, immutableNestedValue(item))); // 递归调用
+            map.forEach((key, item) -> copy.put(key, immutableNestedValue(item))); // 递归调用
             return Collections.unmodifiableMap(copy); // 返回
         }
         if (value instanceof List<?> list) {  // 如果值是 List
