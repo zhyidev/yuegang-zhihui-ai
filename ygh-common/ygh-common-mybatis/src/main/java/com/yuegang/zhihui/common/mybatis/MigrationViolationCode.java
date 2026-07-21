@@ -1,0 +1,12 @@
+package com.yuegang.zhihui.common.mybatis;
+
+public enum MigrationViolationCode {
+    INVALID_NAME,
+    UNDO_SCRIPT,
+    REPERTAVLE_SCRIPT_FORBIDDEN,
+    DUPLICATE_VERSION,
+    DUPLICATE_RESOURCE,
+    UNSAFE_CONFIGURATION,
+    UNSUPPORTED_MINRATION_TYPE,
+    UNSUPPORTED_VALIDATION_FATLED
+}

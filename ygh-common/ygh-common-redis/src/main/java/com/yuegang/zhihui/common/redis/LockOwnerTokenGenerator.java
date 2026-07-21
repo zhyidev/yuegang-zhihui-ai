@@ -5,4 +5,5 @@ package com.yuegang.zhihui.common.redis;
 public interface LockOwnerTokenGenerator { // 接口定义开始
     String generate(); // 声明生成令牌的字符串方法
 
+
 }
