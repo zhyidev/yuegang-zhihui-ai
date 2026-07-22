@@ -38,8 +38,10 @@ public class FlywayConfigurationGuard {
         boolean safe = configuration.isValidateMigrationNaming()
                 && configuration.isValidateOnMigrate()
                 && configuration.isCleanDisabled()
-                && configuration.isOutOfOrder()
-                && configuration.isBaselineOnMigrate();
+                && !configuration.isOutOfOrder()
+                && !configuration.isBaselineOnMigrate()
+                && configuration.getIgnoreMigrationPatterns().length == 0
+                && configuredLocations.equals(approvedLocations);
         if (!safe) {
             throw new MigrationPolicyException(
                     MigrationViolationCode.UNSAFE_CONFIGURATION,

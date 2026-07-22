@@ -10,5 +10,7 @@ public final class MigrationPolicyException extends RuntimeException {
         this.code = Objects.requireNonNull(code,"code must not be null");
     }
 
-    public MigrationViolationCode code() { return code;}
+    public MigrationViolationCode getCode() { return code;}
+
+
 }

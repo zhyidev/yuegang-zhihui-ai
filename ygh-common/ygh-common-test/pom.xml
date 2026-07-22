@@ -11,4 +11,33 @@
     <artifactId>ygh-common-test</artifactId>
     <packaging>jar</packaging>
     <name>YGH Common Test</name>
+    <description>共享测试工具模块，提供各业务模块测试所需的公共基类和工具类</description>
+
+    <dependencies>
+        <!-- 测试框架核心依赖，其他模块引入 ygh-common-test 即可获得全部测试能力 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-test-autoconfigure</artifactId>
+        </dependency>
+    </dependencies>
 </project>

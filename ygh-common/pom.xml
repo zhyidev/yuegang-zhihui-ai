@@ -26,21 +26,13 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-        </dependency>
-    </dependencies>
 
     <modules>
         <module>ygh-common-core</module>
-<!--        <module>ygh-common-web</module>-->
         <module>ygh-common-security</module>
-<!--        <module>ygh-common-mybatis</module>-->
-        <module>ygh-common-redis</module>
-<!--        <module>ygh-common-mq</module>-->
         <module>ygh-common-test</module>
+        <module>ygh-common-redis</module>
         <module>ygh-common-mybatis</module>
+        <module>ygh-common-mq</module>
     </modules>
 </project>
