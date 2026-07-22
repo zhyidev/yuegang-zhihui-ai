@@ -5,10 +5,11 @@ import com.yuegang.zhihui.common.core.ErrorCode;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * 网关安全错误响应写入器。
@@ -29,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * @author yuegang-zhihui
  * @since 1.0.0
  */
+@Component
 public class GatewaySecurityErrorWriter {
 
     /** JSON 序列化器，用于将错误响应对象转为字节数组 */
