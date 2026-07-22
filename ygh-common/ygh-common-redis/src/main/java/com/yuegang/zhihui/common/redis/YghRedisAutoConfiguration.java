@@ -12,7 +12,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 
 /* 共享的 Redis 键构造、TTL 策略及持有者安全型分布式短锁的基础设施自动配置类  */
 @AutoConfiguration(after = DataRedisAutoConfiguration.class) // 在 Spring Data Redis 配置之后加载
-public class YgRedisAutoConfiguration { // 类点=定义开始
+public class YghRedisAutoConfiguration { // 类点=定义开始
     @Bean // 注册
     @ConditionalOnMissingBean // 仅当容器中没有此类型的 Bean 时生效
     public RedisKeyBuilder redisKeyBuilder() { // 注册键构造器
