@@ -36,12 +36,12 @@ public class FlywayConfigurationGuard { // 防止不合规的 Flyway 配置被�
         Set<String> configurationLocation = Set.of(configuration.getLocations()).stream() // 获取当前实际配置路径
                 .map(Location::getDescriptor)
                 .collect(Collectors.toUnmodifiableSet());
-        // 安全性校验项
+        // 强制安全性校验项
         boolean safe = configuration.isValidateMigrationNaming() // 必须开启命名校验
                 && configuration.isValidateOnMigrate() // 必须在迁移时校验
                 && configuration.isCleanDisabled() // 生产环境必须禁用清理功能
-                && configuration.isOutOfOrder() // 允许乱序迁移
-                && configuration.isBaselineOnMigrate() // 禁止迁移时自动打基线（防止隐藏结构偏差）
+                && !configuration.isOutOfOrder() // 严禁乱序执行迁移（必须按版本号）
+                && !configuration.isBaselineOnMigrate() // 禁止迁移时自动打基线（防止隐藏结构偏差）
                 && configuration.getIgnoreMigrationPatterns().length == 0 // 禁止忽略任何迁移
                 && configuration.equals(approvedLocations); // 路径必须匹配核准列表
         if (!safe) {
@@ -67,11 +67,11 @@ public class FlywayConfigurationGuard { // 防止不合规的 Flyway 配置被�
                 }
                 return "db/migration" + relativePath; // 返回标准化的数据迁移路径
             }
-            throw new MigrationPolicyException(
-                    MigrationViolationCode.UNSAFE_CONFIGURATION,
-                    "final Flyway configuration violates the enterprise migration policy "
-            );
+
         }
 
+        throw new MigrationPolicyException(
+                MigrationViolationCode.UNSAFE_CONFIGURATION,
+                "final Flyway configuration violates the enterprise migration policy ");
     }
 }
