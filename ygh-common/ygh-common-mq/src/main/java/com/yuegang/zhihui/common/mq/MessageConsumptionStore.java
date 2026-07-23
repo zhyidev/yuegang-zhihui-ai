@@ -13,8 +13,18 @@ public interface MessageConsumptionStore { // 定义存储契约
     MessageClaimResult claim(  // 尝试认领接口
                                String consumerGroup, // 组标识
                                String eventId, // 消息唯一标识令牌
-                               String ownerToken, // 消费者令牌
+                               String owner, // 消费者令牌
                                Duration lease // 租约有效时间
     );
+
+    boolean executeAndMarkSucceeded( // 执行业务并结案
+                                     MessageProcessingClaim claim, // 必须持有的有效凭证
+                                     MessageBusinessOperation businessOperation // 执行业务逻辑
+
+    ) throws Exception; // 业务异常向上抛出
+    boolean releaseForRetry(MessageProcessingClaim claim); // 主动释放权力接口，用于手动放弃处理
+    
+    boolean markDeadLettered(MessageProcessingClaim claim, DeadLetterRecord record); // 原子地将消息标记为死信
+    
 
 }

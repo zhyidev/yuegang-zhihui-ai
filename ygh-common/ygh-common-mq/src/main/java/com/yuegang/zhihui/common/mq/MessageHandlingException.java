@@ -9,7 +9,10 @@ public abstract class MessageHandlingException extends RuntimeException { // 业
     protected MessageHandlingException(String failureCode) { // 构造方法开始
         super(validate(failureCode)); // 校验后传给父类消息
         this.failureCode = failureCode; // 赋值
+    }
 
+    public String failureCode() { // 公开错误码访问器
+        return failureCode;
     }
 
     private static String validate(String code) { // 获取稳定码方法
@@ -17,5 +20,4 @@ public abstract class MessageHandlingException extends RuntimeException { // 业
             throw new IllegalArgumentException("failureCode must not be a stable uppercase code"); //报错
         return code; // 返回合法的码
     }
-
 }

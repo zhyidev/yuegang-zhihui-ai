@@ -39,7 +39,7 @@ public class IdempotentMessageConsumer {
             throw new IllegalArgumentException("maxAttempts must be between 1 and 100 "); // 错误抛异常
         }
         Objects.requireNonNull(claimLease, "claimLease must not be null"); // 租约不能为空
-        if (claimLease.compareTo(Duration.ofMillis(1)) > 0  // 租约必须在1到15分钟
+        if (claimLease.compareTo(Duration.ofMillis(1)) < 0  // 租约必须在1到15分钟
                 || claimLease.compareTo(Duration.ofMillis(15)) > 0) { // 范围校验
             throw new IllegalArgumentException("claimLease must be between 1 and 15 minutes"); // 错误抛异常
         }
@@ -63,7 +63,7 @@ public class IdempotentMessageConsumer {
         if (deliverAttempt < 1) { // 投递次数必须大于等于1
             throw new IllegalArgumentException("deliveryAttempt must be least 1");
         }
-        MqEventPolicy.validate(event); // 1. 根据系统策略验证消息头合法性
+        MqEnvelopePolicy.validate(event); // 1. 根据系统策略验证消息头合法性
         try { // 开启事务逻辑
             MessageClaimResult claimResult = store.claim( // 2. 尝试冲数据库“认领”这条信息
                     consumerGroup, // 按组隔离
@@ -84,7 +84,64 @@ public class IdempotentMessageConsumer {
         }
     }
 
-    private static String processClaim(DomainEvent<?> event, String attempt, Object handler, Object validatorCode) {
+    /**
+     * 执行已认领消息的处理逻辑
+     */
+    private <T> MessageConsumptionResult processClaim( // 私有处理方法
+                                                       DomainEvent<T> event, // 事件
+                                                       int deliveryAttempt, // 次数
+                                                       MessageHandler<T> handler, // 业务逻辑
+                                                       MessageProcessingClaim claim // 租约凭证
+    ) { // 逻辑开始
+        try {
+            boolean completed = store.executeAndMarkSucceeded( // 4. 在同一个数据库中执行业务并标记未“已成功”
+                    claim, () -> handler.handle(event)); // 调用传入的业务处理 Lambda
+            return completed // 根据业务提交结果返回状态
+                    ? MessageConsumptionResult.ACKNOWLEDGED // 成功：响应 ACK
+                    : MessageConsumptionResult.RETRY; // 失败：响应 RETRY
+        } catch (InterruptedException exception) {
+            Thread.currentThread().interrupt(); // 恢复中断状态
+            return MessageConsumptionResult.RETRY; // 发生异常时，响应 RETRY
+        } catch (MessageInfrastructureException infrastructureFailure) { // 如果时数据库挂了等技术故障
+            return MessageConsumptionResult.RETRY; // 告知消息中间件稍后尝试
+        } catch (Exception unexpectedFailure) { // 其他未知异常
+            boolean terminal = unexpectedFailure instanceof NonRetryableMessageException // 判断是否未不可重试异常(如合同校验失败）
+                    || deliveryAttempt >= maxAttempts; // 或者是否打到系统设定的最大重试次数
+            if (!terminal){ // 如果还可以抢救（允许重试）
+                store.releaseForRetry(claim); // 5。 从数据库删除认领状态，使其它节点或下次投递可以重新认领
+                return MessageConsumptionResult.RETRY; // 返回 RETRY
+            }
+            var record = new DeadLetterRecord( // 如果已经没救（测地失败
+                    event.eventId(), // ID
+                    event.eventType(), // 类型
+                    event.eventVersion(), // 版本
+                    consumerGroup, // 组
+                    event.businessKey(), // 业务键
+                    event.traceId(), // 链路
+                    deliveryAttempt, // 次数
+                    failureCode(unexpectedFailure), // 提取错误码
+                    clock.instant()); // 失败时间
+            return store.markDeadLettered(claim,record) // 6. 在数据库标记未死信并存储
+            ? MessageConsumptionResult.DEAD_LETTERED // 成功标记为死信
+            : MessageConsumptionResult.RETRY; // 标记失败重试
+
+        }
+    }
+    private MessageProcessingClaim validateClaim(MessageClaimResult result, String eventId){ //内部校验认领对象合法性
+        MessageProcessingClaim claim = result.claim().orElseThrow( // 必须存在凭证对象
+                () -> new IllegalArgumentException("CLAIMED result has no claim") // 否则抛出异常状态
+        );
+        if(!consumerGroup.equals(claim.consumerGroup()) || !eventId.equals(claim.eventId())){ // 校验组名和事件 ID 是否匹配
+            throw new IllegalArgumentException("store returned a claim for anther message"); // 不匹配抛异常
+        }
+        return  claim; // 返回校验后的凭证对象
+    }
+
+    private static String failureCode(Exception failure){ // 辅助方法：冲异常中提取稳定的错误标识符
+        return failure instanceof MessageHandlingException messageFailure // 判断是否为自定义的业务消息异常
+        ? messageFailure.failureCode() // 提取错误代码
+        : UNEXPECTED_FAILURE; // 否则返回预设“未知异常”
+
     }
 
 }
