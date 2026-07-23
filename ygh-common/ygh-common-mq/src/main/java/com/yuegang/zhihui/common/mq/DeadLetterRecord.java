@@ -35,7 +35,7 @@ public record DeadLetterRecord(String eventId, // 事件唯一标识
         }
         requireText(businessKey, "businessKey", 128); // 校验业务主键非空及其长度
         requireText(traceId, "traceId", 128); // 校验链路追踪 ID 非空及其长度
-        if (deliveryAttempt < 1) { // 校验头地次数必须大于等于 1
+        if (deliveryAttempt < 1) { // 校验投递次数必须大于等于 1
             throw new IllegalArgumentException("deliveryAttempt must be at least 1"); // 否则报错
         }
 

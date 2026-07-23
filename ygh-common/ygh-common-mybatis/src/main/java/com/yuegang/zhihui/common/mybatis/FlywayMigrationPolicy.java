@@ -47,7 +47,12 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
         return new MigrationDescriptor(normalized, version, description); // 返回描述对象
     }
 
-    //注意别的（老师的）是validate
+    /**
+     * 验证一组资源路径是否符合迁移策略。
+     *
+     * @param resourcePaths 要验证的资源路径集合
+     * @return 验证报告
+     */
     public MigrationValidationReport validate(Collection<String> resourcePaths) { // 批量验证脚本列表
         Objects.requireNonNull(resourcePaths, "resourcePaths must not be null");
         var violations = new ArrayList<MigrationViolation>(); // 违规列表
