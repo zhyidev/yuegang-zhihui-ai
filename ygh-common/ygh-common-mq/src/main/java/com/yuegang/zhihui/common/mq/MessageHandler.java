@@ -1,4 +1,4 @@
-package com.yuegang.zhihui;
+package com.yuegang.zhihui.common.mq;
 
 import com.yuegang.zhihui.common.core.DomainEvent;
 

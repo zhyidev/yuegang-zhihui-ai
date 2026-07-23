@@ -1,4 +1,4 @@
-package com.yuegang.zhihui;
+package com.yuegang.zhihui.common.mq;
 
 public enum MessageClaimStatus { // 认领操作的三种可能枚举
     CLAIMED, // 成功认领：你是当前唯一合法的执行者

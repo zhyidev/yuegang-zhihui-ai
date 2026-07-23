@@ -1,4 +1,4 @@
-package com.yuegang.zhihui;
+package com.yuegang.zhihui.common.mq;
 
 @FunctionalInterface // 函数式编程
 public interface MessageClaimOwnerGenerator { // 租约持有者随机标识生成器接口

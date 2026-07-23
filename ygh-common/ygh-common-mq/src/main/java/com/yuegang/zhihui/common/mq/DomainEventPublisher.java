@@ -1,4 +1,4 @@
-package com.yuegang.zhihui;
+package com.yuegang.zhihui.common.mq;
 
 public interface DomainEventPublisher extends AutoCloseable { // 定义领域事件发布接口，继承关闭接口
     /** 发布事件核心方法：ID、聚合根 ID 、类型、JSON 负载 */

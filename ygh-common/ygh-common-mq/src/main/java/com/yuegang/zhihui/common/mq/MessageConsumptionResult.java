@@ -1,4 +1,4 @@
-package com.yuegang.zhihui;
+package com.yuegang.zhihui.common.mq;
 
 public enum MessageConsumptionResult { // 整个消息生命周期在应用层的反馈结果枚举
     ACKNOWLEDGED, // 处理成功：通知中间件删除消息
