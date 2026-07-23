@@ -3,7 +3,6 @@ package com.yuegang.zhihui.common.mybatis;
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
-import org.springframework.boot.context.properties.PropertyMapper;
 
 import java.time.Instant;
 
