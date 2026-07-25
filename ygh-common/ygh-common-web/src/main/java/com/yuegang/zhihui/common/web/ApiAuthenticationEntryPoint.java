@@ -19,7 +19,11 @@ public class ApiAuthenticationEntryPoint implements AuthenticationEntryPoint { /
             AuthenticationException authException // 异常信息
     ) throws IOException, ServletException { // 异常声明
         //调用响应写入器，返回 401 状态码和”未认证”业务码
-        SecurityApiResponserWriter.write(request,response,401, ErrorCode.UNAUTHORIZED);
+        try {
+            SecurityApiResponseWriter.write(request,response,401, ErrorCode.UNAUTHENTICATED);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

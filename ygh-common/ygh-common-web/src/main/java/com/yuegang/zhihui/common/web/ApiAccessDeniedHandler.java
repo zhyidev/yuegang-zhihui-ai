@@ -16,10 +16,14 @@ public class ApiAccessDeniedHandler implements AccessDeniedHandler { // 定义�
     public void handle( // 实现处理权限拒绝的核心方法
             HttpServletRequest request, // 传入请求对象
             HttpServletResponse response, // 传入响应对象
-            AccessDeniedException accessDeniedException // 传入具体的拒绝异常
+            AccessDeniedException accessDeniedException // 传入具体拒绝异常
     ) throws IOException, ServletException {
         // 调用底层 API 响应器，写入 403 状态码和“权限不足”错误码
-        SecurityApiResponseWriter.writer(request,response,403, ErrorCode.PERMISSION_DENIED);
+        try {
+            SecurityApiResponseWriter.write(request,response,403, ErrorCode.PERMISSION_DENIED);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }
