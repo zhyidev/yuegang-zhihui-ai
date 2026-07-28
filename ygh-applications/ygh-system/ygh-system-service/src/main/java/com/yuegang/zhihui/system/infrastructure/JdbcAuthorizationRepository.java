@@ -35,7 +35,7 @@ public final class JdbcAuthorizationRepository implements AuthorizationRepositor
     }
 
     @Override
-    public Optional<AuthoritySnapshot> replaceRoles(long user, long expectedVersion, Set<String> roles, long operator, String reason) { // 实现替换用户角色的方法（带事务和乐观锁）
+    public Optional<AuthoritySnapshot> replaceRoles(long user,long version, Set<String> roles, long operator, String reason) { // 实现替换用户角色的方法（带事务和乐观锁）
         return tx.execute(s -> { // 启动事务执行块
             // 第一步：根据传入的角色编码集合，到数据库中查找对应的 ID 和编码（仅限已启用的角色）
             List<Map<String, Object>> found = roles.isEmpty() ? List.of() : jdbc.queryForList("SELECT id,code FROM system_roles WHERE code IN (" + String.join(",", Collections.nCopies(roles.size(), "?")) + ") AND enabled=TRUE", roles.toArray());
@@ -61,4 +61,4 @@ public final class JdbcAuthorizationRepository implements AuthorizationRepositor
             return Optional.of(snapshot(user));
         });
     }
-}}
+}
