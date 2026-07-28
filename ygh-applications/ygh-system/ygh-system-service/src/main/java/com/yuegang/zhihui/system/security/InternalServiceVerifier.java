@@ -25,9 +25,9 @@ public final class InternalServiceVerifier { // 定义最终类：内部服务�
             // 获取请求头中的时间戳并解析为 Instant 瞬时对象
             Instant t = Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-Service-Timestamp")));
             // 构造签名元数据：包含服务名、请求方法（GET/POST等）、请求路径以及时间戳
-            var m = new InternalServerSignature.Metadata(service, r.getMethod(), r.getRequestURI(), t);
+            var m = new InternalServiceSignature.Metadata(service, r.getMethod(), r.getRequestURI(), t);
             // 调用签名工具验证请求头中的签名（X-YGH-Service-Signature）是否有效
-            if (!signature.verify(m, h(r, "X-YGH-Service-Signature"))) throw fail();
+            if (!signature.verify(m, h(r, "X-YGH-Service -Signature"))) throw fail();
         } catch (BusinessException e) { // 如果捕获到其他运行期异常
             throw e; // 直接向上抛出
         } catch (RuntimeException e) { // 如果捕获到其他运行，异常

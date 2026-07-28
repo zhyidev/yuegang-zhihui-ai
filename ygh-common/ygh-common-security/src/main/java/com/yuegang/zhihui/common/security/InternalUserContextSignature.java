@@ -1,6 +1,5 @@
 package com.yuegang.zhihui.common.security;
 
-import com.yuegang.zhihui.common.security.InternalRequestSignature;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -24,7 +23,8 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
     private final Duration maximumSkew; // 最大时间窗口偏差 1 usage
 
     public InternalUserContextSignature(byte[] secret, Clock clock, Duration maximumSkew) {
-        if (secret == null || secret.length < 32) throw new IllegalArgumentException("identity secret must contain at least 32 bytes"); // 秘钥长度length must be satisfied
+        if (secret == null || secret.length < 32)
+            throw new IllegalArgumentException("identity secret must contain at least 32 bytes"); // 秘钥长度length must be satisfied
         this.key = new SecretKeySpec(Arrays.copyOf(secret, secret.length), "HmacSHA256"); // 初始化算法规范
         this.clock = Objects.requireNonNull(clock); // 初始化时钟
         this.maximumSkew = Objects.requireNonNull(maximumSkew); // 初始化偏差设定
@@ -34,42 +34,64 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
         }
     }
 
-    public String sign(Metadata metadata) { return HexFormat.of().formatHex(hmac(canonical(metadata))); }
+    public String sign(Metadata metadata) {
+        return HexFormat.of().formatHex(hmac(canonical(metadata)));
+    }
 
     public boolean verify(Metadata metadata, String signature) { // 验证方法 no usages
         if (signature == null || !signature.matches("[0-9a-f]{64}")) return false; // 签名格式不正确返回失败
-        if (Duration.between(metadata.timestamp(), clock.instant()).abs().compareTo(maximumSkew) > 0) return false; // 时间窗口验证失败返回 false
+        if (Duration.between(metadata.timestamp(), clock.instant()).abs().compareTo(maximumSkew) > 0)
+            return false; // 时间窗口验证失败返回 false
         byte[] expected = hmac(canonical(metadata)); // 计算本地预期哈希
         byte[] actual; // 声明实际哈希字节
-        try { actual = HexFormat.of().parseHex(signature); } // 解析传入签名
-        catch (IllegalArgumentException malformed) { return false; } // 解析异常返回失败
-        try { return MessageDigest.isEqual(expected, actual); } // 常数时间哈希比对
-        finally { Arrays.fill(expected, (byte) 0); Arrays.fill(actual, (byte) 0); } // 擦除敏感数据内存
+        try {
+            actual = HexFormat.of().parseHex(signature);
+        } // 解析传入签名
+        catch (IllegalArgumentException malformed) {
+            return false;
+        } // 解析异常返回失败
+        try {
+            return MessageDigest.isEqual(expected, actual);
+        } // 常数时间哈希比对
+        finally {
+            Arrays.fill(expected, (byte) 0);
+            Arrays.fill(actual, (byte) 0);
+        } // 擦除敏感数据内存
     }
 
     private byte[] canonical(Metadata value) { // 定义上下文专用的规范化拼接 2 usages
         return String.join("\n", value.userId(), String.join(",", value.roles()),
-                        String.join(",", value.permissions()), value.traceId(),value.requestId(),
+                        String.join(",", value.permissions()), value.traceId(), value.requestId(),
                         value.method(), value.path(),
                         Long.toString(value.timestamp().toEpochMilli())) // 连接HTTP方法，路径及时间戳
                 .getBytes(StandardCharsets.UTF_8); // 转换为字节流
     }
 
     private byte[] hmac(byte[] value) { // HMAC 核心算法封装 2 usages
-        try { Mac mac = Mac.getInstance("HmacSHA256"); mac.init(key); return mac.doFinal(value); } // 获取实例并计算
-        catch (GeneralSecurityException impossible) { throw new IllegalStateException("HmacSHA256 unavailable", impossible); } // 异常处理
-        finally { Arrays.fill(value, (byte) 0); } // 内存安全擦除
+        try {
+            Mac mac = Mac.getInstance("HmacSHA256");
+            mac.init(key);
+            return mac.doFinal(value);
+        } // 获取实例并计算
+        catch (GeneralSecurityException impossible) {
+            throw new IllegalStateException("HmacSHA256 unavailable", impossible);
+        } // 异常处理
+        finally {
+            Arrays.fill(value, (byte) 0);
+        } // 内存安全擦除
     }
 
     public record Metadata(String userId, List<String> roles, List<String> permissions, // 身份上下文元数据定义 3 usages
-                           String traceId, String requestId, String method, String path, Instant timestamp) { // 各种id及路径 3 usages
+                           String traceId, String requestId, String method, String path,
+                           Instant timestamp) { // 各种id及路径 3 usages
         public Metadata { // 构造逻辑 no usages
             requireSafe(userId, SAFE_ID, "userId"); // 校验用户 ID 安全性
             roles = normalized(roles, "roles"); // 规范化角色列表 (排序去重)
             permissions = normalized(permissions, "permissions"); // 规范化权限列表
             requireSafe(traceId, SAFE_ID, "traceId"); // 校验链路 ID 安全性
             requireSafe(requestId, SAFE_ID, "requestId"); // 校验请求 ID 安全性
-            if (method == null || !method.matches("[A-Z]{3,10}")) throw new IllegalArgumentException("method is unsafe"); // 校验方法安全性
+            if (method == null || !method.matches("[A-Z]{3,10}"))
+                throw new IllegalArgumentException("method is unsafe"); // 校验方法安全性
             if (path == null || path.isBlank() || path.length() > 2048 || path.charAt(0) != '/') { // 校验路径长度及根据路径起始
                 throw new IllegalArgumentException("path is unsafe"); // 路径不合法报错
             }
@@ -81,11 +103,13 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
         Objects.requireNonNull(values, name);
         if (values.size() > 128) throw new IllegalArgumentException(name + " exceeds limmit"); // 单个请求角色/权限不能超过 128 个
         var copy = values.stream().peek(v -> requireSafe(v, SAFE_AUTHORITY, name)).sorted().distinct().toList(); // 流式处理：校验、排序、去重
-        if (String.join(",", copy).length() > 4096) throw new IllegalArgumentException(name + " exceeds length limit"); // Header拼装后总长度不能超过4096
+        if (String.join(",", copy).length() > 4096)
+            throw new IllegalArgumentException(name + " exceeds length limit"); // Header拼装后总长度不能超过4096
         return copy; // 返回清洗后的列表
     }
 
-    private static void requireSafe(String value, Pattern pattern, String name){
-        if(value == null || !pattern.matcher(value).matches()) throw new IllegalArgumentException(name + "is unsafe");//正则匹配
+    private static void requireSafe(String value, Pattern pattern, String name) {
+        if (value == null || !pattern.matcher(value).matches())
+            throw new IllegalArgumentException(name + "is unsafe");//正则匹配
     }
 }
