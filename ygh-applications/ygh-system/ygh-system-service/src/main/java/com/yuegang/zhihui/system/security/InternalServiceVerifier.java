@@ -13,7 +13,7 @@ import java.time.Instant;
 public final class InternalServiceVerifier { // 定义最终类：内部服务校验器
     private final InternalServiceSignature signature; // 声明内部服务签名的操作对象
 
-    private InternalServiceVerifier(byte[] s, Clock c) { // 构造函数，传入密钥字节数组和时钟对象
+    public InternalServiceVerifier(byte[] s, Clock c) { // 构造函数，传入密钥字节数组和时钟对象
         // 初始化签名工具，设置允许的时间偏差为 30 秒，防止由于网络延迟或时钟不同步导致的校验失败
         signature = new InternalServiceSignature(s, c, Duration.ofSeconds(30));
     }
