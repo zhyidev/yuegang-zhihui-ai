@@ -8,7 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.sql.DataSource;
-import java.sql.ResultSet;
+
 import java.util.List;
 import java.util.UUID;
 
@@ -39,7 +39,7 @@ public class SystemDictionaryAdministrationService { // 定义类:系统字典�
         Long type = jdbc.query("SELECT id FROM system_dictionary_type WHERE code=?", r -> r.next() ? r.getLong(1) : null, code); //先查找所属分类的ID
         if (type == null) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         // 实现保存字典项的逻辑
-        int changed = c.version() == 0 ? jdbc.update("INSERT INTO system_dictionary_item(id,type_id,item_key,item_value,sort_order,enabled) VALUES(?,?,?,?,?,?) ON DUPLICATE KEY UPDATE item_value=VALUES(item_value),sort_order=VALUES(sort_order),enabled=VALUES(enabled),version=version+1",next(), type, c.key(), c.value(), c.sortOrder(), c.enabled()) : jdbc.update("UPDATE system_dictionary_item SET item_value=?,sort_order=?,enabled=?,version= version+1 WHERE type_id=? AND item_key=? AND version=?", c.value(), c.sortOrder(), c.enabled(), type, c.key(), c.version());
+        int changed = c.version() == 0 ? jdbc.update("INSERT INTO system_dictionary_item(id,type_id,item_key,item_value,sort_order,enabled) VALUES(?,?,?,?,?,?) ON DUPLICATE KEY UPDATE item_value=VALUES(item_value),sort_order=VALUES(sort_order),enabled=VALUES(enabled),version=version+1", next(), type, c.key(), c.value(), c.sortOrder(), c.enabled()) : jdbc.update("UPDATE system_dictionary_item SET item_value=?,sort_order=?,enabled=?,version= version+1 WHERE type_id=? AND item_key=? AND version=?", c.value(), c.sortOrder(), c.enabled(), type, c.key(), c.version());
         if (changed < 1) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT); // 并发修改冲突报错
         return byCode(code);
     }

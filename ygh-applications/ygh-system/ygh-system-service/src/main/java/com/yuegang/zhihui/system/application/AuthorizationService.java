@@ -14,7 +14,7 @@ public class AuthorizationService { // 定义最终类：授权服务
         repository = r; // 注入仓储实现
     } // 构造函数结束
 
-    public AuthoritySnapshot assignRoles(String user, AssignRolesRequest r, long operator) { // 方法：为用户分配角色
+    public AuthoritySnapshot assign(String user, AssignRolesRequest r, long operator) { // 方法：为用户分配角色
         if (r.reason() != null && r.reason().length() > 500) throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 校验原因长度
         return repository.replaceRoles(id(user), r.version(), r.roleCodes(), operator, r.reason()).orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT) ); // 调用仓储层的角色替换方法，并处理版本冲突
     } // 方法结束

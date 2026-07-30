@@ -12,7 +12,6 @@ import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.UUID;
-
 // 该服务负责通用系统全局设置（Key-Value 格式）的管理，包含敏感数据脱敏与审计记录
 public final class SystemSettingService { // 定义最终类，系统设置服务
     private final JdbcTemplate jdbc; // 声明模板
@@ -58,4 +57,8 @@ public final class SystemSettingService { // 定义最终类，系统设置服�
     private static long nextId() { // 内部 ID 生成
         return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     } // 结束
+
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
 }

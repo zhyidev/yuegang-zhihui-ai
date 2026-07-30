@@ -31,7 +31,7 @@ public final class AuthorizationController { // 定义最终类: 授权控制器
         return ApiResponse.success(service.snapshot(userId), TraceIdResolver.resolve(r)); // 返回用户的权限快照
     } // 方法结束
 
-    @PostMapping("/{userId}/authorities") // 分配用户权限的接口
+    @PutMapping("/{userId}/roles") // 分配用户权限的接口
     public ApiResponse<AuthoritySnapshot> assign(@PathVariable String userId, @Valid @RequestBody AssignRolesRequest body, HttpServletRequest r) { // 请求参数接受
         CurrentUserPrincipal p = users.resolve(r); // 解析当前操作人
         if (!p.roles().contains("ADMIN") && !p.permissions().contains("system:rbac:write")) // 必须拥有管理员角色或 RBAC 写入权限

@@ -3,7 +3,6 @@ package com.yuegang.zhihui.system.api;
 import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
-import com.yuegang.zhihui.common.security.CurrentUserPrincipal;
 import com.yuegang.zhihui.common.web.TraceIdResolver;
 import com.yuegang.zhihui.system.application.SaveDictionaryItemRequest;
 import com.yuegang.zhihui.system.application.SystemDictionaryAdministrationService;
