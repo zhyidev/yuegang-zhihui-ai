@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.baomidou.mybatisplus.extension.toolkit.Db.count;
 
 public class JdbcAddressRepository implements AddressRepository { //实现地址仓储接口
 
@@ -90,7 +89,7 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
 
     @Override
     public Optional<AddressView> makeDefault(long id, long userId, long version) { // 手动设为默认
-        return tx.execute( status -> {
+        return tx.execute(status -> {
             Boolean currentlyDefault = lockedDefault(id, userId, version); // 锁定检查
             if (currentlyDefault == null) return Optional.empty(); // 不存在
             if (!currentlyDefault) clearDefault(userId); // 若当前非默认，先清空其他默认项
