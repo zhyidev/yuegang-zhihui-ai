@@ -29,7 +29,7 @@ public final class NotificationSecurity { // 定义安全校验类
         return context(r).user; // 调用 context 方法解析并提取用户字段
     }
 
-    private long require(HttpServletRequest r, String permission) { // 检查用户是否具备特定权限
+    public long require(HttpServletRequest r, String permission) { // 检查用户是否具备特定权限
         var c = context(r); // 解析用户上下文
         // 如果既不是管理员角色，也不具备传入的权限点，则抛出权限不足异常
         if (!c.roles.contains("ADMIN") && !c.permissions.contains(permission))
@@ -38,7 +38,7 @@ public final class NotificationSecurity { // 定义安全校验类
     }
 
 
-    private void service(HttpServletRequest r) { // 验证内部服务间的请求签名
+    public void service(HttpServletRequest r) { // 验证内部服务间的请求签名
         try {
             String n = h(r, "X-YGH-Service"); // 获取调用方服务名称
             // 解析调动方传来的时间戳
