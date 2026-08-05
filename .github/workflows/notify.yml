@@ -1,0 +1,19 @@
+name: notify
+on: [push]
+
+jobs:
+  mail:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dawidd6/action-send-mail@v4
+        with:
+          server_address: smtp.qq.com
+          server_port: 465
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          to: ${{ secrets.MAIL_TO }}
+          from: ${{ secrets.MAIL_USERNAME }}
+          subject: "[yuegang-zhihui-ai] ${{ github.actor }} pushed"
+          body: |
+            提交人: ${{ github.actor }}
+            提交信息: ${{ github.event.head_commit.message }}
