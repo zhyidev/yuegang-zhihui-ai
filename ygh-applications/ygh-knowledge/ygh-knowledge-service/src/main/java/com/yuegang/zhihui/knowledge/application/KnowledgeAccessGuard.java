@@ -2,11 +2,13 @@ package com.yuegang.zhihui.knowledge.application;
 
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
+
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public final class KnowledgeAccessGuard {
@@ -31,5 +33,7 @@ public final class KnowledgeAccessGuard {
         if (count == null || count != 1) throw notFound();
     }
 
-    private static BusinessException notFound() { return new BusinessException(ErrorCode.RESOURCE_NOT_FOUND); }
+    private static BusinessException notFound() {
+        return new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+    }
 }

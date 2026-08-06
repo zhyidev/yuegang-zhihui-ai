@@ -15,5 +15,7 @@ public record KnowledgeUserContext(long userId, Set<String> roles, Set<String> p
         return roles.contains("ADMIN");
     }
 
-    public boolean anonymous() { return userId == 0; }
+    public boolean anonymous() {
+        return userId == 0;
+    }
 }

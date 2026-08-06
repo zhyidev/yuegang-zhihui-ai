@@ -12,6 +12,7 @@ import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.knowledge.api.KnowledgeStatus;
 import com.yuegang.zhihui.knowledge.api.ReviewKnowledgeRequest;
 import com.yuegang.zhihui.knowledge.api.UpdateKnowledgeMetadataRequest;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -24,6 +25,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Set;
+
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,13 +36,13 @@ import org.springframework.mock.web.MockMultipartFile;
 
 class KnowledgeServicesIntegrationTest {
     private static final byte[] SECRET = "0123456789abcdef0123456789abcdef".getBytes(StandardCharsets.UTF_8);
-    @TempDir Path storage;
+    @TempDir
+    Path storage;
 
     @Test
     void supportsSecureUploadMetadataReviewPublicationIndexOfflineRejectAndExpiry() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
-            Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential())
-                    .locations("classpath:db/migration").load().migrate();
+            Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential()).locations("classpath:db/migration").load().migrate();
             var dataSource = new DriverManagerDataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential());
             var documents = new KnowledgeDocumentService(dataSource, storage.toString());
             var lifecycle = new KnowledgeLifecycleService(dataSource);
@@ -55,19 +57,14 @@ class KnowledgeServicesIntegrationTest {
             assertBusinessError(() -> documents.upload(42, "非法", "POLICY", text("../escape.txt", "content")), ErrorCode.VALIDATION_ERROR);
             assertBusinessError(() -> documents.upload(42, "空文档", "POLICY", text("empty.txt", "")), ErrorCode.VALIDATION_ERROR);
 
-            var updatedMetadata = metadata.update(42, uploaded.id(), new UpdateKnowledgeMetadataRequest("海关总署",
-                    LocalDate.of(2026, 1, 1), OffsetDateTime.of(2027, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), "CN",
-                    "PUBLIC", "政策库", Set.of("通关", "政策"), 0));
+            var updatedMetadata = metadata.update(42, uploaded.id(), new UpdateKnowledgeMetadataRequest("海关总署", LocalDate.of(2026, 1, 1), OffsetDateTime.of(2027, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), "CN", "PUBLIC", "政策库", Set.of("通关", "政策"), 0));
             assertThat(updatedMetadata.tags()).containsExactly("政策", "通关");
-            assertBusinessError(() -> metadata.update(42, uploaded.id(), new UpdateKnowledgeMetadataRequest(null,
-                    LocalDate.of(2027, 1, 1), OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), null,
-                    "PUBLIC", null, Set.of(), updatedMetadata.metadataVersion())), ErrorCode.VALIDATION_ERROR);
+            assertBusinessError(() -> metadata.update(42, uploaded.id(), new UpdateKnowledgeMetadataRequest(null, LocalDate.of(2027, 1, 1), OffsetDateTime.of(2026, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC), null, "PUBLIC", null, Set.of(), updatedMetadata.metadataVersion())), ErrorCode.VALIDATION_ERROR);
 
             var published = documents.review(7, uploaded.id(), new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.APPROVE, "审核通过", uploaded.version()));
             assertThat(published.status()).isEqualTo(KnowledgeStatus.PUBLISHED);
             access.requirePublished(Long.parseLong(published.id()), Set.of("PUBLIC"));
-            assertBusinessError(() -> access.requirePublished(Long.parseLong(published.id()), Set.of("INTERNAL")),
-                    ErrorCode.RESOURCE_NOT_FOUND);
+            assertBusinessError(() -> access.requirePublished(Long.parseLong(published.id()), Set.of("INTERNAL")), ErrorCode.RESOURCE_NOT_FOUND);
             assertThat(lifecycle.list(null, "政策法规", true, 0)).containsExactly(published);
             assertBusinessError(() -> documents.review(7, uploaded.id(), new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.APPROVE, null, uploaded.version())), ErrorCode.BUSINESS_CONFLICT);
 
@@ -98,17 +95,13 @@ class KnowledgeServicesIntegrationTest {
             }
 
             var rejectedUpload = documents.upload(42, "驳回文档", "PRODUCT", text("reject.txt", "商品资料待修订"));
-            assertThat(documents.review(7, rejectedUpload.id(), new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.REJECT, "来源不完整", 0)).status())
-                    .isEqualTo(KnowledgeStatus.REJECTED);
+            assertThat(documents.review(7, rejectedUpload.id(), new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.REJECT, "来源不完整", 0)).status()).isEqualTo(KnowledgeStatus.REJECTED);
 
             var internalUpload = documents.upload(42, "内部通关指引", "CUSTOMS", text("internal.txt", "内部流程"));
-            metadata.update(42, internalUpload.id(), new UpdateKnowledgeMetadataRequest(null, null, null, "CN",
-                    "INTERNAL", "内部知识库", Set.of("内部"), 0));
-            var internalPublished = documents.review(7, internalUpload.id(),
-                    new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.APPROVE, "内部发布", 0));
+            metadata.update(42, internalUpload.id(), new UpdateKnowledgeMetadataRequest(null, null, null, "CN", "INTERNAL", "内部知识库", Set.of("内部"), 0));
+            var internalPublished = documents.review(7, internalUpload.id(), new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.APPROVE, "内部发布", 0));
             access.requirePublished(Long.parseLong(internalPublished.id()), Set.of("PUBLIC", "INTERNAL"));
-            assertBusinessError(() -> access.requirePublished(Long.parseLong(internalPublished.id()), Set.of("PUBLIC")),
-                    ErrorCode.RESOURCE_NOT_FOUND);
+            assertBusinessError(() -> access.requirePublished(Long.parseLong(internalPublished.id()), Set.of("PUBLIC")), ErrorCode.RESOURCE_NOT_FOUND);
 
             var expiringUpload = documents.upload(42, "临时政策", "POLICY", text("expire.txt", "临时监管政策"));
             var expiring = documents.review(7, expiringUpload.id(), new ReviewKnowledgeRequest(ReviewKnowledgeRequest.Decision.APPROVE, null, 0));
@@ -128,7 +121,6 @@ class KnowledgeServicesIntegrationTest {
     }
 
     private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class, error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

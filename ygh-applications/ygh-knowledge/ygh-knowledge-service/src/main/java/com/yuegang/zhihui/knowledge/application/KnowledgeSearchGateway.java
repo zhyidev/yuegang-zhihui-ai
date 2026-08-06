@@ -4,6 +4,7 @@ import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.search.api.SearchHit;
 import com.yuegang.zhihui.search.api.SearchRequest;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import org.springframework.web.client.RestClient;
 
 public final class KnowledgeSearchGateway {
@@ -46,7 +48,9 @@ public final class KnowledgeSearchGateway {
                 number(value.get("finalScore")).doubleValue());
     }
 
-    private static Number number(Object value) { return value instanceof Number number ? number : 0; }
+    private static Number number(Object value) {
+        return value instanceof Number number ? number : 0;
+    }
 
     private static OffsetDateTime date(Object value) {
         try {

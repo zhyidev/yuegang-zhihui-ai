@@ -5,6 +5,7 @@ import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.knowledge.api.KnowledgeDocumentView;
 import com.yuegang.zhihui.knowledge.api.KnowledgeStatus;
 import com.yuegang.zhihui.knowledge.api.ReviewKnowledgeRequest;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import javax.sql.DataSource;
+
 import org.apache.tika.Tika;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -45,8 +47,11 @@ public final class KnowledgeDocumentService {
         transactions = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
         root = Path.of(storage).toAbsolutePath().normalize();
         this.parser = parser;
-        try { Files.createDirectories(root); }
-        catch (IOException failure) { throw new IllegalStateException(failure); }
+        try {
+            Files.createDirectories(root);
+        } catch (IOException failure) {
+            throw new IllegalStateException(failure);
+        }
     }
 
     public KnowledgeDocumentView upload(long user, String title, String category, MultipartFile file) {
@@ -128,7 +133,9 @@ public final class KnowledgeDocumentService {
     }
 
     private String detect(Path path, String name) throws IOException {
-        try (InputStream input = Files.newInputStream(path)) { return tika.detect(input, name); }
+        try (InputStream input = Files.newInputStream(path)) {
+            return tika.detect(input, name);
+        }
     }
 
     private void history(long document, String from, String to, long user, String reason) {
@@ -137,8 +144,10 @@ public final class KnowledgeDocumentService {
     }
 
     private static void cleanup(Path path) {
-        try { Files.deleteIfExists(path); }
-        catch (IOException ignored) { }
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ignored) {
+        }
     }
 
     private static String digest(Path path) throws IOException {
@@ -151,7 +160,9 @@ public final class KnowledgeDocumentService {
         }
     }
 
-    private static long next() { return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE; }
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
 
     private static long id(String value) {
         try {
@@ -163,5 +174,7 @@ public final class KnowledgeDocumentService {
         }
     }
 
-    private static BusinessException invalid() { return new BusinessException(ErrorCode.VALIDATION_ERROR); }
+    private static BusinessException invalid() {
+        return new BusinessException(ErrorCode.VALIDATION_ERROR);
+    }
 }

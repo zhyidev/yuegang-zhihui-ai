@@ -24,24 +24,19 @@ public final class KnowledgeController {
     private final KnowledgeUserResolver users;
     private final KnowledgeAccessGuard access;
 
-    public KnowledgeController(KnowledgeDocumentService service, KnowledgeUserResolver users,
-                               KnowledgeAccessGuard access) {
+    public KnowledgeController(KnowledgeDocumentService service, KnowledgeUserResolver users, KnowledgeAccessGuard access) {
         this.service = service;
         this.users = users;
         this.access = access;
     }
 
     @PostMapping(consumes = "multipart/form-data")
-    ApiResponse<KnowledgeDocumentView> upload(@RequestParam String title, @RequestParam String category,
-                                              @org.springframework.web.bind.annotation.RequestPart MultipartFile file,
-                                              HttpServletRequest request) {
+    ApiResponse<KnowledgeDocumentView> upload(@RequestParam String title, @RequestParam String category, @org.springframework.web.bind.annotation.RequestPart MultipartFile file, HttpServletRequest request) {
         return ok(service.upload(users.resolve(request, true), title, category, file), request);
     }
 
     @PostMapping("/{id}/review")
-    ApiResponse<KnowledgeDocumentView> review(@PathVariable String id,
-                                              @Valid @RequestBody ReviewKnowledgeRequest body,
-                                              HttpServletRequest request) {
+    ApiResponse<KnowledgeDocumentView> review(@PathVariable String id, @Valid @RequestBody ReviewKnowledgeRequest body, HttpServletRequest request) {
         return ok(service.review(users.resolve(request, true), id, body), request);
     }
 
@@ -59,10 +54,10 @@ public final class KnowledgeController {
             if (id <= 0) throw new NumberFormatException();
             return id;
         } catch (NumberFormatException exception) {
-            throw new com.yuegang.zhihui.common.core.BusinessException(
-                    com.yuegang.zhihui.common.core.ErrorCode.VALIDATION_ERROR);
+            throw new com.yuegang.zhihui.common.core.BusinessException(com.yuegang.zhihui.common.core.ErrorCode.VALIDATION_ERROR);
         }
     }
+
     private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
         return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }

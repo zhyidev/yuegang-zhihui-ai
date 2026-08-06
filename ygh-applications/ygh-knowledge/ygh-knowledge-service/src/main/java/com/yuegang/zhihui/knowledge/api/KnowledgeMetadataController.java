@@ -22,8 +22,7 @@ public final class KnowledgeMetadataController {
     private final KnowledgeUserResolver users;
     private final KnowledgeAccessGuard access;
 
-    public KnowledgeMetadataController(KnowledgeMetadataService service, KnowledgeUserResolver users,
-                                       KnowledgeAccessGuard access) {
+    public KnowledgeMetadataController(KnowledgeMetadataService service, KnowledgeUserResolver users, KnowledgeAccessGuard access) {
         this.service = service;
         this.users = users;
         this.access = access;
@@ -38,9 +37,7 @@ public final class KnowledgeMetadataController {
     }
 
     @PutMapping
-    ApiResponse<KnowledgeMetadataView> update(@PathVariable String id,
-                                              @Valid @RequestBody UpdateKnowledgeMetadataRequest body,
-                                              HttpServletRequest request) {
+    ApiResponse<KnowledgeMetadataView> update(@PathVariable String id, @Valid @RequestBody UpdateKnowledgeMetadataRequest body, HttpServletRequest request) {
         return ok(service.update(users.resolve(request, true), id, body), request);
     }
 
@@ -50,8 +47,7 @@ public final class KnowledgeMetadataController {
             if (id <= 0) throw new NumberFormatException();
             return id;
         } catch (NumberFormatException exception) {
-            throw new com.yuegang.zhihui.common.core.BusinessException(
-                    com.yuegang.zhihui.common.core.ErrorCode.VALIDATION_ERROR);
+            throw new com.yuegang.zhihui.common.core.BusinessException(com.yuegang.zhihui.common.core.ErrorCode.VALIDATION_ERROR);
         }
     }
 

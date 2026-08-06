@@ -11,7 +11,9 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 
-/** 通过HTTP远程调用系统服务获取用户权限 */
+/**
+ * 通过HTTP远程调用系统服务获取用户权限
+ */
 public final class HttpSystemAuthorityProvider implements AuthorityProvider { // 实现权限提供者接口
     private final RestClient client;
     private final InternalServiceSignature signature; //声明内部对象样式的内部签名器
@@ -31,10 +33,11 @@ public final class HttpSystemAuthorityProvider implements AuthorityProvider { //
                 .header("X-YGH-Service", "ygh-auth-service") // 设置服务名头
                 .header("X-YGH-Timestamp", Long.toString(now.toEpochMilli())) // 设置时间戳头
                 .header("X-YGH-Service-Signature", signature.sign(m)) // 接收响应并转换
-                .retrieve().body(new ParameterizedTypeReference<>() {}); // 接收响应并转换
-        if (response == null || response.data() == null) throw new IllegalStateException("system authority response unavailable"); // 响应为空抛出异常
+                .retrieve().body(new ParameterizedTypeReference<>() {
+                }); // 接收响应并转换
+        if (response == null || response.data() == null)
+            throw new IllegalStateException("system authority response unavailable"); // 响应为空抛出异常
         return new Authorities(response.data().roles(), response.data().permissions()); // 返回领域对象
     }
-
 
 }

@@ -6,10 +6,12 @@ import com.yuegang.zhihui.knowledge.application.KnowledgeAccessGuard;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserContext;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.sql.DataSource;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -32,9 +34,7 @@ public final class KnowledgeDownloadController {
     private final KnowledgeAccessGuard access;
     private final Path root;
 
-    public KnowledgeDownloadController(DataSource dataSource, KnowledgeUserResolver users,
-                                       KnowledgeAccessGuard access,
-                                       @Value("${ygh.knowledge.storage-root}") String root) {
+    public KnowledgeDownloadController(DataSource dataSource, KnowledgeUserResolver users, KnowledgeAccessGuard access, @Value("${ygh.knowledge.storage-root}") String root) {
         jdbc = new JdbcTemplate(dataSource);
         this.users = users;
         this.access = access;
@@ -42,30 +42,25 @@ public final class KnowledgeDownloadController {
     }
 
     @GetMapping("/{id}/content")
-    ResponseEntity<Resource> content(@PathVariable String id,
-                                     @RequestParam(defaultValue = "true") boolean inline,
-                                     HttpServletRequest request) {
+    ResponseEntity<Resource> content(@PathVariable String id, @RequestParam(defaultValue = "true") boolean inline, HttpServletRequest request) {
         long documentId = positive(id);
         KnowledgeUserContext user = users.resolveContext(request);
         if (!user.administrator()) access.requirePublished(documentId, user.knowledgeVisibilities());
-        Row row = jdbc.query("SELECT file_name,media_type,storage_key,size_bytes FROM knowledge_document WHERE id=?",
-                result -> {
-                    if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
-                    return new Row(result.getString(1), result.getString(2), result.getString(3), result.getLong(4));
-                }, documentId);
+        Row row = jdbc.query("SELECT file_name,media_type,storage_key,size_bytes FROM knowledge_document WHERE id=?", result -> {
+            if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+            return new Row(result.getString(1), result.getString(2), result.getString(3), result.getLong(4));
+        }, documentId);
         Path file = root.resolve(row.key()).normalize();
         if (!file.startsWith(root) || !Files.isRegularFile(file)) {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }
         Resource resource = new FileSystemResource(file);
-        ContentDisposition disposition = (inline ? ContentDisposition.inline() : ContentDisposition.attachment())
-                .filename(row.name(), StandardCharsets.UTF_8).build();
-        return ResponseEntity.ok().contentType(MediaType.parseMediaType(row.media())).contentLength(row.size())
-                .header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString())
-                .header("X-Content-Type-Options", "nosniff").body(resource);
+        ContentDisposition disposition = (inline ? ContentDisposition.inline() : ContentDisposition.attachment()).filename(row.name(), StandardCharsets.UTF_8).build();
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType(row.media())).contentLength(row.size()).header(HttpHeaders.CONTENT_DISPOSITION, disposition.toString()).header("X-Content-Type-Options", "nosniff").body(resource);
     }
 
-    private record Row(String name, String media, String key, long size) { }
+    private record Row(String name, String media, String key, long size) {
+    }
 
     private static long positive(String value) {
         try {

@@ -1,21 +1,31 @@
 package com.yuegang.zhihui.inventory.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.inventory.api.InventoryCommand;
-import java.sql.DriverManager;
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.sql.DriverManager;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class InventoryServicesIntegrationTest {
+    private static InventoryCommand command(String request, String sku, long quantity, String type, String reference) {
+        return new InventoryCommand(request, sku, quantity, type, reference);
+    }
+
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
+
     @Test
     void supportsIdempotentLifecycleExpiryReturnReconciliationAndConcurrentNoOversell() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
@@ -70,7 +80,11 @@ class InventoryServicesIntegrationTest {
             }
             try (var executor = Executors.newFixedThreadPool(8)) {
                 long successes = executor.invokeAll(tasks).stream().filter(future -> {
-                    try { return future.get(); } catch (Exception error) { throw new AssertionError(error); }
+                    try {
+                        return future.get();
+                    } catch (Exception error) {
+                        throw new AssertionError(error);
+                    }
                 }).count();
                 assertThat(successes).isEqualTo(10);
             }
@@ -81,14 +95,5 @@ class InventoryServicesIntegrationTest {
             assertBusinessError(() -> inventory.get("0"), ErrorCode.VALIDATION_ERROR);
             assertBusinessError(() -> returns.returnSold(command("bad", "invalid", 1, "ORDER", "bad")), ErrorCode.VALIDATION_ERROR);
         }
-    }
-
-    private static InventoryCommand command(String request, String sku, long quantity, String type, String reference) {
-        return new InventoryCommand(request, sku, quantity, type, reference);
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }
