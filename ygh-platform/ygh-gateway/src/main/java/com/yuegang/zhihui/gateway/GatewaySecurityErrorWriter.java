@@ -33,7 +33,9 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 public class GatewaySecurityErrorWriter {
 
-    /** JSON 序列化器，用于将错误响应对象转为字节数组 */
+    /**
+     * JSON 序列化器，用于将错误响应对象转为字节数组
+     */
     private final ObjectMapper objectMapper;
 
     /**
@@ -132,8 +134,8 @@ public class GatewaySecurityErrorWriter {
      *   <li>将 JSON 字节写入响应体。</li>
      * </ol>
      *
-     * @param exchange 当前请求上下文
-     * @param status   要返回的 HTTP 状态码
+     * @param exchange  当前请求上下文
+     * @param status    要返回的 HTTP 状态码
      * @param errorCode 业务错误码
      * @return 异步完成信号（已提交响应）
      */

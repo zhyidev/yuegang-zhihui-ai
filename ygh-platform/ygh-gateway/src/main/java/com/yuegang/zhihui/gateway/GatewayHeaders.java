@@ -13,33 +13,53 @@ package com.yuegang.zhihui.gateway;
  */
 interface GatewayHeaders {
 
-    /** 链路追踪 ID，贯穿整个请求生命周期 */
+    /**
+     * 链路追踪 ID，贯穿整个请求生命周期
+     */
     String TRACE_ID = "X-Trace-Id";
 
-    /** 请求 ID，标识单次 HTTP 请求 */
+    /**
+     * 请求 ID，标识单次 HTTP 请求
+     */
     String REQUEST_ID = "X-Request-Id";
 
-    /** 用户 ID，由认证层注入 */
+    /**
+     * 用户 ID，由认证层注入
+     */
     String USER_ID = "X-YGH-User-Id";
 
-    /** 用户角色列表，由认证层注入 */
+    /**
+     * 用户角色列表，由认证层注入
+     */
     String ROLES = "X-YGH-Roles";
 
-    /** 用户权限列表，由认证层注入 */
+    /**
+     * 用户权限列表，由认证层注入
+     */
     String PERMISSIONS = "X-YGH-Permissions";
 
-    /** 客户端真实 IP，由网关从连接层提取 */
+    /**
+     * 客户端真实 IP，由网关从连接层提取
+     */
     String CLIENT_IP = "X-YGH-Client-IP";
 
-    /** 客户端 IP 时间戳，用于签名防重放 */
+    /**
+     * 客户端 IP 时间戳，用于签名防重放
+     */
     String CLIENT_IP_TIMESTAMP = "X-Client-IP-Timestamp";
 
-    /** 客户端 IP 签名，HMAC 防篡改 */
+    /**
+     * 客户端 IP 签名，HMAC 防篡改
+     */
     String CLIENT_IP_SIGNATURE = "X-YGH-Client-IP-Signature";
 
-    /** 用户上下文时间戳，用于签名防重放 */
+    /**
+     * 用户上下文时间戳，用于签名防重放
+     */
     String USER_CONTEXT_TIMESTAMP = "X-YGH-User-Context-Timestamp";
 
-    /** 用户上下文签名，HMAC 防篡改 */
+    /**
+     * 用户上下文签名，HMAC 防篡改
+     */
     String USER_CONTEXT_SIGNATURE = "X-YGH-User-Context-Signature";
 }

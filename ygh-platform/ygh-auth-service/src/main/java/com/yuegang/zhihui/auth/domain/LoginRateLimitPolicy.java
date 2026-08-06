@@ -2,7 +2,9 @@ package com.yuegang.zhihui.auth.domain;
 
 import java.time.Duration;
 
-/** 限流策略配置 */
+/**
+ * 限流策略配置
+ */
 public record LoginRateLimitPolicy( // 登录频率限制策略配置 Record
                                     int principalLimit, // 账号维度允许的最大请求数
                                     Duration principalWindow, // 账号维度的计数时间窗口
@@ -17,9 +19,10 @@ public record LoginRateLimitPolicy( // 登录频率限制策略配置 Record
         validate(ipLimit, ipWindow, "ip");
     }
 
-      public static LoginRateLimitPolicy enterpriseDefault() { // 企业级默认安全策略配置
+    public static LoginRateLimitPolicy enterpriseDefault() { // 企业级默认安全策略配置
         return new LoginRateLimitPolicy(10, Duration.ofMillis(15), 30, Duration.ofMillis(15));
     }
+
     private static void validate(int limit, Duration window, String dimension) { // 策略参数合法性验证
         if (limit < 1 || limit > MAXIMUM_LIMIT) {
             throw new IllegalArgumentException(dimension + " limit must be between 1 and 10000");

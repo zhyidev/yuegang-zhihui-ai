@@ -49,6 +49,22 @@ public final class ClasspathCompromisedPasswordChecker implements CompromisedPas
 
     }
 
+    private static byte[] sha256(byte[] value) { // 计算SHA-256哈希结构的内部方法
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value); // 调用JDK加密库
+        } catch (NoSuchAlgorithmException impossible) { // 捕获算法不存在异常
+            throw new IllegalStateException("SHA-256 is unavailable", impossible); // 抛出异常
+        }
+    }
+
+    private static int compare(byte[] left, int leftOffset, byte[] right, int rightOffset) { // 比较两个字节数组切片的内部方法
+        for (int index = 0; index < DIGEST_LENGTH; index++) { // 逐字节比较
+            int comparison = Integer.compare(
+                    Byte.toUnsignedInt(left[leftOffset + index]), Byte.toUnsignedInt(right[rightOffset + index]));
+            if (comparison != 0) return comparison; // 发现差异立即返回
+        }
+        return 0; // 完全一致
+    }
 
     @Override
     public boolean isCompromised(char[] password) { // 核心方法:检查密码是否已泄露
@@ -91,21 +107,4 @@ public final class ClasspathCompromisedPasswordChecker implements CompromisedPas
     public String datasetVersion() { // 捕获数据集版本
         return DATASET_VERSION;
     } // 实现泄露密码检查接口
-
-    private static byte[] sha256(byte[] value) { // 计算SHA-256哈希结构的内部方法
-        try {
-            return MessageDigest.getInstance("SHA-256").digest(value); // 调用JDK加密库
-        } catch (NoSuchAlgorithmException impossible) { // 捕获算法不存在异常
-            throw new IllegalStateException("SHA-256 is unavailable", impossible); // 抛出异常
-        }
-    }
-
-    private static int compare(byte[] left, int leftOffset, byte[] right, int rightOffset) { // 比较两个字节数组切片的内部方法
-        for (int index = 0; index < DIGEST_LENGTH; index++) { // 逐字节比较
-            int comparison = Integer.compare(
-                    Byte.toUnsignedInt(left[leftOffset + index]), Byte.toUnsignedInt(right[rightOffset + index]));
-            if (comparison != 0) return comparison; // 发现差异立即返回
-        }
-        return 0; // 完全一致
-    }
 }

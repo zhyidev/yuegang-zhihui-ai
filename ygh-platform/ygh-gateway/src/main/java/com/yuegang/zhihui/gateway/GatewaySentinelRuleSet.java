@@ -30,7 +30,7 @@ public class GatewaySentinelRuleSet {
                 rule("admin-service", serviceQps, serviceBurst));
     }
 
-    private static GatewayFlowRule rule(String routeId, double qps, int burst){
+    private static GatewayFlowRule rule(String routeId, double qps, int burst) {
         return new GatewayFlowRule(routeId)
                 .setCount(qps) //每次限制次数
                 .setIntervalSec(1) //窗口1秒

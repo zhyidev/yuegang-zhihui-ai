@@ -1,8 +1,6 @@
 package com.yuegang.zhihui.gateway;
 
 
-
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -134,14 +132,14 @@ public class GatewaySecurityConfiguration {
                         // 7. 兜底：其余所有 /api/v1/** 请求必须经过认证
                         .pathMatchers("/api/v1/**").authenticated()
                         .anyExchange().denyAll())
-                        // 异常处理逻辑（返回统一的 401/403 JSON）
-                        .exceptionHandling(errors -> errors
-                                .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
-                                .accessDeniedHandler((exchange, ignored) -> errorWriter.accessDenied(exchange)))
-                                .oauth2ResourceServer(resourceServer -> resourceServer
-                                        .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
-                                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
-                                .build();
+                // 异常处理逻辑（返回统一的 401/403 JSON）
+                .exceptionHandling(errors -> errors
+                        .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
+                        .accessDeniedHandler((exchange, ignored) -> errorWriter.accessDenied(exchange)))
+                .oauth2ResourceServer(resourceServer -> resourceServer
+                        .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+                .build();
 
     }
 

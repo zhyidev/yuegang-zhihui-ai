@@ -5,7 +5,9 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
 
-/** 账号锁定策略 */
+/**
+ * 账号锁定策略
+ */
 public final class AccountLockPolicy { // 账号锁定策略逻辑类
     private final int maximumFailures; // 允许的最大失败次数
     private final Duration lockDuration; // 达到上限后的锁定持续时长

@@ -2,9 +2,12 @@ package com.yuegang.zhihui.auth.domain;
 
 import java.util.Locale;
 
-/** 凭证规范化工具 */
+/**
+ * 凭证规范化工具
+ */
 public final class PrincipalNormalizer { // 登录凭证（如用户名、邮箱）的标准化处理器
-    private PrincipalNormalizer() {} // 禁止实例化
+    private PrincipalNormalizer() {
+    } // 禁止实例化
 
     public static String normalize(String principal) { // 执行规范化
         if (principal == null) throw new IllegalArgumentException("principal must not be null");

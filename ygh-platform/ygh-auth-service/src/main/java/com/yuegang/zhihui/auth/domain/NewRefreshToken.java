@@ -3,7 +3,9 @@ package com.yuegang.zhihui.auth.domain;
 import java.time.Instant;
 import java.util.Objects;
 
-/** 新刷新令牌数据 */
+/**
+ * 新刷新令牌数据
+ */
 public record NewRefreshToken(long id, String tokenHash, Instant issuedAt, Instant expiresAt) { // 新签发的刷新令牌 Record
 
     public NewRefreshToken { // 校验

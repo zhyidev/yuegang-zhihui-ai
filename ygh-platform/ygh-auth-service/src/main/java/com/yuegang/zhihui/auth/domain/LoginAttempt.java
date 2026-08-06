@@ -4,15 +4,17 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
-/** 尝试登录审计 */
+/**
+ * 尝试登录审计
+ */
 public record LoginAttempt( // 定义登录尝试审计记录 Record
-        Long accountId, // 尝试的账号 ID（失败时可能为空）
-        String principalHash, // 登录凭证（标准化后）的哈希值，用于脱敏存储
-        String clientIpHash, // 客户端 IP 的哈希值
-        LoginAttemptResult result, // 尝试结果枚举
-        String failureReason, // 失败原因代码
-        Instant occurredAt, // 发生时间
-        String traceId // 请求追踪 ID
+                            Long accountId, // 尝试的账号 ID（失败时可能为空）
+                            String principalHash, // 登录凭证（标准化后）的哈希值，用于脱敏存储
+                            String clientIpHash, // 客户端 IP 的哈希值
+                            LoginAttemptResult result, // 尝试结果枚举
+                            String failureReason, // 失败原因代码
+                            Instant occurredAt, // 发生时间
+                            String traceId // 请求追踪 ID
 ) {
     private static final Pattern HASH = Pattern.compile("[0-9a-f]{64}"); // SHA-256 哈希正则
     private static final Pattern SAFE_CODE = Pattern.compile("[A-Z][A-Z0-9_]{0,63}"); // 安全状态码正则

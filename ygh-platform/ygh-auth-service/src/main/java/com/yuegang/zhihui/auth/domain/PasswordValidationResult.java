@@ -2,7 +2,9 @@ package com.yuegang.zhihui.auth.domain;
 
 import java.util.Set;
 
-/** 密码校验结果类 */
+/**
+ * 密码校验结果类
+ */
 public record PasswordValidationResult(Set<PasswordViolation> violations) { // 存储一组密码违规项的结果 Record
 
     public PasswordValidationResult {

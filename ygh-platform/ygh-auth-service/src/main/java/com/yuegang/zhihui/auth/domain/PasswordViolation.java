@@ -1,5 +1,8 @@
 package com.yuegang.zhihui.auth.domain;
-/**密码违规项枚举*/
+
+/**
+ * 密码违规项枚举
+ */
 public enum PasswordViolation { // 各种可能的密码违规原因
     TOO_SHORT, // 长度过短
     TOO_LONG, // 长度过长

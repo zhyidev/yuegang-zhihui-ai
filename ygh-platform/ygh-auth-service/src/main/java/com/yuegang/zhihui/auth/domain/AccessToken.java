@@ -3,7 +3,9 @@ package com.yuegang.zhihui.auth.domain;
 import java.time.Instant;
 import java.util.Objects;
 
-/** 访问令牌服务*/
+/**
+ * 访问令牌服务
+ */
 public record AccessToken(String value, String jwtId, Instant expireAt) { // 定义访问令牌 Record，包含令牌值、JWT、ID 和过期时间
 
     public AccessToken { // 紧凑型构造函数，用于校验数据合法性
@@ -19,6 +21,6 @@ public record AccessToken(String value, String jwtId, Instant expireAt) { // 定
     @Override
     public String toString() { // 重写 toString 方法
         // 为了安全起见，在日志中脱敏显示令牌值和 JWT ID
-        return "AccessToken[value=[REDACTED], jwtId=[REDACTED], expiresAt=" + expireAt +"]";
+        return "AccessToken[value=[REDACTED], jwtId=[REDACTED], expiresAt=" + expireAt + "]";
     }
 }

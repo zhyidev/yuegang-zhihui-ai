@@ -21,6 +21,21 @@ import java.util.Set;
 public class GatewayEdgeConfiguration {
 
     /**
+     * 将逗号分隔的上传路径字符串解析为不可变集合。
+     *
+     * @param configuredPaths 配置文件中的路径列表（逗号分隔）
+     * @return 上传路径集合（不可变）
+     */
+    static Set<String> parsePaths(String configuredPaths) {
+        var paths = new LinkedHashSet<String>();
+        Arrays.stream(configuredPaths.split(","))
+                .map(String::trim)
+                .filter(path -> !path.isEmpty())
+                .forEach(paths::add);
+        return Set.copyOf(paths);
+    }
+
+    /**
      * 创建请求守卫过滤器 Bean。
      *
      * @param requestMaxSize 普通请求最大 Body 大小
@@ -40,20 +55,5 @@ public class GatewayEdgeConfiguration {
                 uploadMaxSize.toBytes(),
                 parsePaths(uploadPaths),
                 errorWriter);
-    }
-
-    /**
-     * 将逗号分隔的上传路径字符串解析为不可变集合。
-     *
-     * @param configuredPaths 配置文件中的路径列表（逗号分隔）
-     * @return 上传路径集合（不可变）
-     */
-    static Set<String> parsePaths(String configuredPaths) {
-        var paths = new LinkedHashSet<String>();
-        Arrays.stream(configuredPaths.split(","))
-                .map(String::trim)
-                .filter(path -> !path.isEmpty())
-                .forEach(paths::add);
-        return Set.copyOf(paths);
     }
 }

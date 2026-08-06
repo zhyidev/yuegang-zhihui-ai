@@ -2,7 +2,9 @@ package com.yuegang.zhihui.auth.domain;
 
 import java.util.Objects;
 
-/** 登录账号模型视图 */
+/**
+ * 登录账号模型视图
+ */
 public record LoginAccount(
         long accountId, // 内部编号 ID
         long userId, // 业务用户 ID

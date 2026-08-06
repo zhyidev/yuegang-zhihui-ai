@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 // JWT 桥接过滤器
+
 /**
  * 将认证通过后资源服务器 JWT 桥接到受信任的网关属性（Gateway Attributes）中。
  */

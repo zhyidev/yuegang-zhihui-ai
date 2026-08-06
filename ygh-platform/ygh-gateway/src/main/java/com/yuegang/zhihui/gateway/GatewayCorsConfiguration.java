@@ -33,29 +33,6 @@ import java.util.List;
 public class GatewayCorsConfiguration {
 
     /**
-     * 创建响应式 CORS 配置源 Bean。
-     *
-     * @param allowedOrigins 从配置文件读取的允许来源列表（逗号分隔）
-     * @return 基于 URL 路径匹配的 CORS 配置源
-     */
-    @Bean
-    CorsConfigurationSource gatewayCorsConfigurationSource(
-            @Value("${ygh.gateway.cors.allowed-origins}") String allowedOrigins) {
-        return createSource(allowedOrigins);
-    }
-
-    /**
-     * 创建 CORS WebFilter Bean。
-     *
-     * @param configurationSource CORS 配置源
-     * @return 自定义 CORS 过滤器实例
-     */
-    @Bean
-    GatewayCorsWebFilter gatewayCorsWebFilter(CorsConfigurationSource configurationSource) {
-        return new GatewayCorsWebFilter(configurationSource);
-    }
-
-    /**
      * 从逗号分隔的字符串创建 CORS 配置源。
      *
      * <p>处理流程：</p>
@@ -154,5 +131,28 @@ public class GatewayCorsConfiguration {
                     "CORS origin must be an HTTP(S) origin without a path");
         }
         return origin;
+    }
+
+    /**
+     * 创建响应式 CORS 配置源 Bean。
+     *
+     * @param allowedOrigins 从配置文件读取的允许来源列表（逗号分隔）
+     * @return 基于 URL 路径匹配的 CORS 配置源
+     */
+    @Bean
+    CorsConfigurationSource gatewayCorsConfigurationSource(
+            @Value("${ygh.gateway.cors.allowed-origins}") String allowedOrigins) {
+        return createSource(allowedOrigins);
+    }
+
+    /**
+     * 创建 CORS WebFilter Bean。
+     *
+     * @param configurationSource CORS 配置源
+     * @return 自定义 CORS 过滤器实例
+     */
+    @Bean
+    GatewayCorsWebFilter gatewayCorsWebFilter(CorsConfigurationSource configurationSource) {
+        return new GatewayCorsWebFilter(configurationSource);
     }
 }

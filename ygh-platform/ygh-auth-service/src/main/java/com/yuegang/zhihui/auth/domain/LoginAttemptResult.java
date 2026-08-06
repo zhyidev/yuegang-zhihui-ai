@@ -1,6 +1,8 @@
 package com.yuegang.zhihui.auth.domain;
 
-/** 登录结果枚举 */
+/**
+ * 登录结果枚举
+ */
 public enum LoginAttemptResult { // 登录尝试的所有可能结果
     SUCCESS, // 登录成功
     INVALID_CREDENTIALS, // 凭证无效（密码错）

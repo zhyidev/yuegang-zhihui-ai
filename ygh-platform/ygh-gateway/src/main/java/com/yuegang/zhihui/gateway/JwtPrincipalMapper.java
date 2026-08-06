@@ -4,7 +4,6 @@ package com.yuegang.zhihui.gateway;
  * JWT 字段解析器
  **/
 
-import com.yuegang.zhihui.common.security.AccountStatusProvider;
 import com.yuegang.zhihui.common.security.CurrentUserPrincipal;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -14,8 +13,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import static org.springframework.security.config.http.MatcherType.regex;
 
 /**
  * 将经过验证的 JWT Claims 声明转换为最小化的、不可变的内部 Principal 对象。
@@ -27,20 +24,6 @@ public class JwtPrincipalMapper {
     private static final int MAX_ENCODE_AUTHORITIES = 4096; // 编码后的总长度限制 
     private static final Pattern SAFE_SUBJECT = Pattern.compile("[A-Za-z0-9][A-Za-z0-9-:.]{0,127}");
     private static final Pattern SAFE_AUTHORITY = Pattern.compile("[A-Za-z0-9][A-Za-z0-9-:.]{0,127}");
-
-    CurrentUserPrincipal map(Jwt jwt) { // 1 usage
-        if (jwt == null) throw new BadCredentialsException("JWT must not be null");
-        String subject = jwt.getSubject();
-        // 校验 SUB 主题（通常是用户ID）是否包含非法字符
-        if (subject == null || !SAFE_SUBJECT.matcher(subject).matches()) {
-            throw new BadCredentialsException("JWT subject is missing or unsafe");
-        }
-        // 解析角色和权限
-        return new CurrentUserPrincipal(
-                subject,
-                claimSet(jwt, "roles"),
-                claimSet(jwt, "permissions"));
-    }
 
     // 从声明中提取集合并进行安全校验
     private static Set<String> claimSet(Jwt jwt, String claimName) { // 2 usages
@@ -55,12 +38,26 @@ public class JwtPrincipalMapper {
             if (!(value instanceof String authority) || !SAFE_SUBJECT.matcher(authority).matches()) {
                 throw new BadCredentialsException("JWT claim contains unsafe value");
             }
-            if (result.add(authority)){
-                encodedLength += authority.length()+ (result.size() == 1?0:1);
+            if (result.add(authority)) {
+                encodedLength += authority.length() + (result.size() == 1 ? 0 : 1);
             }
         }
-        if (encodedLength> MAX_ENCODE_AUTHORITIES) throw new BadCredentialsException("JWT claim too long");
+        if (encodedLength > MAX_ENCODE_AUTHORITIES) throw new BadCredentialsException("JWT claim too long");
         return Set.copyOf(result);
+    }
+
+    CurrentUserPrincipal map(Jwt jwt) { // 1 usage
+        if (jwt == null) throw new BadCredentialsException("JWT must not be null");
+        String subject = jwt.getSubject();
+        // 校验 SUB 主题（通常是用户ID）是否包含非法字符
+        if (subject == null || !SAFE_SUBJECT.matcher(subject).matches()) {
+            throw new BadCredentialsException("JWT subject is missing or unsafe");
+        }
+        // 解析角色和权限
+        return new CurrentUserPrincipal(
+                subject,
+                claimSet(jwt, "roles"),
+                claimSet(jwt, "permissions"));
     }
 
 }

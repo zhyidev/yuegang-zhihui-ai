@@ -55,6 +55,41 @@ final class TrustedUserContextFilter implements GlobalFilter, Ordered {
         this.clock = clock;
     }
 
+    private static List<String> split(String encoded) {
+        return encoded.isEmpty() ? List.of() : List.of(encoded.split(",", -1));
+    }
+
+    /**
+     * 验证用户 ID 的安全性，防止注入非法字符
+     */
+    private static String validateUserId(String userId) {
+        if (userId == null || !SAFE_USER_TO.matcher(userId).matches()) { //使用正则验证
+            throw new IllegalStateException("unsafe userId: " + userId); //验证失败抛出异常
+        }
+        return userId; //返回安全的ID
+    }
+
+    /**
+     * 将权限/角色集合编码为排序后的安全字符串
+     */
+    private static String encodedAuthorities(Set<String> authorities, String fieldName) {
+        if (authorities.size() > MAX_AUTHORITIES) { // 检查数量是否超限
+            throw new IllegalArgumentException(fieldName + " exceeds authority count limit"); // 超限报错
+        }
+        String encoded = authorities.stream() // 开启流处理
+                .peek(value -> { // 检查每一个元素的安全性
+                    if (!SAFE_AUTHORITY.matcher(value).matches()) {
+                        throw new IllegalArgumentException(fieldName + " contains an unsafe authority"); // 元素非法报错
+                    }
+                })
+                .sorted() // 字母序排序，确保生成规范化 (Canonical) 的字符串以供签名
+                .collect(Collectors.joining(",")); // 使用逗号连接
+        if (encoded.length() > MAX_AUTHORITY_HEADER_LENGTH) { // 检查总长度是否超限
+            throw new IllegalArgumentException(fieldName + " exceeds header length limit"); // 超长报错
+        }
+        return encoded; // 返回编码后的字符串
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         // 读取前序过滤器放入 exchange 属性中的认证主体；如果没有则视为未认证。
@@ -95,40 +130,10 @@ final class TrustedUserContextFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(request).build());
     }
 
-    private static List<String> split(String encoded){
-        return encoded.isEmpty() ? List.of() : List.of(encoded.split(",",-1));
-    }
-
     @Override
     public int getOrder() {
         // 当前与认证桥接过滤器同级排序，后续若需要稳定链路顺序可再调整。
         return 0;
-    }
-/** 验证用户 ID 的安全性，防止注入非法字符 */
-    private static String validateUserId(String userId) {
-        if (userId == null || !SAFE_USER_TO.matcher(userId).matches()) { //使用正则验证
-            throw new IllegalStateException("unsafe userId: " + userId); //验证失败抛出异常
-        }
-        return userId; //返回安全的ID
-    }
-
-    /** 将权限/角色集合编码为排序后的安全字符串 */
-    private static String encodedAuthorities(Set<String> authorities, String fieldName) {
-        if (authorities.size() > MAX_AUTHORITIES) { // 检查数量是否超限
-            throw new IllegalArgumentException(fieldName + " exceeds authority count limit"); // 超限报错
-        }
-        String encoded = authorities.stream() // 开启流处理
-                .peek( value -> { // 检查每一个元素的安全性
-                    if (!SAFE_AUTHORITY.matcher(value).matches()) {
-                        throw new IllegalArgumentException(fieldName + " contains an unsafe authority"); // 元素非法报错
-                    }
-                })
-                .sorted() // 字母序排序，确保生成规范化 (Canonical) 的字符串以供签名
-                .collect(Collectors.joining(",")); // 使用逗号连接
-        if (encoded.length() > MAX_AUTHORITY_HEADER_LENGTH) { // 检查总长度是否超限
-            throw new IllegalArgumentException(fieldName + " exceeds header length limit"); // 超长报错
-        }
-        return encoded; // 返回编码后的字符串
     }
 
 

@@ -3,8 +3,11 @@ package com.yuegang.zhihui.auth.domain;
 import java.util.Objects;
 import java.util.Set;
 
-/** 令牌主体信息 */
-public record TokenPrincipal(long accountId, long userId, Set<String> roles, Set<String> permissions) { // 封装在 Token 中的核心权限身份主体 Record
+/**
+ * 令牌主体信息
+ */
+public record TokenPrincipal(long accountId, long userId, Set<String> roles,
+                             Set<String> permissions) { // 封装在 Token 中的核心权限身份主体 Record
 
     public TokenPrincipal { // 校验构造函数
         if (accountId <= 0 || userId <= 0) throw new IllegalArgumentException("token identifiers must be positive");

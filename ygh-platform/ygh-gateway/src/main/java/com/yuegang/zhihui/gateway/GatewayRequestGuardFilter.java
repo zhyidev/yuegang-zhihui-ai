@@ -13,7 +13,6 @@ import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -35,19 +34,29 @@ import java.util.Set;
 @SuppressWarnings("NullableProblems")
 public class GatewayRequestGuardFilter implements WebFilter, Ordered {
 
-    /** 可配置的最大请求体上限（100MB），防止配置错误导致内存溢出 */
+    /**
+     * 可配置的最大请求体上限（100MB），防止配置错误导致内存溢出
+     */
     static final long MAX_CONFIGURABLE_BYTES = 100L * 1024 * 1024;
 
-    /** 普通请求的最大 Body 大小（字节） */
+    /**
+     * 普通请求的最大 Body 大小（字节）
+     */
     private final long requestMaxBytes;
 
-    /** 上传请求的最大 Body 大小（字节） */
+    /**
+     * 上传请求的最大 Body 大小（字节）
+     */
     private final long uploadMaxBytes;
 
-    /** 允许上传的路径白名单 */
+    /**
+     * 允许上传的路径白名单
+     */
     private final Set<String> uploadPaths;
 
-    /** 安全错误响应写入器 */
+    /**
+     * 安全错误响应写入器
+     */
     private final GatewaySecurityErrorWriter errorWriter;
 
     /**
@@ -67,6 +76,36 @@ public class GatewayRequestGuardFilter implements WebFilter, Ordered {
     }
 
     /**
+     * 重新封装 Request，使下游过滤器能再次读取 Body 字节流。
+     *
+     * <p>Spring WebFlux 的 Body 默认只能读取一次，
+     * 该方法通过装饰器模式保留了已读取的 Buffer 供下游复用。</p>
+     *
+     * @param exchange   当前请求上下文
+     * @param chain      过滤器链
+     * @param bufferBody 已读取的请求体 Buffer（可能为 null）
+     * @return 异步完成信号
+     */
+    private static Mono<Void> replay(ServerWebExchange exchange, WebFilterChain chain,
+                                     DataBuffer bufferBody) {
+        var guardedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
+            @Override
+            public Flux<DataBuffer> getBody() {
+                if (bufferBody == null) return Flux.empty();
+                return Flux.defer(() -> Flux.just(DataBufferUtils.retain(bufferBody)));
+            }
+        };
+
+        Mono<Void> result = Mono.defer(() ->
+                chain.filter(exchange.mutate().request(guardedRequest).build()));
+
+        if (bufferBody == null) return result;
+
+        // 逻辑处理完后释放缓冲区内存
+        return result.doFinally(ignored -> DataBufferUtils.release(bufferBody));
+    }
+
+    /**
      * 核心过滤逻辑。
      *
      * <p>判断请求类型（普通/上传），应用对应的大小限制，
@@ -81,7 +120,7 @@ public class GatewayRequestGuardFilter implements WebFilter, Ordered {
         // 判断是否为 multipart 上传请求
         boolean multipart = exchange.getRequest().getHeaders().getContentType() != null
                 && MediaType.MULTIPART_FORM_DATA.isCompatibleWith(
-                        exchange.getRequest().getHeaders().getContentType());
+                exchange.getRequest().getHeaders().getContentType());
 
         String path = exchange.getRequest().getPath().pathWithinApplication().value();
 
@@ -130,35 +169,5 @@ public class GatewayRequestGuardFilter implements WebFilter, Ordered {
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;
-    }
-
-    /**
-     * 重新封装 Request，使下游过滤器能再次读取 Body 字节流。
-     *
-     * <p>Spring WebFlux 的 Body 默认只能读取一次，
-     * 该方法通过装饰器模式保留了已读取的 Buffer 供下游复用。</p>
-     *
-     * @param exchange   当前请求上下文
-     * @param chain      过滤器链
-     * @param bufferBody 已读取的请求体 Buffer（可能为 null）
-     * @return 异步完成信号
-     */
-    private static Mono<Void> replay(ServerWebExchange exchange, WebFilterChain chain,
-                                     DataBuffer bufferBody) {
-        var guardedRequest = new ServerHttpRequestDecorator(exchange.getRequest()) {
-            @Override
-            public Flux<DataBuffer> getBody() {
-                if (bufferBody == null) return Flux.empty();
-                return Flux.defer(() -> Flux.just(DataBufferUtils.retain(bufferBody)));
-            }
-        };
-
-        Mono<Void> result = Mono.defer(() ->
-                chain.filter(exchange.mutate().request(guardedRequest).build()));
-
-        if (bufferBody == null) return result;
-
-        // 逻辑处理完后释放缓冲区内存
-        return result.doFinally(ignored -> DataBufferUtils.release(bufferBody));
     }
 }

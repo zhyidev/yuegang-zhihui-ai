@@ -11,7 +11,9 @@ import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.HexFormat;
 
-/** 生成加盐的，确定性的审计标识符，而无需在审计日志中存储原始敏感数据 */
+/**
+ * 生成加盐的，确定性的审计标识符，而无需在审计日志中存储原始敏感数据
+ */
 public final class SensitiveValueHasher {
     private static final int MINIMUM_PEPPER_BYTES = 32; // 要求 Pepper 最小长度为 32 字节
     private final SecretKeySpec key; // 内部使用 HMAC 秘钥
@@ -69,8 +71,9 @@ public final class SensitiveValueHasher {
         byte[] domainSeparated = new byte[raw.length + 1];
         domainSeparated[0] = 2; // 域标识：2 代表验证码
         System.arraycopy(raw, 0, domainSeparated, 1, raw.length);
-        try { return hmac(domainSeparated); }
-        finally {
+        try {
+            return hmac(domainSeparated);
+        } finally {
             Arrays.fill(raw, (byte) 0); // 清理内存
             Arrays.fill(domainSeparated, (byte) 0);
         }

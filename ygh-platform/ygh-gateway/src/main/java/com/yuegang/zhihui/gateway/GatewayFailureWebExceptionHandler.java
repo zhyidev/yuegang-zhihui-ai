@@ -25,7 +25,9 @@ import reactor.core.publisher.Mono;
  */
 public class GatewayFailureWebExceptionHandler implements WebExceptionHandler, Ordered {
 
-    /** 安全错误响应写入器 */
+    /**
+     * 安全错误响应写入器
+     */
     private final GatewaySecurityErrorWriter errorWriter;
 
     /**

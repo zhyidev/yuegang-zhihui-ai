@@ -26,8 +26,11 @@ import java.util.List;
  */
 final class GatewayJwtValidators {
 
-    /** 私有构造器，工具类不可实例化 */
-    private GatewayJwtValidators() {}
+    /**
+     * 私有构造器，工具类不可实例化
+     */
+    private GatewayJwtValidators() {
+    }
 
     /**
      * 创建组合 JWT 验证器。

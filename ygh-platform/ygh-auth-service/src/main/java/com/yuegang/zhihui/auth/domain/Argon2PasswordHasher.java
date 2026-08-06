@@ -1,6 +1,5 @@
 package com.yuegang.zhihui.auth.domain;
 
-import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
 import java.nio.ByteBuffer;

@@ -2,7 +2,9 @@ package com.yuegang.zhihui.auth.domain;
 
 import java.util.Objects;
 
-/** 密码摘要 */
+/**
+ * 密码摘要
+ */
 public record PasswordDigest(String hash, String algorithm, int version) { // 包含哈希串，算法名称和版本的摘要 Record
 
     public PasswordDigest { // 校验

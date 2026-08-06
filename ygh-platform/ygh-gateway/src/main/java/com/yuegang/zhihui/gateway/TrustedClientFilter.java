@@ -48,6 +48,15 @@ final class TrustedClientFilter implements GlobalFilter, Ordered {
         }
     }
 
+    private static List<String> split(String encoded) {
+        return encoded.isEmpty() ? List.of() : List.of(encoded.split(",", -1));
+    }
+
+    private static String stripScope(String address) {
+        int scope = address.indexOf("%"); //过滤 IPv6 的作用域标识
+        return scope < 0 ? address : address.substring(0, scope);
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         InetSocketAddress remote = exchange.getRequest().getRemoteAddress();
@@ -76,18 +85,9 @@ final class TrustedClientFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(request).build());
     }
 
-    private static List<String> split(String encoded){
-        return encoded.isEmpty() ? List.of() : List.of(encoded.split(",",-1));
-    }
-
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE + 25;
-    }
-
-    private static String stripScope(String address) {
-        int scope = address.indexOf("%"); //过滤 IPv6 的作用域标识
-        return scope < 0 ? address : address.substring(0, scope);
     }
 
 }
