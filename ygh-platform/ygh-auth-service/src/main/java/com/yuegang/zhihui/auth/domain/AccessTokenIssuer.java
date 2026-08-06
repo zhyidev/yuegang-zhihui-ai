@@ -5,5 +5,5 @@ package com.yuegang.zhihui.auth.domain;
  */
 public interface AccessTokenIssuer { // 定义访问令牌签发器接口
     // TODO
-    AccessToken issue();
+    AccessToken issue(TokenPrincipal principal);
 }
