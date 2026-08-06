@@ -5,10 +5,9 @@ import com.yuegang.zhihui.common.web.TraceIdResolver;
 import com.yuegang.zhihui.knowledge.application.KnowledgeIndexJobService;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin/knowledge/index-jobs")

@@ -9,7 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false) // 声明配置类
 @ConditionalOnProperty(name = "ygh.mq.enabled", havingValue = "true") // 仅当 ygh.mq.enabled=true 时加载此类
 class NotificationMqConfiguration {
-    @Bean(destroyMethod = "close") // 注册 Bean，并在应用关闭时调用其 close 方法
+    @Bean(destroyMethod = "close")
+        // 注册 Bean，并在应用关闭时调用其 close 方法
     NotificationDomainEventConsumer notificationDomainEventConsumer(
             @Value("${ygh.mq.nameserver}") String n, // 从配置文件注入 MQ 地址
             @Value("${ygh.mq.topic:YGH_DOMAIN_EVENTS}") String t, // 注入主题，默认使用通用领域事件主题

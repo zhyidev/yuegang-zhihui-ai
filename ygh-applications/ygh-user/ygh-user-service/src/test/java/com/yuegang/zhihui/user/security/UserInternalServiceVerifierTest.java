@@ -1,18 +1,29 @@
 package com.yuegang.zhihui.user.security;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class UserInternalServiceVerifierTest {
     private static final byte[] SECRET = "0123456789abcdef0123456789abcdef".getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+    private static MockHttpServletRequest signed(Instant time, String signedMethod, String path) {
+        var request = new MockHttpServletRequest("GET", path);
+        var signatures = new InternalServiceSignature(SECRET, Clock.systemUTC(), Duration.ofSeconds(30));
+        var metadata = new InternalServiceSignature.Metadata("ygh-auth-service", signedMethod, path, time);
+        request.addHeader("X-YGH-Service", metadata.service());
+        request.addHeader("X-YGH-Service-Timestamp", Long.toString(time.toEpochMilli()));
+        request.addHeader("X-YGH-Service-Signature", signatures.sign(metadata));
+        return request;
+    }
 
     @Test
     void acceptsValidSignatureAndRejectsMissingMalformedOrTamperedMetadata() {
@@ -30,15 +41,5 @@ class UserInternalServiceVerifierTest {
                 .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> verifier.verify(signed(now, "POST", "/internal/v1/users/1")))
                 .isInstanceOf(BusinessException.class);
-    }
-
-    private static MockHttpServletRequest signed(Instant time, String signedMethod, String path) {
-        var request = new MockHttpServletRequest("GET", path);
-        var signatures = new InternalServiceSignature(SECRET, Clock.systemUTC(), Duration.ofSeconds(30));
-        var metadata = new InternalServiceSignature.Metadata("ygh-auth-service", signedMethod, path, time);
-        request.addHeader("X-YGH-Service", metadata.service());
-        request.addHeader("X-YGH-Service-Timestamp", Long.toString(time.toEpochMilli()));
-        request.addHeader("X-YGH-Service-Signature", signatures.sign(metadata));
-        return request;
     }
 }

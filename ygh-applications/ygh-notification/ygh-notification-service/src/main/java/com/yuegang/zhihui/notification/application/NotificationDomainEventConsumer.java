@@ -37,13 +37,13 @@ public final class NotificationDomainEventConsumer implements AutoCloseable { //
                         String tag = message.getTags(), event = Objects.requireNonNullElse(message.getKeys(), UUID.randomUUID().toString());
 
                         if ("TRAINING_ASSIGNED".equals(tag)) // 如果是培训分配事件
-                            service.create(new NotificationCommand(event, text(p,"userId"), "TRAINING_ASSIGNED",Map.of("courseTitle", text(p, "courseTitle"))));
+                            service.create(new NotificationCommand(event, text(p, "userId"), "TRAINING_ASSIGNED", Map.of("courseTitle", text(p, "courseTitle"))));
                         else if ("WALLET_PAYMENT_SUCCEEDED".equals(tag)) // 如果是支付成功
-                            service.create(new NotificationCommand(event, text(p, "userId"), "ORDER_PAID",Map.of("referenceId", text(p, "referenceId"))));
+                            service.create(new NotificationCommand(event, text(p, "userId"), "ORDER_PAID", Map.of("referenceId", text(p, "referenceId"))));
                         else if ("KNOWLEDGE_REVIEWED".equals(tag)) // 如果是知识审核事件
-                            service.create(new NotificationCommand(event, text(p, "userId"), "KNOWLEDGE_REVIEWED",Map.of("title", text(p, "title"), "decision", text(p, "decision"))));
+                            service.create(new NotificationCommand(event, text(p, "userId"), "KNOWLEDGE_REVIEWED", Map.of("title", text(p, "title"), "decision", text(p, "decision"))));
 
-                    }catch (Exception e) { // 消费处理失败
+                    } catch (Exception e) { // 消费处理失败
                         return ConsumeConcurrentlyStatus.RECONSUME_LATER; // 告知 MQ 稍后重新投递进行重试
                     }
                 }
@@ -56,10 +56,10 @@ public final class NotificationDomainEventConsumer implements AutoCloseable { //
 
     private static String text(Map<String, Object> p, String k) { // 辅助方法：从解析的 JSON Map 中提取必填字符串
         Object v = p.get(k);
-        if (v == null || v.toString().isBlank()) throw new IllegalArgumentException("event field missing"); // 字段缺失则抛出参数异常
+        if (v == null || v.toString().isBlank())
+            throw new IllegalArgumentException("event field missing"); // 字段缺失则抛出参数异常
         return v.toString();
     }
-
 
 
     @Override

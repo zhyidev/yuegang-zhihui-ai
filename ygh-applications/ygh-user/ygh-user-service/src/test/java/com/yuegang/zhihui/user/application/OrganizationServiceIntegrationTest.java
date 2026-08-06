@@ -1,22 +1,28 @@
 package com.yuegang.zhihui.user.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.user.api.CreateDepartmentRequest;
 import com.yuegang.zhihui.user.api.CreateEmployeeRequest;
 import com.yuegang.zhihui.user.api.CreatePositionRequest;
-import java.time.Clock;
-import java.time.LocalDate;
-import java.util.Set;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class OrganizationServiceIntegrationTest {
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
+
     @Test
     void managesDepartmentPositionAndEmployeeLifecycle() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
@@ -58,10 +64,5 @@ class OrganizationServiceIntegrationTest {
             assertBusinessError(() -> service.replacePositions("0", Set.of()), ErrorCode.VALIDATION_ERROR);
             assertBusinessError(() -> service.replacePositions("not-a-number", Set.of()), ErrorCode.VALIDATION_ERROR);
         }
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

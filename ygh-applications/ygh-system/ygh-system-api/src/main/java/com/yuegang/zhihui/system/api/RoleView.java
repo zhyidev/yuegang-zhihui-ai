@@ -2,7 +2,8 @@ package com.yuegang.zhihui.system.api;
 
 import java.util.Set;
 
-public record RoleView(String id, String code, String name, boolean enabled, long version, Set<String> permissions) { // 包含主键ID、角色编码、名称、是否启用、版本号和权限集合
+public record RoleView(String id, String code, String name, boolean enabled, long version,
+                       Set<String> permissions) { // 包含主键ID、角色编码、名称、是否启用、版本号和权限集合
     /**
      * 辅助构造函数：不带权限列表的初始化
      */

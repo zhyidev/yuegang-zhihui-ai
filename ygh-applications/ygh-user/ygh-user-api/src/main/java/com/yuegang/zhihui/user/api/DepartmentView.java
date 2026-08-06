@@ -8,4 +8,5 @@ public record DepartmentView(
         int sortOrder, // 属性: 排序值
         boolean enabled, // 属性: 状态（启用/禁用）
         long version // 属性: 乐观锁版本号
-) { } // 类定义结束
+) {
+} // 类定义结束

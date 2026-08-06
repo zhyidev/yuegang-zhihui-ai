@@ -2,20 +2,23 @@ package com.yuegang.zhihui.knowledge.application;
 
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.sql.DataSource;
-
-import org.springframework.jdbc.core.JdbcTemplate;
 
 public final class KnowledgeAccessGuard {
     private final JdbcTemplate jdbc;
 
     public KnowledgeAccessGuard(DataSource dataSource) {
         jdbc = new JdbcTemplate(dataSource);
+    }
+
+    private static BusinessException notFound() {
+        return new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
     }
 
     public void requirePublished(long documentId, Set<String> visibilities) {
@@ -31,9 +34,5 @@ public final class KnowledgeAccessGuard {
                   AND visibility IN (%s)
                 """.formatted(markers), Integer.class, arguments.toArray());
         if (count == null || count != 1) throw notFound();
-    }
-
-    private static BusinessException notFound() {
-        return new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
     }
 }

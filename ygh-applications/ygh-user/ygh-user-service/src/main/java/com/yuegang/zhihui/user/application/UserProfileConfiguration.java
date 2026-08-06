@@ -12,7 +12,9 @@ import org.springframework.context.annotation.Configuration;
 import javax.sql.DataSource;
 import java.time.Clock;
 
-/** Spring配置类，配置用户和地址相关的 Bean */
+/**
+ * Spring配置类，配置用户和地址相关的 Bean
+ */
 @Configuration(proxyBeanMethods = false) // 声明为轻量级配置类
 class UserProfileConfiguration { // 用户档案模块配置类
     @Bean
@@ -21,7 +23,7 @@ class UserProfileConfiguration { // 用户档案模块配置类
     }
 
     @Bean
-     UserProfileService userProfileService(UserProfileRepository repository) {
+    UserProfileService userProfileService(UserProfileRepository repository) {
         return new UserProfileService(repository); //注册用户档案服务
     }
 

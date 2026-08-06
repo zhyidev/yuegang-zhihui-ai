@@ -24,6 +24,10 @@ public class SystemDictionaryAdministrationController { // 定义类
         users = u; // 赋值
     } // 结束
 
+    private static <T> ApiResponse<T> ok(T x, HttpServletRequest r) { // 封装成功地响应结果工具方法
+        return ApiResponse.success(x, TraceIdResolver.resolve(r)); // 构造带追踪的 ID 成功
+    } // 结束
+
     @GetMapping
         // 获取字典所有层级结构的接口（用于管理后台列表）
     ApiResponse<List<DictionaryAdminView>> all(HttpServletRequest r) {
@@ -51,9 +55,5 @@ public class SystemDictionaryAdministrationController { // 定义类
         var p = users.resolve(r); // 解析当前操作者
         if (!p.roles().contains("ADMIN") && !p.permissions().contains("system:rbac:write")) // 判断管理员角色或字典写权限
             throw new BusinessException(ErrorCode.PERMISSION_DENIED); // 校验失败抛出 403
-    } // 结束
-
-    private static <T> ApiResponse<T> ok(T x, HttpServletRequest r) { // 封装成功地响应结果工具方法
-        return ApiResponse.success(x, TraceIdResolver.resolve(r)); // 构造带追踪的 ID 成功
     } // 结束
 }

@@ -6,14 +6,9 @@ import com.yuegang.zhihui.knowledge.application.KnowledgeLifecycleService;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserContext;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public final class KnowledgeLifecycleController {
@@ -23,6 +18,10 @@ public final class KnowledgeLifecycleController {
     public KnowledgeLifecycleController(KnowledgeLifecycleService service, KnowledgeUserResolver users) {
         this.service = service;
         this.users = users;
+    }
+
+    private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
+        return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }
 
     @GetMapping("/api/v1/knowledge/documents")
@@ -40,9 +39,5 @@ public final class KnowledgeLifecycleController {
     @PutMapping("/api/v1/admin/knowledge/documents/{id}/offline")
     ApiResponse<KnowledgeDocumentView> offline(@PathVariable String id, @RequestParam long version, @RequestParam(required = false) String reason, HttpServletRequest request) {
         return ok(service.offline(users.resolve(request, true), id, version, reason), request);
-    }
-
-    private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
-        return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }
 }

@@ -21,6 +21,23 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
         this.cipher = Objects.requireNonNull(cipher);
     }
 
+    private static long lockVersion(Connection c, long userId) throws SQLException { // 内部方法：通过 FOR UPDATE 锁定记录
+        try (var s = c.prepareStatement("SELECT version FROM user_profile WHERE user_id=? FOR UPDATE")) {
+            s.setLong(1, userId);
+            try (var rows = s.executeQuery()) {
+                return rows.next() ? rows.getLong(1) : null;
+            }
+        }
+    }
+
+    private static String normalizedEmail(String value) { // 内部工具：把邮箱标准化（转小写）
+        String normalized = blankToNull(value);
+        return normalized == null ? null : normalized.toLowerCase(Locale.ROOT);
+    }
+
+    private static String blankToNull(String value) { // 内部工具: 空转 NULL
+        return value == null || value.isBlank() ? null : value.trim();
+    }
 
     @Override
     public Optional<UserProfileView> findByUserId(long userId) { // 按 ID 查询资料
@@ -96,15 +113,6 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
         return findByUserId(userId); // 返回保存后的最新视图
     }
 
-    private static long lockVersion(Connection c, long userId) throws SQLException { // 内部方法：通过 FOR UPDATE 锁定记录
-        try (var s = c.prepareStatement("SELECT version FROM user_profile WHERE user_id=? FOR UPDATE")) {
-            s.setLong(1, userId);
-            try (var rows = s.executeQuery()) {
-                return rows.next() ? rows.getLong(1) : null;
-            }
-        }
-    }
-
     private void bindInsert(PreparedStatement s, long userId, UpdateUserProfileRequest r) throws SQLException {
         s.setLong(1, userId);
         s.setString(2, r.displayName().trim());
@@ -149,15 +157,6 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
 
     private String decrypt(long userId, String field, int keyVersion, byte[] value) { // 内部解密代理方法
         return value == null ? null : cipher.decrypt(userId, field, keyVersion, value);
-    }
-
-    private static String normalizedEmail(String value) { // 内部工具：把邮箱标准化（转小写）
-        String normalized = blankToNull(value);
-        return normalized == null ? null : normalized.toLowerCase(Locale.ROOT);
-    }
-
-    private static String blankToNull(String value) { // 内部工具: 空转 NULL
-        return value == null || value.isBlank() ? null : value.trim();
     }
 
 }

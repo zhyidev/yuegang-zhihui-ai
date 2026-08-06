@@ -1,7 +1,5 @@
 package com.yuegang.zhihui.notification.api;
 
-import java.time.OffsetDateTime;
-
 /**
  * 这个 Record 用于展示通知模板的详细信息
  */

@@ -8,13 +8,7 @@ import com.yuegang.zhihui.knowledge.security.KnowledgeUserContext;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
@@ -28,6 +22,20 @@ public final class KnowledgeController {
         this.service = service;
         this.users = users;
         this.access = access;
+    }
+
+    private static long positive(String value) {
+        try {
+            long id = Long.parseLong(value);
+            if (id <= 0) throw new NumberFormatException();
+            return id;
+        } catch (NumberFormatException exception) {
+            throw new com.yuegang.zhihui.common.core.BusinessException(com.yuegang.zhihui.common.core.ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
+    private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
+        return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }
 
     @PostMapping(consumes = "multipart/form-data")
@@ -46,19 +54,5 @@ public final class KnowledgeController {
         long document = positive(id);
         if (!user.administrator()) access.requirePublished(document, user.knowledgeVisibilities());
         return ok(service.get(document), request);
-    }
-
-    private static long positive(String value) {
-        try {
-            long id = Long.parseLong(value);
-            if (id <= 0) throw new NumberFormatException();
-            return id;
-        } catch (NumberFormatException exception) {
-            throw new com.yuegang.zhihui.common.core.BusinessException(com.yuegang.zhihui.common.core.ErrorCode.VALIDATION_ERROR);
-        }
-    }
-
-    private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
-        return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }
 }

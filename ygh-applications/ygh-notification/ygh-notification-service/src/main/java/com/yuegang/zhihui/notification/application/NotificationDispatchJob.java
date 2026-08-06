@@ -2,7 +2,9 @@ package com.yuegang.zhihui.notification.application;
 
 import org.springframework.scheduling.annotation.Scheduled;
 
-/** 定时任务类，负责周期性扫描并分发待发送的通知 */
+/**
+ * 定时任务类，负责周期性扫描并分发待发送的通知
+ */
 public final class NotificationDispatchJob { // 定义分发任何类
     private final NotificationService service; // 依赖通知核心服务
 

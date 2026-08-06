@@ -1,19 +1,18 @@
 package com.yuegang.zhihui.system.security;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.common.security.InternalUserContextSignature;
+import org.junit.jupiter.api.Test;
+import org.springframework.mock.web.MockHttpServletRequest;
+
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
+
+import static org.assertj.core.api.Assertions.*;
 
 class SystemSecurityVerifierTest {
     private static final byte[] SECRET = "0123456789abcdef0123456789abcdef".getBytes(StandardCharsets.UTF_8);

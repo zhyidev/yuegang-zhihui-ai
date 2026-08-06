@@ -21,6 +21,10 @@ public class SystemDictionaryAdministrationService { // 定义类:系统字典�
         jdbc = new JdbcTemplate(d); //初始化
     }
 
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    } // 结束
+
     public List<DictionaryAdminView> all() { // 方法:查询全量字典配置(后台管理用)
         //查询并递归映射
         return jdbc.query("SELECT id,code,name,enabled,version FROM system_dictionary_type ORDER BY code", (r, n) -> view(r));
@@ -57,8 +61,4 @@ public class SystemDictionaryAdministrationService { // 定义类:系统字典�
         var items = jdbc.query("SELECT item_key,item_value,sort_order,enabled,version FROM system_dictionary_item WHERE type_id=? ORDER BY sort_order,item_key", (i, n) -> new DictionaryAdminView.Item(i.getString(1), i.getString(2), i.getInt(3), i.getBoolean(4), i.getLong(5)), id);
         return new DictionaryAdminView(r.getString(2), r.getString(3), r.getBoolean(4), r.getLong(5), items); // 组装返回
     } // 结果
-
-    private static long next() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-    } // 结束
 }

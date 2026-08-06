@@ -1,9 +1,10 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import static org.mockito.Mockito.*;
-
 import com.yuegang.zhihui.common.mq.JdbcOutboxDispatcher;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class KnowledgeOutboxConfigurationTest {
     @Test

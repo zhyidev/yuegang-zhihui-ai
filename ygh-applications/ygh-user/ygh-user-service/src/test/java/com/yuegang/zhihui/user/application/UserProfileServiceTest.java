@@ -1,14 +1,24 @@
 package com.yuegang.zhihui.user.application;
 
-import static org.assertj.core.api.Assertions.*;
-import com.yuegang.zhihui.common.core.*;
-import com.yuegang.zhihui.user.api.*;
+import com.yuegang.zhihui.common.core.BusinessException;
+import com.yuegang.zhihui.common.core.ErrorCode;
+import com.yuegang.zhihui.user.api.UpdateUserProfileRequest;
+import com.yuegang.zhihui.user.api.UserProfileView;
 import com.yuegang.zhihui.user.domain.UserProfileRepository;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class UserProfileServiceTest {
-    @Test void createsReadsAndUpdatesOnlyWithCurrentVersion() {
+    private static UpdateUserProfileRequest request(String name, String avatar, long version) {
+        return new UpdateUserProfileRequest(name, avatar, "zh-CN", "Asia/Shanghai", version);
+    }
+
+    @Test
+    void createsReadsAndUpdatesOnlyWithCurrentVersion() {
         var repository = new MemoryRepository();
         var service = new UserProfileService(repository);
         var created = service.update("42", request("Alice", null, 0));
@@ -20,7 +30,9 @@ class UserProfileServiceTest {
                 .isInstanceOfSatisfying(BusinessException.class,
                         e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.BUSINESS_CONFLICT));
     }
-    @Test void rejectsMissingInvalidTimezoneAndUnsafeAvatar() {
+
+    @Test
+    void rejectsMissingInvalidTimezoneAndUnsafeAvatar() {
         var service = new UserProfileService(new MemoryRepository());
         assertThat(service.get("42")).extracting(UserProfileView::displayName).isEqualTo("新用户");
         assertThatThrownBy(() -> service.update("42", new UpdateUserProfileRequest("Alice", null, "zh-CN", "Mars/Base", 0)))
@@ -28,12 +40,14 @@ class UserProfileServiceTest {
         assertThatThrownBy(() -> service.update("42", request("Alice", "file:///secret", 0)))
                 .isInstanceOf(BusinessException.class);
     }
-    private static UpdateUserProfileRequest request(String name, String avatar, long version) {
-        return new UpdateUserProfileRequest(name, avatar, "zh-CN", "Asia/Shanghai", version);
-    }
+
     private static final class MemoryRepository implements UserProfileRepository {
         UserProfileView value;
-        public Optional<UserProfileView> findByUserId(long id) { return Optional.ofNullable(value); }
+
+        public Optional<UserProfileView> findByUserId(long id) {
+            return Optional.ofNullable(value);
+        }
+
         public Optional<UserProfileView> save(long id, UpdateUserProfileRequest request) {
             if (value == null) {
                 if (request.version() != 0) return Optional.empty();

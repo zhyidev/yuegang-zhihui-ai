@@ -1,35 +1,40 @@
 package com.yuegang.zhihui.order.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.inventory.api.InventoryCommand;
 import com.yuegang.zhihui.inventory.api.InventoryReferenceView;
-import com.yuegang.zhihui.order.api.AddressSnapshot;
-import com.yuegang.zhihui.order.api.CartItemRequest;
-import com.yuegang.zhihui.order.api.CreateOrderRequest;
-import com.yuegang.zhihui.order.api.OrderItemCommand;
-import com.yuegang.zhihui.order.api.OrderStatus;
+import com.yuegang.zhihui.order.api.*;
 import com.yuegang.zhihui.order.infrastructure.CommerceReconciliationClient;
 import com.yuegang.zhihui.order.infrastructure.InventoryClient;
 import com.yuegang.zhihui.wallet.api.WalletReferenceView;
-import java.math.BigDecimal;
-import java.sql.DriverManager;
-import java.util.List;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.math.BigDecimal;
+import java.sql.DriverManager;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 class OrderServicesIntegrationTest {
+    private static CreateOrderRequest request(String requestId, String sku, long quantity, String price) {
+        return new CreateOrderRequest(requestId,
+                List.of(new OrderItemCommand(sku, "SKU-" + sku, "商品" + sku, new BigDecimal(price), quantity)),
+                new AddressSnapshot("张三", "13800138000", "CN", "440000", "广东省", "广州市", "天河区", "测试地址", "510000"),
+                "测试订单");
+    }
+
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
+
     @Test
     void supportsCartSnapshotsStateMachineInventoryCompensationExpiryAndReconciliation() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
@@ -109,17 +114,5 @@ class OrderServicesIntegrationTest {
                     .isInstanceOf(IllegalStateException.class);
             assertBusinessError(() -> orders.get(42, "0"), ErrorCode.VALIDATION_ERROR);
         }
-    }
-
-    private static CreateOrderRequest request(String requestId, String sku, long quantity, String price) {
-        return new CreateOrderRequest(requestId,
-                List.of(new OrderItemCommand(sku, "SKU-" + sku, "商品" + sku, new BigDecimal(price), quantity)),
-                new AddressSnapshot("张三", "13800138000", "CN", "440000", "广东省", "广州市", "天河区", "测试地址", "510000"),
-                "测试订单");
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

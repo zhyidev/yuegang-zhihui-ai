@@ -5,28 +5,27 @@ import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.knowledge.api.KnowledgeDocumentView;
 import com.yuegang.zhihui.knowledge.api.KnowledgeStatus;
 import com.yuegang.zhihui.knowledge.api.ReviewKnowledgeRequest;
+import org.apache.tika.Tika;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.DigestOutputStream;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import javax.sql.DataSource;
-
-import org.apache.tika.Tika;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-import org.springframework.web.multipart.MultipartFile;
 
 public final class KnowledgeDocumentService {
     private static final Set<String> ALLOWED = Set.of("application/pdf",
@@ -52,6 +51,41 @@ public final class KnowledgeDocumentService {
         } catch (IOException failure) {
             throw new IllegalStateException(failure);
         }
+    }
+
+    private static void cleanup(Path path) {
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ignored) {
+        }
+    }
+
+    private static String digest(Path path) throws IOException {
+        try (InputStream input = Files.newInputStream(path)) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            input.transferTo(new DigestOutputStream(OutputStream.nullOutputStream(), digest));
+            return HexFormat.of().formatHex(digest.digest());
+        } catch (NoSuchAlgorithmException failure) {
+            throw new IllegalStateException(failure);
+        }
+    }
+
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
+
+    private static long id(String value) {
+        try {
+            long id = Long.parseLong(value);
+            if (id <= 0) throw new NumberFormatException();
+            return id;
+        } catch (NumberFormatException failure) {
+            throw invalid();
+        }
+    }
+
+    private static BusinessException invalid() {
+        return new BusinessException(ErrorCode.VALIDATION_ERROR);
     }
 
     public KnowledgeDocumentView upload(long user, String title, String category, MultipartFile file) {
@@ -141,40 +175,5 @@ public final class KnowledgeDocumentService {
     private void history(long document, String from, String to, long user, String reason) {
         jdbc.update("INSERT INTO knowledge_status_history(id,document_id,from_status,to_status,operator_id,reason) VALUES(?,?,?,?,?,?)",
                 next(), document, from, to, user, reason);
-    }
-
-    private static void cleanup(Path path) {
-        try {
-            Files.deleteIfExists(path);
-        } catch (IOException ignored) {
-        }
-    }
-
-    private static String digest(Path path) throws IOException {
-        try (InputStream input = Files.newInputStream(path)) {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            input.transferTo(new DigestOutputStream(OutputStream.nullOutputStream(), digest));
-            return HexFormat.of().formatHex(digest.digest());
-        } catch (NoSuchAlgorithmException failure) {
-            throw new IllegalStateException(failure);
-        }
-    }
-
-    private static long next() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-    }
-
-    private static long id(String value) {
-        try {
-            long id = Long.parseLong(value);
-            if (id <= 0) throw new NumberFormatException();
-            return id;
-        } catch (NumberFormatException failure) {
-            throw invalid();
-        }
-    }
-
-    private static BusinessException invalid() {
-        return new BusinessException(ErrorCode.VALIDATION_ERROR);
     }
 }

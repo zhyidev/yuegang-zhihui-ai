@@ -36,7 +36,7 @@ public final class NotificationAdministrationController { // 定义通知管理�
         // 调用重放逻辑，并记录执行人的权限及身份
         service.replay(id, security.require(r, "notification:compensate"));
         // 返回操作已受理的成功响应
-        return ApiResponse.success(Map.of("accepted", true),TraceIdResolver.resolve(r));
+        return ApiResponse.success(Map.of("accepted", true), TraceIdResolver.resolve(r));
     }
 
     // 手动触发待发送通知的分发任务
@@ -44,6 +44,6 @@ public final class NotificationAdministrationController { // 定义通知管理�
     ApiResponse<Map<String, Integer>> dispatch(HttpServletRequest r) {
         security.require(r, "notification:compensate"); // 校验"通知补偿"权限
         // 执行待发送通知的分发逻辑，并返回本次发送的数量
-        return ApiResponse.success(Map.of("sent", service.dispatchPending()),TraceIdResolver.resolve(r));
+        return ApiResponse.success(Map.of("sent", service.dispatchPending()), TraceIdResolver.resolve(r));
     }
 }

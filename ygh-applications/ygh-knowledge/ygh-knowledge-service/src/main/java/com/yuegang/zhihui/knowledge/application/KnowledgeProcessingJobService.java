@@ -1,14 +1,16 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import com.yuegang.zhihui.common.core.*;
+import com.yuegang.zhihui.common.core.BusinessException;
+import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.knowledge.api.KnowledgeProcessingJobView;
-
-import java.sql.Timestamp;
-import java.time.*;
-import java.util.*;
-import javax.sql.DataSource;
-
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import javax.sql.DataSource;
+import java.sql.Timestamp;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 public final class KnowledgeProcessingJobService {
     private final JdbcTemplate jdbc;
@@ -17,6 +19,20 @@ public final class KnowledgeProcessingJobService {
     public KnowledgeProcessingJobService(DataSource dataSource, KnowledgeParseDispatcher dispatcher) {
         jdbc = new JdbcTemplate(dataSource);
         this.dispatcher = dispatcher;
+    }
+
+    private static KnowledgeProcessingJobView view(long id, long document, String type, String status, int progress, int retries, String error, Timestamp time) {
+        return new KnowledgeProcessingJobView(Long.toString(id), Long.toString(document), type, status, progress, retries, error, time.toInstant().atOffset(ZoneOffset.UTC));
+    }
+
+    private static long positive(String value) {
+        try {
+            long parsed = Long.parseLong(value);
+            if (parsed <= 0) throw new NumberFormatException();
+            return parsed;
+        } catch (Exception failure) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
     }
 
     public List<KnowledgeProcessingJobView> list(String document, String status, int limit) {
@@ -44,19 +60,5 @@ public final class KnowledgeProcessingJobService {
             if (!r.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
             return view(r.getLong(1), r.getLong(2), r.getString(3), r.getString(4), r.getInt(5), r.getInt(6), r.getString(7), r.getTimestamp(8));
         }, job);
-    }
-
-    private static KnowledgeProcessingJobView view(long id, long document, String type, String status, int progress, int retries, String error, Timestamp time) {
-        return new KnowledgeProcessingJobView(Long.toString(id), Long.toString(document), type, status, progress, retries, error, time.toInstant().atOffset(ZoneOffset.UTC));
-    }
-
-    private static long positive(String value) {
-        try {
-            long parsed = Long.parseLong(value);
-            if (parsed <= 0) throw new NumberFormatException();
-            return parsed;
-        } catch (Exception failure) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
     }
 }

@@ -19,6 +19,30 @@ public final class KnowledgeUserResolver {
         signatures = new InternalUserContextSignature(key, Clock.systemUTC(), Duration.ofSeconds(30));
     }
 
+    private static String header(HttpServletRequest request, String name) {
+        String value = request.getHeader(name);
+        if (value == null || value.isBlank()) throw failure();
+        return value;
+    }
+
+    private static boolean anonymous(HttpServletRequest request) {
+        String user = request.getHeader("X-YGH-User-Id");
+        if (user != null && !user.isBlank()) return false;
+        for (String name : List.of("X-YGH-Roles", "X-YGH-Permissions", "X-YGH-User-Context-Timestamp", "X-YGH-User-Context-Signature")) {
+            String value = request.getHeader(name);
+            if (value != null && !value.isBlank()) throw failure();
+        }
+        return true;
+    }
+
+    private static List<String> values(String value) {
+        return value == null || value.isBlank() ? List.of() : List.of(value.split(","));
+    }
+
+    private static BusinessException failure() {
+        return new BusinessException(ErrorCode.PERMISSION_DENIED);
+    }
+
     public long resolve(HttpServletRequest request, boolean administrator) {
         KnowledgeUserContext context = resolveContext(request);
         if (administrator && !context.administrator()) throw new BusinessException(ErrorCode.PERMISSION_DENIED);
@@ -48,29 +72,5 @@ public final class KnowledgeUserResolver {
         } catch (RuntimeException exception) {
             throw failure();
         }
-    }
-
-    private static String header(HttpServletRequest request, String name) {
-        String value = request.getHeader(name);
-        if (value == null || value.isBlank()) throw failure();
-        return value;
-    }
-
-    private static boolean anonymous(HttpServletRequest request) {
-        String user = request.getHeader("X-YGH-User-Id");
-        if (user != null && !user.isBlank()) return false;
-        for (String name : List.of("X-YGH-Roles", "X-YGH-Permissions", "X-YGH-User-Context-Timestamp", "X-YGH-User-Context-Signature")) {
-            String value = request.getHeader(name);
-            if (value != null && !value.isBlank()) throw failure();
-        }
-        return true;
-    }
-
-    private static List<String> values(String value) {
-        return value == null || value.isBlank() ? List.of() : List.of(value.split(","));
-    }
-
-    private static BusinessException failure() {
-        return new BusinessException(ErrorCode.PERMISSION_DENIED);
     }
 }

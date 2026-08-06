@@ -4,21 +4,45 @@ import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.knowledge.api.KnowledgeIndexJobView;
 import com.yuegang.zhihui.knowledge.api.RebuildKnowledgeIndexResponse;
+import org.springframework.jdbc.core.JdbcTemplate;
 
+import javax.sql.DataSource;
 import java.sql.Timestamp;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.UUID;
-import javax.sql.DataSource;
-
-import org.springframework.jdbc.core.JdbcTemplate;
 
 public final class KnowledgeIndexJobService {
     private final JdbcTemplate jdbc;
 
     public KnowledgeIndexJobService(DataSource dataSource) {
         this.jdbc = new JdbcTemplate(dataSource);
+    }
+
+    private static KnowledgeIndexJobView view(long id, long documentId, String version, String type, String status, int retries, String failure, Timestamp updatedAt) {
+        int progress = switch (status) {
+            case "SUCCEEDED" -> 100;
+            case "PROCESSING" -> 75;
+            case "PENDING", "RETRY" -> 50;
+            default -> 0;
+        };
+        OffsetDateTime time = updatedAt.toInstant().atOffset(ZoneOffset.UTC);
+        return new KnowledgeIndexJobView(Long.toString(id), Long.toString(documentId), version, type, status, progress, retries, failure, time);
+    }
+
+    private static long positive(String value) {
+        try {
+            long parsed = Long.parseLong(value);
+            if (parsed <= 0) throw new NumberFormatException();
+            return parsed;
+        } catch (RuntimeException failure) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
+    private static long nextId() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     }
 
     public List<KnowledgeIndexJobView> list(String documentId, String status, int limit) {
@@ -70,30 +94,5 @@ public final class KnowledgeIndexJobService {
             jdbc.update("INSERT INTO knowledge_index_job(id,document_id,index_version,job_type,status) VALUES(?,?,?,'UPSERT','PENDING')", nextId(), document, version);
         }
         return new RebuildKnowledgeIndexResponse(version, documents.size());
-    }
-
-    private static KnowledgeIndexJobView view(long id, long documentId, String version, String type, String status, int retries, String failure, Timestamp updatedAt) {
-        int progress = switch (status) {
-            case "SUCCEEDED" -> 100;
-            case "PROCESSING" -> 75;
-            case "PENDING", "RETRY" -> 50;
-            default -> 0;
-        };
-        OffsetDateTime time = updatedAt.toInstant().atOffset(ZoneOffset.UTC);
-        return new KnowledgeIndexJobView(Long.toString(id), Long.toString(documentId), version, type, status, progress, retries, failure, time);
-    }
-
-    private static long positive(String value) {
-        try {
-            long parsed = Long.parseLong(value);
-            if (parsed <= 0) throw new NumberFormatException();
-            return parsed;
-        } catch (RuntimeException failure) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
-    }
-
-    private static long nextId() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     }
 }

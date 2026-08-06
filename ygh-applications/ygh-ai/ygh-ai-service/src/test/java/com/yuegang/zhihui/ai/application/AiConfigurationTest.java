@@ -1,16 +1,16 @@
 package com.yuegang.zhihui.ai.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuegang.zhihui.ai.domain.ModelGateway;
 import com.yuegang.zhihui.ai.domain.RetrievalGateway;
 import com.yuegang.zhihui.ai.infrastructure.CommerceToolGateway;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import java.util.Base64;
-import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
+
+import javax.sql.DataSource;
+import java.util.Base64;
+
+import static org.mockito.Mockito.mock;
 
 class AiConfigurationTest {
     @Test

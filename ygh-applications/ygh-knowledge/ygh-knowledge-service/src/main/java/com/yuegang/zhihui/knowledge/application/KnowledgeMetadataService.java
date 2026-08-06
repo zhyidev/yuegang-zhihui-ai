@@ -5,17 +5,16 @@ import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.knowledge.api.KnowledgeMetadataView;
 import com.yuegang.zhihui.knowledge.api.UpdateKnowledgeMetadataRequest;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.sql.DataSource;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.ZoneOffset;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import javax.sql.DataSource;
-
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.transaction.annotation.Transactional;
 
 public class KnowledgeMetadataService {
     private final JdbcTemplate jdbc;
@@ -24,6 +23,18 @@ public class KnowledgeMetadataService {
     public KnowledgeMetadataService(DataSource dataSource, ObjectMapper json) {
         jdbc = new JdbcTemplate(dataSource);
         this.json = json;
+    }
+
+    private static long id(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (Exception exception) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     }
 
     @Transactional
@@ -75,17 +86,5 @@ public class KnowledgeMetadataService {
         } catch (Exception exception) {
             throw new IllegalStateException(exception);
         }
-    }
-
-    private static long id(String value) {
-        try {
-            return Long.parseLong(value);
-        } catch (Exception exception) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
-    }
-
-    private static long next() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     }
 }

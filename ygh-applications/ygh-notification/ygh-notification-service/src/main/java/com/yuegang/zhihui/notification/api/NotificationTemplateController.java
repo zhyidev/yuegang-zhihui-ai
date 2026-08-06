@@ -10,7 +10,9 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** 该控制器处理通知模板的管理，包括查看和编辑 */
+/**
+ * 该控制器处理通知模板的管理，包括查看和编辑
+ */
 @RestController
 @RequestMapping("/api/v1/admin/notifications/templates") // 定义通知模板管理的基础路径
 public class NotificationTemplateController { // 定义模板管理控制器类

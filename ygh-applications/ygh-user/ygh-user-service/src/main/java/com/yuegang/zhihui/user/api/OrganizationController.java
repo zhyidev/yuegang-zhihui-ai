@@ -28,6 +28,10 @@ public class OrganizationController { // 定义组织架构控制器类
         this.users = users;
     }
 
+    private static <T> ApiResponse<T> ok(T data, HttpServletRequest request) { // 封装成功响应的辅助方法
+        return ApiResponse.success(data, TraceIdResolver.resolve(request));
+    }
+
     @GetMapping("/departments")
         // 查询部门列表
     ApiResponse<List<DepartmentView>> departments(HttpServletRequest request) { // 查询部门列表,需要读取权限
@@ -40,7 +44,6 @@ public class OrganizationController { // 定义组织架构控制器类
         require(request, "organization:write");
         return ok(service.createDepartment(body), request);
     }
-
 
     @PostMapping("/positions")
     ApiResponse<PositionView> createPosition(@Valid @RequestBody CreatePositionRequest body, HttpServletRequest request) { // 创建职位，需要写权限
@@ -75,17 +78,13 @@ public class OrganizationController { // 定义组织架构控制器类
     @PutMapping("/employees/{id}/status/{status}")
     ApiResponse<EmployeeView> status(@PathVariable String id, @PathVariable String status, HttpServletRequest request) { // 更改员工在职状态，需要写权限
         require(request, "employee:write");
-        return ok(service.changeStatus(id,status),request);
+        return ok(service.changeStatus(id, status), request);
     }
 
     private void require(HttpServletRequest request, String permission) { // 私有权限检查辅助方法
         CurrentUserPrincipal principal = users.resolve(request); // 解析当前用户信息
         if (!principal.hasRole("ADMIN") && !principal.hasPermission(permission))
             throw new BusinessException(ErrorCode.PERMISSION_DENIED); // 非管理员且无特定权限则抛出拒绝访问
-    }
-
-    private static <T> ApiResponse<T> ok(T data, HttpServletRequest request) { // 封装成功响应的辅助方法
-        return ApiResponse.success(data, TraceIdResolver.resolve(request));
     }
 
 }

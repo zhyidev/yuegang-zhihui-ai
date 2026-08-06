@@ -18,6 +18,17 @@ public final class InternalServiceVerifier { // 定义最终类：内部服务�
         signature = new InternalServiceSignature(s, c, Duration.ofSeconds(30));
     }
 
+    private static String h(HttpServletRequest r, String n) { // 私有化辅助方法，获取必填的请求头
+        String v = r.getHeader(n); // 根据名称获取头信息
+        if (v == null || v.isBlank()) throw fail(); // 如果头信息不存在或为空白，则判定为失败
+        return v;
+
+    }
+
+    private static BusinessException fail() {
+        return new BusinessException(ErrorCode.UNAUTHENTICATED);// 返回"未认定"状态的业务异常
+    }
+
     public void verify(HttpServletRequest r, String expected) { // 核心方法：验证请求是否来自预期的服务
         try { // 开启异常捕获块
             String service = h(r, "X-YGH-Service");
@@ -33,17 +44,6 @@ public final class InternalServiceVerifier { // 定义最终类：内部服务�
         } catch (RuntimeException e) { // 如果捕获到其他运行，异常
             throw fail(); // 统一封装为验证失败（未认证）异常抛出
         }
-    }
-
-    private static String h(HttpServletRequest r, String n) { // 私有化辅助方法，获取必填的请求头
-        String v = r.getHeader(n); // 根据名称获取头信息
-        if (v == null || v.isBlank()) throw fail(); // 如果头信息不存在或为空白，则判定为失败
-        return v;
-
-    }
-
-    private static BusinessException fail() {
-        return new BusinessException(ErrorCode.UNAUTHENTICATED);// 返回"未认定"状态的业务异常
     }
 
 }

@@ -19,6 +19,8 @@ public record CreateAddressRequest(
 
 ) { // 类开始
     @Override
-    public String toString() { return "CreateAddressRequest[pii=REDACTED]"; } // 重写：日志脱敏，防止将用户个人隐私（PII）泄露到日志文件
+    public String toString() {
+        return "CreateAddressRequest[pii=REDACTED]";
+    } // 重写：日志脱敏，防止将用户个人隐私（PII）泄露到日志文件
 
 }

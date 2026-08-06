@@ -20,6 +20,10 @@ public class SystemCatalogService { // 定义最终类：系统目录服务
         this.jdbc = new JdbcTemplate(d); // 初始化模板
     } // 结束
 
+    private static FeatureFlagView view(java.sql.ResultSet r) throws SQLException {
+        return new FeatureFlagView(r.getString(1), r.getBoolean(2), r.getInt(3), r.getString(4), r.getLong(5)); // 从结果映射到 DTO
+    }
+
     public List<DictionaryView> dictionaries() { // 方法：查询所有已启用的字典内容（业务端调用）
         return jdbc.query("SELECT code,name FROM system_dictionary_type WHERE enabled=TRUE ORDER BY code",
                 (ResultSet t, int n) -> new DictionaryView(t.getString(1), t.getString(2),
@@ -54,9 +58,4 @@ public class SystemCatalogService { // 定义最终类：系统目录服务
                 }, key);
 
     } //  结束
-
-
-    private static FeatureFlagView view(java.sql.ResultSet r) throws SQLException {
-        return new FeatureFlagView(r.getString(1), r.getBoolean(2), r.getInt(3), r.getString(4), r.getLong(5)); // 从结果映射到 DTO
-    }
 }

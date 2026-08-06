@@ -21,24 +21,6 @@ public final class SystemTrustedUserContextResolver { // 定义最终类，受�
         signatures = new InternalUserContextSignature(s, c, Duration.ofSeconds(30));
     } // 构造函数结束
 
-    public CurrentUserPrincipal resolve(HttpServletRequest r) { // 核心方法：从请求中解析用户信息
-        try { // 开启尝试块
-            String u = h(r, "X-YGH-User-Id"); // 获取可信的用户 ID
-            var roles = v(r.getHeader(  "X-YGH-Roles"));// 获取并分角色列表
-            var perms = v(r.getHeader(  "X-YGH-Permissions")); // 获收#分列表
-            // 构造验证元数据，包含用户信息、链路ID(Trace/Request)以及网关生成此信息时的时间戳
-            var m = new InternalUserContextSignature.Metadata(u, roles, perms, h(r, "X-YGH-Trace-Id"), h(r, "X-Request-Id"),r.getMethod(),r.getRequestURI(), Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-User-Timestamp"))));
-            // 执行签名校验，如果 X-YGH-User-Context-Signature 不正确，说明用户信息在中途被篡改或伪造
-            if (!signatures.verify(m, h(r, "X-YGH-User-Context-Signature"))) throw f();
-// 校验通过后，构造并返回同一个包含用户、角色和权限的 CurrentUserPrincipal 对象
-            return new CurrentUserPrincipal(u, new LinkedHashSet<>(roles), new LinkedHashSet<>(perms));
-        } catch (BusinessException e) { // 捕获已知业务异常
-            throw e; // 直接抛出
-        } catch (RuntimeException e) { // 捕获解析异常（如数字格式化错、空指针等）
-            throw e; // 封装并抛出未认证异常
-        }
-    } // resolve 方法结束
-
     private static String h(HttpServletRequest r, String n) { // 辅助方法：获取必填头信息
         String x = r.getHeader(n); // 读取 Header
         if (x == null || x.isBlank()) throw f(); // 缺失则报错
@@ -52,5 +34,23 @@ public final class SystemTrustedUserContextResolver { // 定义最终类，受�
     private static BusinessException f() { // 辅助方法:统一常工厂
         return new BusinessException(ErrorCode.UNAUTHENTICATED); // 返回未认证异常
     }
+
+    public CurrentUserPrincipal resolve(HttpServletRequest r) { // 核心方法：从请求中解析用户信息
+        try { // 开启尝试块
+            String u = h(r, "X-YGH-User-Id"); // 获取可信的用户 ID
+            var roles = v(r.getHeader("X-YGH-Roles"));// 获取并分角色列表
+            var perms = v(r.getHeader("X-YGH-Permissions")); // 获收#分列表
+            // 构造验证元数据，包含用户信息、链路ID(Trace/Request)以及网关生成此信息时的时间戳
+            var m = new InternalUserContextSignature.Metadata(u, roles, perms, h(r, "X-YGH-Trace-Id"), h(r, "X-Request-Id"), r.getMethod(), r.getRequestURI(), Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-User-Timestamp"))));
+            // 执行签名校验，如果 X-YGH-User-Context-Signature 不正确，说明用户信息在中途被篡改或伪造
+            if (!signatures.verify(m, h(r, "X-YGH-User-Context-Signature"))) throw f();
+// 校验通过后，构造并返回同一个包含用户、角色和权限的 CurrentUserPrincipal 对象
+            return new CurrentUserPrincipal(u, new LinkedHashSet<>(roles), new LinkedHashSet<>(perms));
+        } catch (BusinessException e) { // 捕获已知业务异常
+            throw e; // 直接抛出
+        } catch (RuntimeException e) { // 捕获解析异常（如数字格式化错、空指针等）
+            throw e; // 封装并抛出未认证异常
+        }
+    } // resolve 方法结束
 
 }

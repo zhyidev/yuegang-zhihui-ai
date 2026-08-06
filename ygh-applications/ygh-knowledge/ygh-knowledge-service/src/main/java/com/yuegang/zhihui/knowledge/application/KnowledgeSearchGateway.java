@@ -4,6 +4,7 @@ import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.search.api.SearchHit;
 import com.yuegang.zhihui.search.api.SearchRequest;
+import org.springframework.web.client.RestClient;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -14,8 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.springframework.web.client.RestClient;
-
 public final class KnowledgeSearchGateway {
     private static final String PATH = "/internal/v1/search/hybrid";
     private final RestClient client;
@@ -24,20 +23,6 @@ public final class KnowledgeSearchGateway {
     public KnowledgeSearchGateway(String baseUrl, byte[] secret) {
         client = RestClient.builder().baseUrl(baseUrl).build();
         signatures = new InternalServiceSignature(secret, Clock.systemUTC(), Duration.ofSeconds(30));
-    }
-
-    public List<SearchHit> search(String query, String category, int limit, Set<String> visibilities) {
-        Instant now = Instant.now();
-        var metadata = new InternalServiceSignature.Metadata("ygh-knowledge-service", "POST", PATH, now);
-        @SuppressWarnings("unchecked")
-        ApiResponse<List<Map<String, Object>>> response = client.post().uri(PATH)
-                .header("X-YGH-Service", "ygh-knowledge-service")
-                .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
-                .header("X-YGH-Service-Signature", signatures.sign(metadata))
-                .body(new SearchRequest(query, limit, category, visibilities))
-                .retrieve().body(ApiResponse.class);
-        if (response == null || response.data() == null) return List.of();
-        return response.data().stream().map(KnowledgeSearchGateway::hit).toList();
     }
 
     private static SearchHit hit(Map<String, Object> value) {
@@ -59,5 +44,19 @@ public final class KnowledgeSearchGateway {
         } catch (RuntimeException ignored) {
             return null;
         }
+    }
+
+    public List<SearchHit> search(String query, String category, int limit, Set<String> visibilities) {
+        Instant now = Instant.now();
+        var metadata = new InternalServiceSignature.Metadata("ygh-knowledge-service", "POST", PATH, now);
+        @SuppressWarnings("unchecked")
+        ApiResponse<List<Map<String, Object>>> response = client.post().uri(PATH)
+                .header("X-YGH-Service", "ygh-knowledge-service")
+                .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
+                .header("X-YGH-Service-Signature", signatures.sign(metadata))
+                .body(new SearchRequest(query, limit, category, visibilities))
+                .retrieve().body(ApiResponse.class);
+        if (response == null || response.data() == null) return List.of();
+        return response.data().stream().map(KnowledgeSearchGateway::hit).toList();
     }
 }

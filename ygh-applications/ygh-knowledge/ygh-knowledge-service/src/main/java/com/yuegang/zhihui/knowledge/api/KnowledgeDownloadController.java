@@ -6,12 +6,6 @@ import com.yuegang.zhihui.knowledge.application.KnowledgeAccessGuard;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserContext;
 import com.yuegang.zhihui.knowledge.security.KnowledgeUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import javax.sql.DataSource;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
@@ -20,11 +14,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.sql.DataSource;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 @RestController
 @RequestMapping("/api/v1/knowledge/documents")
@@ -39,6 +34,16 @@ public final class KnowledgeDownloadController {
         this.users = users;
         this.access = access;
         this.root = Path.of(root).toAbsolutePath().normalize();
+    }
+
+    private static long positive(String value) {
+        try {
+            long id = Long.parseLong(value);
+            if (id <= 0) throw new NumberFormatException();
+            return id;
+        } catch (NumberFormatException exception) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
     }
 
     @GetMapping("/{id}/content")
@@ -60,15 +65,5 @@ public final class KnowledgeDownloadController {
     }
 
     private record Row(String name, String media, String key, long size) {
-    }
-
-    private static long positive(String value) {
-        try {
-            long id = Long.parseLong(value);
-            if (id <= 0) throw new NumberFormatException();
-            return id;
-        } catch (NumberFormatException exception) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
     }
 }

@@ -32,6 +32,10 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
         this.cipher = Objects.requireNonNull(cipher); // 校验注入加密器
     }
 
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    } // 内部工具: 空字符串转 null
+
     @Override
     public List<AddressView> findAll(long userId) { // 查找用户的所有地址
         // 按默认状态置顶，更新时间倒序，ID倒序排序
@@ -100,7 +104,6 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
         });
     }
 
-
     private void clearDefault(long userId) {
         jdbc.update("UPDATE user_address SET is_default=FALSE, version=version+1 WHERE user_id=? AND is_default=TRUE", userId);
     } //内部方法:清除用户所有默认标记
@@ -134,9 +137,4 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
                 rs.getString("postal_code"), rs.getBoolean("is_default"), rs.getLong("version"), rs.getTimestamp("updated_at").toLocalDateTime().atOffset(ZoneOffset.UTC) // 按时间戳为 UTC OffsetDateTime
         );
     }
-
-
-    private static String blankToNull(String value) {
-        return value == null || value.isBlank() ? null : value.trim();
-    } // 内部工具: 空字符串转 null
 }

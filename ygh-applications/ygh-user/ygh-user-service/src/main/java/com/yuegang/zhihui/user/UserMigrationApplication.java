@@ -7,7 +7,6 @@ package com.yuegang.zhihui.user;
  * Bounded Flyway job; production runtime starts with Flyway disabled.
  */
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 

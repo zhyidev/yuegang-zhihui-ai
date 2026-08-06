@@ -1,22 +1,22 @@
 package com.yuegang.zhihui.training.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.training.api.*;
 import com.yuegang.zhihui.training.security.TrainingUserContext;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.mock.web.MockMultipartFile;
+
 import java.nio.file.Files;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.mock.web.MockMultipartFile;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TrainingServicesIntegrationTest {
     @Test

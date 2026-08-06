@@ -7,7 +7,8 @@ public record UpdateUserProfileRequest( // 定义公共记录类：修改用户�
                                         @Size(max = 512) String avatarUrl, // 校验：头像URL连接最大长度512个字符
                                         @Pattern(regexp = "\\+?[0-9 -]{5,31}") String phone, // 校验：手机号格式（可选）
                                         @Email @Size(max = 254) String email, // 校验：邮箱地址必须符合RFC规范且限254个字符
-                                        @NotBlank @Pattern(regexp = "[a-z]{2}(?:-[A-Z]{2})?") String locale,  // 校验：语言地区代码，如 zh-CN, en-US
+                                        @NotBlank @Pattern(regexp = "[a-z]{2}(?:-[A-Z]{2})?") String locale,
+                                        // 校验：语言地区代码，如 zh-CN, en-US
                                         @NotBlank @Size(max = 64) String timezone, // 校验：时区标识符不能为空，如 Asia/Shanghai
                                         @PositiveOrZero long version // 校验：乐观锁版本号
 ) { // 类体开始

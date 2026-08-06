@@ -1,19 +1,19 @@
 package com.yuegang.zhihui.order.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.sun.net.httpserver.HttpServer;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.order.api.AddressSnapshot;
 import com.yuegang.zhihui.order.api.CreateOrderRequest;
 import com.yuegang.zhihui.order.api.OrderItemCommand;
 import com.yuegang.zhihui.order.infrastructure.InventoryClient;
+import org.junit.jupiter.api.Test;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class CheckoutServiceTest {
     @Test

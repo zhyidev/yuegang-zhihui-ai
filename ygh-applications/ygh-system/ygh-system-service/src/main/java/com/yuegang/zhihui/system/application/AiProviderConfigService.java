@@ -34,6 +34,40 @@ public class AiProviderConfigService { // 定义最终类: AI 供应商配置服
         this.secrets = secrets; // 初始化加密器
     } // 构造函数结束
 
+    private static AiProviderConfigView toView(String provider, String baseUrl, String chatModel,
+                                               String embeddingModel, boolean webSearchEnabled,
+                                               String ciphertext, long version,
+                                               Timestamp updatedAt) {
+        boolean configured = ciphertext != null && !ciphertext.isBlank(); // 判断密钥是否已配置
+        OffsetDateTime changed = updatedAt == null ? null : updatedAt.toInstant().atOffset(ZoneOffset.UTC); // 时间戳转 OffsetDateTime
+        return new AiProviderConfigView(provider, baseUrl, chatModel, embeddingModel, webSearchEnabled, configured, configured ? "......" : "未配置", version, changed); // 返回脱敏之后的视图对象
+    } // 方法结束
+
+    private static void validateBaseUrl(String value) {
+        try { // 开启校验
+            URI uri = URI.create(value.trim()); // 创建 URI 对象
+            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null // 强制要求 HTTP 和主机名
+                    || uri.getUserInfo() != null || uri.getQuery() != null || uri.getFragment() != null) { // 检查 URI 的各个部分是否合法
+                throw new IllegalArgumentException("Invalid base URL: " + value);
+            }
+        } catch (RuntimeException failure) { // 铺货解析异常
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 统一抛出校验失败业务异常
+        }
+    }
+
+    private static String digest(String value) { // 私有静态方法：生成数据摘要
+        try { // 开启哈希计算
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256") // 使用 SHA-256 算法
+                    .digest(value.getBytes(StandardCharsets.UTF_8))); // 返回十六进制哈希字符串
+        } catch (Exception impossible) { // 理论上不会发生的异常处理
+            throw new IllegalArgumentException(impossible); // 抛出非法状态异常
+        }
+    } // 方法结束
+
+    private static long nextId() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE; // 利 UUID 生成正整数型 ID
+    }//方法结束
+
     public AiProviderConfigView update(UpdateAiProviderConfigRequest request, long operator) { // 方法：更新 AI 配置
         validateBaseUrl(request.baseUrl()); // 校验传入的基础 URL 格式
         var current = jdbc.queryForMap(SELECT); // 获取数据库中当前的配置快照
@@ -74,7 +108,6 @@ public class AiProviderConfigService { // 定义最终类: AI 供应商配置服
 
     } // 方法结束
 
-
     public AiProviderConfigView view() { // 方法：获取前端展示用的配置视图
         return jdbc.queryForObject(SELECT, (row, index) -> toView(  //执行查询并转换为视图对象
                 row.getString(1), row.getString(2), row.getString(3), row.getString(4), // 映射供应商、URL、模型
@@ -88,39 +121,5 @@ public class AiProviderConfigService { // 定义最终类: AI 供应商配置服
                 row.getBoolean(5), row.getNString(6), row.getLong(8) // 映射搜索开关，解密后的密码、版本
         )); // 方法结束
     }
-
-    private static AiProviderConfigView toView(String provider, String baseUrl, String chatModel,
-                                               String embeddingModel, boolean webSearchEnabled,
-                                               String ciphertext, long version,
-                                               Timestamp updatedAt) {
-        boolean configured = ciphertext != null && !ciphertext.isBlank(); // 判断密钥是否已配置
-        OffsetDateTime changed = updatedAt == null ? null : updatedAt.toInstant().atOffset(ZoneOffset.UTC); // 时间戳转 OffsetDateTime
-        return new AiProviderConfigView(provider, baseUrl, chatModel, embeddingModel, webSearchEnabled, configured, configured ? "......" : "未配置", version, changed); // 返回脱敏之后的视图对象
-    } // 方法结束
-
-    private static void validateBaseUrl(String value) {
-        try { // 开启校验
-            URI uri = URI.create(value.trim()); // 创建 URI 对象
-            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null // 强制要求 HTTP 和主机名
-                    || uri.getUserInfo() != null || uri.getQuery() != null || uri.getFragment() != null) { // 检查 URI 的各个部分是否合法
-                throw new IllegalArgumentException("Invalid base URL: " + value);
-            }
-        } catch (RuntimeException failure) { // 铺货解析异常
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 统一抛出校验失败业务异常
-        }
-    }
-
-    private static String digest(String value) { // 私有静态方法：生成数据摘要
-        try { // 开启哈希计算
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256") // 使用 SHA-256 算法
-                    .digest(value.getBytes(StandardCharsets.UTF_8))); // 返回十六进制哈希字符串
-        } catch (Exception impossible) { // 理论上不会发生的异常处理
-            throw new IllegalArgumentException(impossible); // 抛出非法状态异常
-        }
-    } // 方法结束
-
-    private static long nextId() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE; // 利 UUID 生成正整数型 ID
-    }//方法结束
 
 }

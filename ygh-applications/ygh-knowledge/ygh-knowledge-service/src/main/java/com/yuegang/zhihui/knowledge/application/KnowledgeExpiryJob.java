@@ -1,10 +1,10 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import java.util.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.support.TransactionTemplate;
 
-import org.springframework.jdbc.core.*;
-import org.springframework.scheduling.annotation.*;
-import org.springframework.transaction.support.*;
+import java.util.UUID;
 
 public final class KnowledgeExpiryJob {
     private final JdbcTemplate jdbc;
@@ -13,6 +13,10 @@ public final class KnowledgeExpiryJob {
     public KnowledgeExpiryJob(JdbcTemplate j, org.springframework.transaction.PlatformTransactionManager m) {
         jdbc = j;
         tx = new TransactionTemplate(m);
+    }
+
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     }
 
     @Scheduled(fixedDelayString = "${ygh.knowledge.expiry-delay:60000}")
@@ -24,9 +28,5 @@ public final class KnowledgeExpiryJob {
                     jdbc.update("INSERT INTO knowledge_index_job(id,document_id,index_version,job_type,status) VALUES(?,?,?,'DELETE','PENDING')", next(), id, "knowledge-expiry-" + System.currentTimeMillis());
                 }
             });
-    }
-
-    private static long next() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
     }
 }

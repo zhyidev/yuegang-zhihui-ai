@@ -1,15 +1,16 @@
 package com.yuegang.zhihui.knowledge.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yuegang.zhihui.knowledge.security.*;
-
-import java.util.*;
-import javax.sql.DataSource;
-
+import com.yuegang.zhihui.knowledge.security.KnowledgeUserResolver;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.transaction.PlatformTransactionManager;
+
+import javax.sql.DataSource;
+import java.util.Arrays;
+import java.util.Base64;
 
 @Configuration(proxyBeanMethods = false)
 class KnowledgeConfiguration {

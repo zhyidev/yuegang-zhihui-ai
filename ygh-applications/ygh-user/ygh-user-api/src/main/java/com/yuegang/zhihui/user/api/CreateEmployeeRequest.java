@@ -12,4 +12,5 @@ public record CreateEmployeeRequest(
         String departmentId, // 属性：所属部门ID
         Set<String> positionIds, // 属性：关联的岗位ID集合（一个员工可有多个岗位）
         LocalDate hiredOn // 属性：入职日志
-) { } // 类定义结束
+) {
+} // 类定义结束

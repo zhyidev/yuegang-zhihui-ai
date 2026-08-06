@@ -22,6 +22,10 @@ public final class AddressController { // 定义地址控制器类
         this.users = users;
     }
 
+    private static <T> ApiResponse<T> ok(T data, HttpServletRequest request) { // 私有辅助方法：封装成功的 API 并携带 Trace ID
+        return ApiResponse.success(data, TraceIdResolver.resolve(request));
+    }
+
     @GetMapping
     public ApiResponse<List<AddressView>> list(HttpServletRequest request) { // 获取当前用户的地址列表
         return ok(service.list(user(request)), request);
@@ -33,26 +37,22 @@ public final class AddressController { // 定义地址控制器类
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<AddressView> update(@PathVariable String id ,@RequestBody UpdateAddressRequest body, HttpServletRequest request) { // 根据 ID 更新地址信息
+    public ApiResponse<AddressView> update(@PathVariable String id, @RequestBody UpdateAddressRequest body, HttpServletRequest request) { // 根据 ID 更新地址信息
         return ok(service.update(user(request), id, body), request);
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<AddressOperationResponse> delete(@PathVariable String id,@RequestBody long version, HttpServletRequest request) { // 根据 ID （乐观锁）删除地址
+    public ApiResponse<AddressOperationResponse> delete(@PathVariable String id, @RequestBody long version, HttpServletRequest request) { // 根据 ID （乐观锁）删除地址
         return ok(service.delete(user(request), id, version), request);
     }
 
     @PutMapping("/{id}/default")
     public ApiResponse<AddressView> makeDefault(@PathVariable String id, @RequestParam long version, HttpServletRequest request) {
-        return ok(service.makeDefault(user(request), id,version), request);
+        return ok(service.makeDefault(user(request), id, version), request);
     }
 
     private String user(HttpServletRequest request) { // 私有辅助方法：从请求中解析并获取当前登录用户 Id
         return users.resolve(request).userId();
-    }
-
-    private static <T> ApiResponse<T> ok(T data,HttpServletRequest request) { // 私有辅助方法：封装成功的 API 并携带 Trace ID
-        return ApiResponse.success(data, TraceIdResolver.resolve(request));
     }
 
 }

@@ -1,26 +1,27 @@
 package com.yuegang.zhihui.system.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
-import com.yuegang.zhihui.system.api.AssignRolesRequest;
-import com.yuegang.zhihui.system.api.SaveDictionaryItemRequest;
-import com.yuegang.zhihui.system.api.SaveDictionaryTypeRequest;
-import com.yuegang.zhihui.system.api.UpdateFeatureFlagRequest;
-import com.yuegang.zhihui.system.api.UpdateSystemSettingRequest;
-import com.yuegang.zhihui.system.api.UpdateAiProviderConfigRequest;
+import com.yuegang.zhihui.system.api.*;
 import com.yuegang.zhihui.system.infrastructure.JdbcAuthorizationRepository;
 import com.yuegang.zhihui.system.security.SystemSecretCipher;
-import java.nio.charset.StandardCharsets;
-import java.util.Set;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class SystemServicesIntegrationTest {
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
+
     @Test
     void managesRbacDictionariesFlagsAndSettingsWithOptimisticConcurrency() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
@@ -81,10 +82,5 @@ class SystemServicesIntegrationTest {
                     "http://insecure.example", "doubao-chat-test", "doubao-embedding-test", true, null,
                     configured.version()), 7), ErrorCode.VALIDATION_ERROR);
         }
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

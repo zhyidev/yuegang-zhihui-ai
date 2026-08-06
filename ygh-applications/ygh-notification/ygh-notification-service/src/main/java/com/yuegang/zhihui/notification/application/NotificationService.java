@@ -29,6 +29,40 @@ public class NotificationService { // 定义核心服务类
         jdbc = new JdbcTemplate(d);
     }
 
+    private static String safe(String x) { // 辅助方法：截断过长的错误信息防止数据库溢出
+        return x == null ? "unknow" : x.substring(0, Math.min(1000, x.length()));
+    }
+
+    private static String render(String t, Map<String, String> v) { // 辅助方法：渲染通知模板内容
+        var m = TOKEN.matcher(t); // 使用正则表达式匹配变量占位符
+        var b = new StringBuilder();
+        while (m.find()) { // 发展占位符
+            String value = v.get(m.group(1)); // 从传入变量映射中获取真实值
+            if (value == null) throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 变量缺失抛出校验异常
+        }
+        m.appendTail(b); // 追加剩余文本
+        return b.toString(); // 返回渲染后的文本
+    }
+
+    private static NotificationView view(java.sql.ResultSet r) throws java.sql.SQLException { // 辅助方法：映射 ResultSet 为视图 Record
+        return new NotificationView(Long.toString(r.getLong(1)), r.getString(2), r.getString(3), r.getString(4),
+                r.getTimestamp(5) != null,
+                r.getTimestamp(6).toLocalDateTime().atOffset(ZoneOffset.UTC)
+        );
+    }
+
+    private static long next() { // 辅助方法：生成临时消息 ID（使用随机 UUID 位运算）
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
+
+    private static long id(String s) { // 辅助方法：解析并校验字符串 ID
+        try {
+            return Long.parseLong(s);
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
     @Transactional // 声明式事务：创建通知消息
     public NotificationView create(NotificationCommand c) {
         long user = id(c.userId());
@@ -46,7 +80,7 @@ public class NotificationService { // 定义核心服务类
                 }, c.templateCode());
 
         long message = next(); // 生成新的分布式消息 ID
-            // 插入消息记录，状态初始化为 'PENDING' (待分发)
+        // 插入消息记录，状态初始化为 'PENDING' (待分发)
         jdbc.update("INSERT INTO notification_message(id, event_id, user_id, template_code, title, cpntent, status, next_retry_at) VALUES(?,?,?,?,?,?,'PENDING','NOW(6)')",
                 message, c.eventId(), user, c.templateCode(), render(t[0], c.variables()), render(t[1], c.variables()));
         audit(message, "CREATED", null, null); // 记录审计日志：创建通知成功
@@ -123,7 +157,6 @@ public class NotificationService { // 定义核心服务类
                 (r, n) -> view(r), user);
     }
 
-
     public void read(long user, String id) { // 标记单条通知为已读
         if (jdbc.update("UPDATE notification_message SET read_at=COALESCE(read_at,NOW(6)) WHERE id=? AND user_id=?",
                 id(id), user) != 1)
@@ -143,46 +176,11 @@ public class NotificationService { // 定义核心服务类
                 next(), message, action, operator, detail);
     }
 
-
     private String write(Object x) { // 辅助方法：对象转 JSON 字符串
         try {
             return json.writeValueAsString(x);
         } catch (Exception e) {
             throw new IllegalStateException(e);
-        }
-    }
-
-    private static String safe(String x) { // 辅助方法：截断过长的错误信息防止数据库溢出
-        return x == null ? "unknow" : x.substring(0, Math.min(1000, x.length()));
-    }
-
-    private static String render(String t, Map<String, String> v) { // 辅助方法：渲染通知模板内容
-        var m = TOKEN.matcher(t); // 使用正则表达式匹配变量占位符
-        var b = new StringBuilder();
-        while (m.find()) { // 发展占位符
-            String value = v.get(m.group(1)); // 从传入变量映射中获取真实值
-            if (value == null) throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 变量缺失抛出校验异常
-        }
-        m.appendTail(b); // 追加剩余文本
-        return b.toString(); // 返回渲染后的文本
-    }
-
-    private static NotificationView view(java.sql.ResultSet r) throws java.sql.SQLException { // 辅助方法：映射 ResultSet 为视图 Record
-        return new NotificationView(Long.toString(r.getLong(1)), r.getString(2), r.getString(3), r.getString(4),
-                r.getTimestamp(5) != null,
-                r.getTimestamp(6).toLocalDateTime().atOffset(ZoneOffset.UTC)
-        );
-    }
-
-    private static long next() { // 辅助方法：生成临时消息 ID（使用随机 UUID 位运算）
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-    }
-
-    private static long id(String s) { // 辅助方法：解析并校验字符串 ID
-        try {
-            return Long.parseLong(s);
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
     }
 

@@ -4,20 +4,15 @@ import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.knowledge.api.KnowledgeDocumentView;
 import com.yuegang.zhihui.knowledge.api.KnowledgeStatus;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import javax.sql.DataSource;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
+import javax.sql.DataSource;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.ZoneOffset;
+import java.util.*;
 
 public final class KnowledgeLifecycleService {
     private final JdbcTemplate jdbc;
@@ -26,6 +21,24 @@ public final class KnowledgeLifecycleService {
     public KnowledgeLifecycleService(DataSource dataSource) {
         jdbc = new JdbcTemplate(dataSource);
         transactions = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
+    }
+
+    private static KnowledgeDocumentView map(ResultSet result) throws SQLException {
+        return new KnowledgeDocumentView(Long.toString(result.getLong(1)), result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getLong(6), result.getString(7), KnowledgeStatus.valueOf(result.getString(8)), result.getLong(9), result.getTimestamp(10).toLocalDateTime().atOffset(ZoneOffset.UTC));
+    }
+
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
+
+    private static long id(String value) {
+        try {
+            long parsed = Long.parseLong(value);
+            if (parsed <= 0) throw new NumberFormatException();
+            return parsed;
+        } catch (Exception exception) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
     }
 
     public List<KnowledgeDocumentView> list(String status, String category, boolean publicOnly, int limit) {
@@ -68,23 +81,5 @@ public final class KnowledgeLifecycleService {
             if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
             return map(result);
         }, id);
-    }
-
-    private static KnowledgeDocumentView map(ResultSet result) throws SQLException {
-        return new KnowledgeDocumentView(Long.toString(result.getLong(1)), result.getString(2), result.getString(3), result.getString(4), result.getString(5), result.getLong(6), result.getString(7), KnowledgeStatus.valueOf(result.getString(8)), result.getLong(9), result.getTimestamp(10).toLocalDateTime().atOffset(ZoneOffset.UTC));
-    }
-
-    private static long next() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-    }
-
-    private static long id(String value) {
-        try {
-            long parsed = Long.parseLong(value);
-            if (parsed <= 0) throw new NumberFormatException();
-            return parsed;
-        } catch (Exception exception) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
     }
 }

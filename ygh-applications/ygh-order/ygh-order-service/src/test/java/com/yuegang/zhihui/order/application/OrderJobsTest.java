@@ -1,10 +1,10 @@
 package com.yuegang.zhihui.order.application;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import com.yuegang.zhihui.common.mq.JdbcOutboxDispatcher;
 import org.junit.jupiter.api.Test;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class OrderJobsTest {
     @Test

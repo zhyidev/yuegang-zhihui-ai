@@ -1,11 +1,13 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import com.yuegang.zhihui.common.mq.*;
-import org.springframework.beans.factory.annotation.*;
-import org.springframework.boot.autoconfigure.condition.*;
-import org.springframework.context.annotation.*;
-import org.springframework.jdbc.core.*;
-import org.springframework.scheduling.annotation.*;
+import com.yuegang.zhihui.common.mq.DomainEventPublisher;
+import com.yuegang.zhihui.common.mq.JdbcOutboxDispatcher;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.scheduling.annotation.Scheduled;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = "ygh.mq.enabled", havingValue = "true")

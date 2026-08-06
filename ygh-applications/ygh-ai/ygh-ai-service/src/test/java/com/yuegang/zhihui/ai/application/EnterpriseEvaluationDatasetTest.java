@@ -1,12 +1,13 @@
 package com.yuegang.zhihui.ai.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
-import java.sql.DriverManager;
-import java.util.HashSet;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
+
+import java.sql.DriverManager;
+import java.util.HashSet;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class EnterpriseEvaluationDatasetTest {
 
@@ -21,10 +22,10 @@ class EnterpriseEvaluationDatasetTest {
 
             var categories = new HashSet<String>();
             try (var connection = DriverManager.getConnection(
-                            mysql.jdbcUrl(), mysql.username(), mysql.credential());
-                    var statement = connection.prepareStatement(
-                            "SELECT category FROM ai_evaluation_case");
-                    var rows = statement.executeQuery()) {
+                    mysql.jdbcUrl(), mysql.username(), mysql.credential());
+                 var statement = connection.prepareStatement(
+                         "SELECT category FROM ai_evaluation_case");
+                 var rows = statement.executeQuery()) {
                 while (rows.next()) {
                     categories.add(rows.getString(1));
                 }
@@ -33,10 +34,10 @@ class EnterpriseEvaluationDatasetTest {
             assertThat(categories)
                     .contains("POLICY", "CUSTOMS", "TRACEABILITY", "RECOMMENDATION");
             try (var connection = DriverManager.getConnection(
-                            mysql.jdbcUrl(), mysql.username(), mysql.credential());
-                    var statement = connection.prepareStatement(
-                            "SELECT COUNT(*) FROM ai_evaluation_case WHERE expected_refusal=TRUE");
-                    var rows = statement.executeQuery()) {
+                    mysql.jdbcUrl(), mysql.username(), mysql.credential());
+                 var statement = connection.prepareStatement(
+                         "SELECT COUNT(*) FROM ai_evaluation_case WHERE expected_refusal=TRUE");
+                 var rows = statement.executeQuery()) {
                 rows.next();
                 assertThat(rows.getInt(1)).isEqualTo(2);
             }

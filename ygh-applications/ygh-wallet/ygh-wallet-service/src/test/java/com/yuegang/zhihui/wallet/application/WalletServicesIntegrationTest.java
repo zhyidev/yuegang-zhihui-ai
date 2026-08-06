@@ -1,21 +1,31 @@
 package com.yuegang.zhihui.wallet.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.wallet.api.WalletCommand;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class WalletServicesIntegrationTest {
+    private static WalletCommand command(String request, String reference, String amount, String currency) {
+        return new WalletCommand(request, reference, new BigDecimal(amount), currency);
+    }
+
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
+
     @Test
     void supportsRechargePaymentRefundIdempotencyLedgerAndConcurrentNoOverdraft() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
@@ -62,20 +72,15 @@ class WalletServicesIntegrationTest {
             }
             try (var executor = Executors.newFixedThreadPool(8)) {
                 long successes = executor.invokeAll(tasks).stream().filter(future -> {
-                    try { return future.get(); } catch (Exception error) { throw new AssertionError(error); }
+                    try {
+                        return future.get();
+                    } catch (Exception error) {
+                        throw new AssertionError(error);
+                    }
                 }).count();
                 assertThat(successes).isEqualTo(10);
             }
             assertThat(wallet.get(84).availableBalance()).isEqualByComparingTo("0.00");
         }
-    }
-
-    private static WalletCommand command(String request, String reference, String amount, String currency) {
-        return new WalletCommand(request, reference, new BigDecimal(amount), currency);
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

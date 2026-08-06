@@ -35,7 +35,7 @@ public final class JdbcAuthorizationRepository implements AuthorizationRepositor
     }
 
     @Override
-    public Optional<AuthoritySnapshot> replaceRoles(long user,long version, Set<String> roles, long operator, String reason) { // 实现替换用户角色的方法（带事务和乐观锁）
+    public Optional<AuthoritySnapshot> replaceRoles(long user, long version, Set<String> roles, long operator, String reason) { // 实现替换用户角色的方法（带事务和乐观锁）
         return tx.execute(s -> { // 启动事务执行块
             // 第一步：根据传入的角色编码集合，到数据库中查找对应的 ID 和编码（仅限已启用的角色）
             List<Map<String, Object>> found = roles.isEmpty() ? List.of() : jdbc.queryForList("SELECT id,code FROM system_roles WHERE code IN (" + String.join(",", Collections.nCopies(roles.size(), "?")) + ") AND enabled=TRUE", roles.toArray());
@@ -56,7 +56,7 @@ public final class JdbcAuthorizationRepository implements AuthorizationRepositor
             // 第七步：更新用户授权版本号，使用其自增 1，完成乐观锁闭环
             jdbc.update("UPDATE system_user_authorization SET version=version+1 WHERE user_id=?", user);
             // 第八步：插入授权审计日志，记录用户ID、操作人ID、旧角色集字符串、新角色集字符串以及变更原因
-            jdbc.update("INSERT INTO system_authorization_audit(user_id,operator_user_id,old_roles,new_roles,reason) VALUES(?,?,?,?,?)", user,operator, String.join(",", new TreeSet<>(old)), String.join(",", new TreeSet<>(roles)), reason == null || reason.isBlank() ? null : reason.trim());
+            jdbc.update("INSERT INTO system_authorization_audit(user_id,operator_user_id,old_roles,new_roles,reason) VALUES(?,?,?,?,?)", user, operator, String.join(",", new TreeSet<>(old)), String.join(",", new TreeSet<>(roles)), reason == null || reason.isBlank() ? null : reason.trim());
             // 事务执行成功，返回最新的用户权限快照
             return Optional.of(snapshot(user));
         });

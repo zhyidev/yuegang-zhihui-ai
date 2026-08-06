@@ -29,6 +29,30 @@ public final class OrganizationService { // 定义组织架构服务类
         this.ids = ids; // 注入 ID 生成器
     }
 
+    private static DepartmentView mapDepartment(ResultSet rs) throws SQLException { // 结果集到部门的视图映射
+        Object p = rs.getObject("parent_id"); // 获取父级 ID
+        return new DepartmentView(Long.toString(rs.getLong("id")), p == null ? null : p.toString(), rs.getString("department_code"), rs.getString("department_name"),
+                rs.getInt("sort_order"), rs.getBoolean("enabled"), rs.getLong("version"));
+    }
+
+    private static PositionView mapPosition(ResultSet rs) throws SQLException { // 结果集到职位视图映射
+        return new PositionView(Long.toString(rs.getLong("id")), rs.getString("position_code"), rs.getString("position_name"), rs.getString("description"), rs.getBoolean("enabled"), rs.getInt("version"));
+    }
+
+    private static Long optional(String value) {
+        return value == null || value.isBlank() ? null : positive(value); // 辅助处理可选 ID
+    }
+
+    private static long positive(String value) { // 辅助校验正整数 ID
+        try {
+            long id = Long.parseLong(value);
+            if (id == 0) throw new NumberFormatException();
+            return id;
+        } catch (NumberFormatException e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
+    }
+
     public DepartmentView createDepartment(CreateDepartmentRequest request) { // 创建部门
         try {
             long id = ids.nextId(); // 获取分布式 ID
@@ -46,7 +70,7 @@ public final class OrganizationService { // 定义组织架构服务类
     }
 
     public List<PositionView> positions() { // 查询所有职位
-        return jdbc.query("SELECT * FROM user_position ORDER BY position_name,id",(  rs,  row) -> mapPosition(rs));
+        return jdbc.query("SELECT * FROM user_position ORDER BY position_name,id", (rs, row) -> mapPosition(rs));
     }
 
     public PositionView createPosition(CreatePositionRequest request) { // 创建职位
@@ -131,31 +155,6 @@ public final class OrganizationService { // 定义组织架构服务类
             return new EmployeeView(Long.toString(id), Long.toString(rs.getLong("user_id")), rs.getString("employee_no"), d == null ? null : d.toString(), positions, rs.getString("employee status"), rs.getObject("hired_on", java.time.LocalDate.class), rs.getLong("version")); // 构建视图对象
 
         }, id);
-    }
-
-    private static DepartmentView mapDepartment(ResultSet rs) throws SQLException { // 结果集到部门的视图映射
-        Object p = rs.getObject("parent_id"); // 获取父级 ID
-        return new DepartmentView(Long.toString(rs.getLong("id")), p == null ? null : p.toString(), rs.getString("department_code"), rs.getString("department_name"),
-                rs.getInt("sort_order"), rs.getBoolean("enabled"), rs.getLong("version"));
-    }
-
-
-    private static PositionView mapPosition(ResultSet rs) throws SQLException { // 结果集到职位视图映射
-        return new PositionView(Long.toString(rs.getLong("id")), rs.getString("position_code"), rs.getString("position_name"), rs.getString("description"), rs.getBoolean("enabled"), rs.getInt("version"));
-    }
-
-    private static Long optional(String value) {
-        return value == null || value.isBlank() ? null : positive(value); // 辅助处理可选 ID
-    }
-
-    private static long positive(String value) { // 辅助校验正整数 ID
-        try {
-            long id = Long.parseLong(value);
-            if (id == 0) throw new NumberFormatException();
-            return id;
-        } catch (NumberFormatException e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        }
     }
 
 }

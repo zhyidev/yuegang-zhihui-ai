@@ -4,7 +4,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import javax.sql.DataSource;
 
-/** 查询服务类，负责轻量级的数据库读取操作 */
+/**
+ * 查询服务类，负责轻量级的数据库读取操作
+ */
 public final class NotificationQueryService { // 定义通知查询服务
     private final JdbcTemplate jdbc; // 声明 JDBC 操作模板
 

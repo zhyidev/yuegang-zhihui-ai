@@ -24,19 +24,22 @@ public class SystemCatalogController { // 定义最终类：系统目录服务�
         users = u; // 注入
     } // 构造结束
 
-    @GetMapping("/dictionaries") // 获取全景已启用字典的接口（业务端展示用）
+    @GetMapping("/dictionaries")
+        // 获取全景已启用字典的接口（业务端展示用）
     ApiResponse<List<DictionaryView>> dictionaries(HttpServletRequest r) { // 请求对象
         users.resolve(r); // 仅要求请求必须经过身份认证
         return ApiResponse.success(service.dictionaries(), TraceIdResolver.resolve(r)); // 返回字典数据
     } // 结束
 
-    @GetMapping("/feature-flags") // 获取所有功能开关状态
+    @GetMapping("/feature-flags")
+        // 获取所有功能开关状态
     ApiResponse<List<FeatureFlagView>> flags(HttpServletRequest r) { // 请求对象
         users.resolve(r); // 认证校验
         return ApiResponse.success(service.flags(), TraceIdResolver.resolve(r)); // 返回开关列表
     } // 结束
 
-    @PutMapping("/feature-flags/{key}") // 更新具体功能开关配置（通常用于灰度或紧急降级）
+    @PutMapping("/feature-flags/{key}")
+        // 更新具体功能开关配置（通常用于灰度或紧急降级）
     ApiResponse<FeatureFlagView> update(@PathVariable String key, @Valid @RequestBody UpdateFeatureFlagRequest body, HttpServletRequest r) {
         var p = users.resolve(r); // 解析用户
         if (!p.roles().contains("ADMIN")) throw new BusinessException(ErrorCode.PERMISSION_DENIED); // 强制要求管理员操作

@@ -44,6 +44,10 @@ public final class AddressCipher { // 定义最终类 AddressCipher
         this.random = Objects.requireNonNull(random); // 赋值随机源
     }
 
+    private static byte[] aad(long userId, String field, int version) { // 构造 AAD：由用户ID、字段名和版本组成
+        return (userId + ":" + field + ":" + version).getBytes(StandardCharsets.US_ASCII); // 返回 ASCII 字节数组
+    }
+
     public int keyVersion() {
         return keyVersion;
     } // 获取当前加密器使用的密钥版本
@@ -84,9 +88,5 @@ public final class AddressCipher { // 定义最终类 AddressCipher
         } catch (GeneralSecurityException failure) {
             throw new IllegalStateException("PII decryption failed", failure);
         } // 解密失败抛异常
-    }
-
-    private static byte[] aad(long userId, String field, int version) { // 构造 AAD：由用户ID、字段名和版本组成
-        return (userId + ":" + field + ":" + version).getBytes(StandardCharsets.US_ASCII); // 返回 ASCII 字节数组
     }
 }

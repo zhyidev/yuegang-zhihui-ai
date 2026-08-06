@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
  * 更新系统参数配置请求 DTO
  */
 public record UpdateSystemSettingRequest(@NotBlank @Size(max = 2000) String value, // 配置值：非空且最长为2000个字符
-                                         @NotBlank @Pattern(regexp = "STRING|INTEGER|BOOLEAN|JSON") String valueType, // 类型：必须属于定义的枚举
+                                         @NotBlank @Pattern(regexp = "STRING|INTEGER|BOOLEAN|JSON") String valueType,
+                                         // 类型：必须属于定义的枚举
                                          boolean secret, @PositiveOrZero long version) { // 是否敏感加密、版本号
 }

@@ -1,18 +1,20 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import static org.assertj.core.api.Assertions.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
-
-import java.nio.file.*;
-import java.util.Base64;
-
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.*;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class KnowledgeJobRecoveryIntegrationTest {
     @Test

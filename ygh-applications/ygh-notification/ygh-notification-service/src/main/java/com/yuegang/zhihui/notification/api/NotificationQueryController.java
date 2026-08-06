@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Map;
 
-/** 该控制器处理关于未读通知状态的查询 */
+/**
+ * 该控制器处理关于未读通知状态的查询
+ */
 @RestController // 标记为 REST 控制器
 public final class NotificationQueryController { // 定义通知查询的控制器类
     private final NotificationQueryService service; // 查询专用服务

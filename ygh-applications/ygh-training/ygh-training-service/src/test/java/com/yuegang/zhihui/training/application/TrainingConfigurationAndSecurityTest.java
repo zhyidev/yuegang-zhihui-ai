@@ -1,35 +1,54 @@
 package com.yuegang.zhihui.training.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.when;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpServer;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.security.InternalUserContextSignature;
-import com.yuegang.zhihui.training.infrastructure.OrganizationTargetClient;
-import com.yuegang.zhihui.training.security.TrainingUserResolver;
 import com.yuegang.zhihui.training.api.AssignmentView;
 import com.yuegang.zhihui.training.api.CreateAssignmentRequest;
 import com.yuegang.zhihui.training.api.CreateScopedAssignmentRequest;
-import com.sun.net.httpserver.HttpServer;
+import com.yuegang.zhihui.training.infrastructure.OrganizationTargetClient;
+import com.yuegang.zhihui.training.security.TrainingUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
-import java.nio.file.Files;
+import org.junit.jupiter.api.Test;
+
+import javax.sql.DataSource;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
-import javax.sql.DataSource;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.*;
 
 class TrainingConfigurationAndSecurityTest {
     private static final byte[] KEY = "01234567890123456789012345678901".getBytes();
+
+    private static HttpServletRequest signed(String user, String rolesHeader, String permissionsHeader) {
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        String timestamp = Long.toString(System.currentTimeMillis());
+        List<String> roles = rolesHeader.isBlank() ? List.of() : List.of(rolesHeader.split(","));
+        List<String> permissions = permissionsHeader.isBlank()
+                ? List.of() : List.of(permissionsHeader.split(","));
+        when(request.getMethod()).thenReturn("GET");
+        when(request.getRequestURI()).thenReturn("/api/v1/training/courses");
+        when(request.getHeader("X-YGH-User-Id")).thenReturn(user);
+        when(request.getHeader("X-YGH-Roles")).thenReturn(rolesHeader);
+        when(request.getHeader("X-YGH-Permissions")).thenReturn(permissionsHeader);
+        when(request.getHeader("X-Trace-Id")).thenReturn("trace-training");
+        when(request.getHeader("X-Request-Id")).thenReturn("request-training");
+        when(request.getHeader("X-YGH-User-Context-Timestamp")).thenReturn(timestamp);
+        var metadata = new InternalUserContextSignature.Metadata(
+                user, roles, permissions, "trace-training", "request-training", "GET",
+                "/api/v1/training/courses", Instant.ofEpochMilli(Long.parseLong(timestamp)));
+        when(request.getHeader("X-YGH-User-Context-Signature")).thenReturn(
+                new InternalUserContextSignature(KEY, Clock.systemUTC(), Duration.ofSeconds(30)).sign(metadata));
+        return request;
+    }
 
     @Test
     void createsAllTrainingBeans() throws Exception {
@@ -104,27 +123,5 @@ class TrainingConfigurationAndSecurityTest {
         } finally {
             server.stop(0);
         }
-    }
-
-    private static HttpServletRequest signed(String user, String rolesHeader, String permissionsHeader) {
-        HttpServletRequest request = mock(HttpServletRequest.class);
-        String timestamp = Long.toString(System.currentTimeMillis());
-        List<String> roles = rolesHeader.isBlank() ? List.of() : List.of(rolesHeader.split(","));
-        List<String> permissions = permissionsHeader.isBlank()
-                ? List.of() : List.of(permissionsHeader.split(","));
-        when(request.getMethod()).thenReturn("GET");
-        when(request.getRequestURI()).thenReturn("/api/v1/training/courses");
-        when(request.getHeader("X-YGH-User-Id")).thenReturn(user);
-        when(request.getHeader("X-YGH-Roles")).thenReturn(rolesHeader);
-        when(request.getHeader("X-YGH-Permissions")).thenReturn(permissionsHeader);
-        when(request.getHeader("X-Trace-Id")).thenReturn("trace-training");
-        when(request.getHeader("X-Request-Id")).thenReturn("request-training");
-        when(request.getHeader("X-YGH-User-Context-Timestamp")).thenReturn(timestamp);
-        var metadata = new InternalUserContextSignature.Metadata(
-                user, roles, permissions, "trace-training", "request-training", "GET",
-                "/api/v1/training/courses", Instant.ofEpochMilli(Long.parseLong(timestamp)));
-        when(request.getHeader("X-YGH-User-Context-Signature")).thenReturn(
-                new InternalUserContextSignature(KEY, Clock.systemUTC(), Duration.ofSeconds(30)).sign(metadata));
-        return request;
     }
 }

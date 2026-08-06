@@ -1,8 +1,5 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import com.yuegang.zhihui.common.core.BusinessException;
@@ -12,20 +9,6 @@ import com.yuegang.zhihui.common.test.YghTestContainerFactory;
 import com.yuegang.zhihui.knowledge.api.KnowledgeStatus;
 import com.yuegang.zhihui.knowledge.api.ReviewKnowledgeRequest;
 import com.yuegang.zhihui.knowledge.api.UpdateKnowledgeMetadataRequest;
-
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.sql.DriverManager;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Set;
-
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -34,10 +17,29 @@ import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.sql.DriverManager;
+import java.time.*;
+import java.util.ArrayList;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 class KnowledgeServicesIntegrationTest {
     private static final byte[] SECRET = "0123456789abcdef0123456789abcdef".getBytes(StandardCharsets.UTF_8);
     @TempDir
     Path storage;
+
+    private static MockMultipartFile text(String name, String content) {
+        return new MockMultipartFile("file", name, "text/plain", content.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class, error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
 
     @Test
     void supportsSecureUploadMetadataReviewPublicationIndexOfflineRejectAndExpiry() throws Exception {
@@ -114,13 +116,5 @@ class KnowledgeServicesIntegrationTest {
             assertBusinessError(() -> lifecycle.offline(7, expiring.id(), expiring.version(), "invalid"), ErrorCode.BUSINESS_CONFLICT);
             assertBusinessError(() -> metadata.view(Long.MAX_VALUE), ErrorCode.RESOURCE_NOT_FOUND);
         }
-    }
-
-    private static MockMultipartFile text(String name, String content) {
-        return new MockMultipartFile("file", name, "text/plain", content.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class, error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

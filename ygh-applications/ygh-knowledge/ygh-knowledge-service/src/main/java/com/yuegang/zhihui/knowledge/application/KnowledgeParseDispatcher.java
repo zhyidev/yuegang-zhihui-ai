@@ -1,13 +1,8 @@
 package com.yuegang.zhihui.knowledge.application;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.security.*;
-import java.util.*;
-
 import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.*;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -15,6 +10,15 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.sql.DataSource;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.util.ArrayList;
+import java.util.HexFormat;
+import java.util.List;
+import java.util.UUID;
 
 public final class KnowledgeParseDispatcher {
     private final JdbcTemplate jdbc;
@@ -25,40 +29,6 @@ public final class KnowledgeParseDispatcher {
         jdbc = new JdbcTemplate(dataSource);
         tx = new TransactionTemplate(new DataSourceTransactionManager(dataSource));
         root = Path.of(storage).toAbsolutePath().normalize();
-    }
-
-    @Scheduled(fixedDelayString = "${ygh.knowledge.parse-dispatch-delay:3000}")
-    public void dispatch() {
-        jdbc.queryForList("SELECT id FROM knowledge_processing_job WHERE status IN ('PENDING','RETRY') AND (next_retry_at IS NULL OR next_retry_at<=NOW(6)) ORDER BY created_at LIMIT 10", Long.class).forEach(this::process);
-    }
-
-    public void process(long job) {
-        if (jdbc.update("UPDATE knowledge_processing_job SET status='PROCESSING',progress=20 WHERE id=? AND status IN ('PENDING','RETRY')", job) != 1)
-            return;
-        try {
-            Row row = jdbc.query("SELECT j.document_id,d.storage_key FROM knowledge_processing_job j JOIN knowledge_document d ON d.id=j.document_id WHERE j.id=?", r -> {
-                if (!r.next()) throw new IllegalStateException("processing source missing");
-                return new Row(r.getLong(1), r.getString(2));
-            }, job);
-            Path source = root.resolve(row.storageKey()).normalize();
-            if (!source.startsWith(root)) throw new IllegalStateException("storage key escapes root");
-            String text = parse(source);
-            if (text.isBlank()) throw new IllegalStateException("document contains no readable text");
-            tx.executeWithoutResult(status -> {
-                jdbc.update("UPDATE knowledge_processing_job SET progress=60 WHERE id=?", job);
-                jdbc.update("DELETE FROM knowledge_chunk WHERE document_id=?", row.documentId());
-                int index = 0;
-                for (String chunk : chunks(text))
-                    jdbc.update("INSERT INTO knowledge_chunk(id,document_id,chunk_index,content,token_count,content_sha256) VALUES(?,?,?,?,?,?)", next(), row.documentId(), index++, chunk, Math.max(1, chunk.length() / 2), digest(chunk));
-                if (jdbc.update("UPDATE knowledge_document SET status='PENDING_REVIEW' WHERE id=? AND status='PROCESSING'", row.documentId()) != 1)
-                    throw new IllegalStateException("document processing state changed");
-                jdbc.update("INSERT INTO knowledge_status_history(id,document_id,from_status,to_status,operator_id,reason) SELECT ?,id,'PROCESSING','PENDING_REVIEW',uploaded_by,'PARSE_SUCCEEDED' FROM knowledge_document WHERE id=?", next(), row.documentId());
-                jdbc.update("UPDATE knowledge_processing_job SET status='SUCCEEDED',progress=100,last_error=NULL,next_retry_at=NULL WHERE id=?", job);
-            });
-        } catch (RuntimeException failure) {
-            String error = failure.getClass().getSimpleName() + ": " + String.valueOf(failure.getMessage());
-            jdbc.update("UPDATE knowledge_processing_job SET status=CASE WHEN retry_count>=9 THEN 'FAILED' ELSE 'RETRY' END,progress=0,retry_count=retry_count+1,next_retry_at=DATE_ADD(NOW(6),INTERVAL LEAST(300,POW(2,retry_count)) SECOND),last_error=? WHERE id=?", error.substring(0, Math.min(1000, error.length())), job);
-        }
     }
 
     private static String parse(Path path) {
@@ -93,6 +63,40 @@ public final class KnowledgeParseDispatcher {
 
     private static long next() {
         return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
+
+    @Scheduled(fixedDelayString = "${ygh.knowledge.parse-dispatch-delay:3000}")
+    public void dispatch() {
+        jdbc.queryForList("SELECT id FROM knowledge_processing_job WHERE status IN ('PENDING','RETRY') AND (next_retry_at IS NULL OR next_retry_at<=NOW(6)) ORDER BY created_at LIMIT 10", Long.class).forEach(this::process);
+    }
+
+    public void process(long job) {
+        if (jdbc.update("UPDATE knowledge_processing_job SET status='PROCESSING',progress=20 WHERE id=? AND status IN ('PENDING','RETRY')", job) != 1)
+            return;
+        try {
+            Row row = jdbc.query("SELECT j.document_id,d.storage_key FROM knowledge_processing_job j JOIN knowledge_document d ON d.id=j.document_id WHERE j.id=?", r -> {
+                if (!r.next()) throw new IllegalStateException("processing source missing");
+                return new Row(r.getLong(1), r.getString(2));
+            }, job);
+            Path source = root.resolve(row.storageKey()).normalize();
+            if (!source.startsWith(root)) throw new IllegalStateException("storage key escapes root");
+            String text = parse(source);
+            if (text.isBlank()) throw new IllegalStateException("document contains no readable text");
+            tx.executeWithoutResult(status -> {
+                jdbc.update("UPDATE knowledge_processing_job SET progress=60 WHERE id=?", job);
+                jdbc.update("DELETE FROM knowledge_chunk WHERE document_id=?", row.documentId());
+                int index = 0;
+                for (String chunk : chunks(text))
+                    jdbc.update("INSERT INTO knowledge_chunk(id,document_id,chunk_index,content,token_count,content_sha256) VALUES(?,?,?,?,?,?)", next(), row.documentId(), index++, chunk, Math.max(1, chunk.length() / 2), digest(chunk));
+                if (jdbc.update("UPDATE knowledge_document SET status='PENDING_REVIEW' WHERE id=? AND status='PROCESSING'", row.documentId()) != 1)
+                    throw new IllegalStateException("document processing state changed");
+                jdbc.update("INSERT INTO knowledge_status_history(id,document_id,from_status,to_status,operator_id,reason) SELECT ?,id,'PROCESSING','PENDING_REVIEW',uploaded_by,'PARSE_SUCCEEDED' FROM knowledge_document WHERE id=?", next(), row.documentId());
+                jdbc.update("UPDATE knowledge_processing_job SET status='SUCCEEDED',progress=100,last_error=NULL,next_retry_at=NULL WHERE id=?", job);
+            });
+        } catch (RuntimeException failure) {
+            String error = failure.getClass().getSimpleName() + ": " + String.valueOf(failure.getMessage());
+            jdbc.update("UPDATE knowledge_processing_job SET status=CASE WHEN retry_count>=9 THEN 'FAILED' ELSE 'RETRY' END,progress=0,retry_count=retry_count+1,next_retry_at=DATE_ADD(NOW(6),INTERVAL LEAST(300,POW(2,retry_count)) SECOND),last_error=? WHERE id=?", error.substring(0, Math.min(1000, error.length())), job);
+        }
     }
 
     private record Row(long documentId, String storageKey) {

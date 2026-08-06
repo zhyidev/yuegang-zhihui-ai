@@ -25,6 +25,20 @@ public final class NotificationSecurity { // 定义安全校验类
         this.services = new InternalServiceSignature(k, Clock.systemUTC(), Duration.ofSeconds(30));
     }
 
+    private static String h(HttpServletRequest r, String n) {
+        String v = r.getHeader(n); // 获取指定名称的 Header
+        if (v == null || v.isBlank()) throw f(); // 如果头信息缺失或为空白，抛出未授权异常
+        return v;
+    }
+
+    private static List<String> v(String x) {// 快捷解析逗号分隔字符串为列表的方法
+        return x == null || x.isBlank() ? List.of() : List.of(x.split(",")); // 分隔 and return list
+    }
+
+    private static BusinessException f() { // 统一定义未授权异常
+        return new BusinessException(ErrorCode.UNAUTHENTICATED);
+    }
+
     public long user(HttpServletRequest r) { // 从请求中直接解析并返回用户 ID
         return context(r).user; // 调用 context 方法解析并提取用户字段
     }
@@ -36,7 +50,6 @@ public final class NotificationSecurity { // 定义安全校验类
             throw new BusinessException(ErrorCode.PERMISSION_DENIED);
         return c.user; // 校验通过，返回用户ID
     }
-
 
     public void service(HttpServletRequest r) { // 验证内部服务间的请求签名
         try {
@@ -68,18 +81,4 @@ public final class NotificationSecurity { // 定义安全校验类
 
     private record Context(Long user, List<String> roles, List<String> permissions) {
     } // 定义内部上下文数据载体
-
-    private static String h(HttpServletRequest r, String n) {
-        String v = r.getHeader(n); // 获取指定名称的 Header
-        if (v == null || v.isBlank()) throw f(); // 如果头信息缺失或为空白，抛出未授权异常
-        return v;
-    }
-
-    private static List<String> v(String x) {// 快捷解析逗号分隔字符串为列表的方法
-        return x == null || x.isBlank() ? List.of() : List.of(x.split(",")); // 分隔 and return list
-    }
-
-    private static BusinessException f() { // 统一定义未授权异常
-        return new BusinessException(ErrorCode.UNAUTHENTICATED);
-    }
 }

@@ -2,13 +2,12 @@ package com.yuegang.zhihui.knowledge.application;
 
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.search.api.*;
-
-import java.time.*;
-import java.util.List;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestClient;
+
+import java.time.*;
+import java.util.List;
 
 public final class KnowledgeIndexDispatcher {
     private static final String INDEX = "/internal/v1/search/index", DELETE = "/internal/v1/search/delete-document";

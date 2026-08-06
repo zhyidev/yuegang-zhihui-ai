@@ -1,20 +1,16 @@
 package com.yuegang.zhihui.product.application;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpServer;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
-import com.yuegang.zhihui.product.api.ProductStatus;
-import com.yuegang.zhihui.product.api.SaveBrandRequest;
-import com.yuegang.zhihui.product.api.SaveCategoryRequest;
-import com.yuegang.zhihui.product.api.SaveProductBatchRequest;
-import com.yuegang.zhihui.product.api.SaveProductRequest;
-import com.yuegang.zhihui.product.api.TraceEventRequest;
-import com.yuegang.zhihui.product.api.UpdateProductRequest;
+import com.yuegang.zhihui.product.api.*;
+import org.flywaydb.core.Flyway;
+import org.junit.jupiter.api.Test;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import java.math.BigDecimal;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
@@ -25,12 +21,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.flywaydb.core.Flyway;
-import org.junit.jupiter.api.Test;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.jdbc.core.JdbcTemplate;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ProductServicesIntegrationTest {
+    private static void assertBusinessError(Runnable call, ErrorCode expected) {
+        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
+                error -> assertThat(error.errorCode()).isEqualTo(expected));
+    }
+
     @Test
     void managesCatalogProductStatusPriceBatchAndTraceability() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
@@ -139,10 +139,5 @@ class ProductServicesIntegrationTest {
             assertBusinessError(() -> catalog.trace("0"), ErrorCode.VALIDATION_ERROR);
             assertBusinessError(() -> products.get("invalid", false), ErrorCode.VALIDATION_ERROR);
         }
-    }
-
-    private static void assertBusinessError(Runnable call, ErrorCode expected) {
-        assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 }

@@ -19,10 +19,23 @@ public final class AddressService { // 定义地址业务服务类
         this.ids = ids;
     }
 
+    private static BusinessException conflict() {
+        return new BusinessException(ErrorCode.BUSINESS_CONFLICT); // 统一定义冲突异常
+    }
+
+    private static long parse(String value) { // 内部辅助方法：解析字符串 ID 为 Long
+        try {
+            long id = Long.parseLong(value); // 转换数字
+            if (id <= 0) throw new NumberFormatException(); // 校验 ID 必须大户0
+            return id; // 返回有效 ID
+        } catch (NumberFormatException e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        } // 转换失败抛出验证错误
+    }
+
     public List<AddressView> list(String userId) {
         return repository.findAll(parse(userId));
     } // 获取指定用户的所有地址列表
-
 
     public AddressView create(String userId, CreateAddressRequest request) { // 创建新地址
         return repository.create(ids.nextId(), parse(userId), request); // 生成新ID并调用仓储层保存
@@ -39,19 +52,5 @@ public final class AddressService { // 定义地址业务服务类
 
     public AddressView makeDefault(String userId, String addressId, long version) { // 设置为默认地址
         return repository.makeDefault(parse(addressId), parse(userId), version).orElseThrow(AddressService::conflict); // 操作失败抛出异常
-    }
-
-    private static BusinessException conflict() {
-        return new BusinessException(ErrorCode.BUSINESS_CONFLICT); // 统一定义冲突异常
-    }
-
-    private static long parse(String value) { // 内部辅助方法：解析字符串 ID 为 Long
-        try {
-            long id = Long.parseLong(value); // 转换数字
-            if (id <= 0) throw new NumberFormatException(); // 校验 ID 必须大户0
-            return id; // 返回有效 ID
-        } catch (NumberFormatException e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-        } // 转换失败抛出验证错误
     }
 }

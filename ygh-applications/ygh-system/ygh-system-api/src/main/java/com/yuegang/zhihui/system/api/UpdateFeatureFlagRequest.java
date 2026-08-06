@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Min;
 /**
  * 更新功能开关请求 DTO
  */
-public record UpdateFeatureFlagRequest(boolean enabled, @Min(0) @Max(100) int rolloutPercent, String rulesJson, // 启用状态、放量比例(限制0-100) 规则JSON
+public record UpdateFeatureFlagRequest(boolean enabled, @Min(0) @Max(100) int rolloutPercent, String rulesJson,
+                                       // 启用状态、放量比例(限制0-100) 规则JSON
                                        long version) { // 版本号
 }

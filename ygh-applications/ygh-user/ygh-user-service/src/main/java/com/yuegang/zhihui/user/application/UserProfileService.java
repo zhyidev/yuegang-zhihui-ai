@@ -22,20 +22,6 @@ public class UserProfileService { // 定义用户资料服务类
     public UserProfileService(UserProfileRepository repository) { // 构造函数并进行非空检查
         this.repository = Objects.requireNonNull(repository);
     }
-// AI-generated: method implementation
-    public UserProfileView get(String userId) {
-        long id = parse(userId);
-        return repository.findByUserId(id)
-                .orElseGet(() -> repository.save(id, defaultRequest())
-                        .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT)));
-    }
-// AI-generated: method implementation
-    public UserProfileView update(String userId, UpdateUserProfileRequest request) {
-        validate(request);
-        long id = parse(userId);
-        return repository.save(id, request)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT));
-    }
 
     private static void validate(UpdateUserProfileRequest request) {
         Objects.requireNonNull(request, "request is null");
@@ -62,7 +48,6 @@ public class UserProfileService { // 定义用户资料服务类
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
     }
 
-
     private static long parse(String value) { // 内部辅助：解析用户 ID ，失败时为注册验证问题
         try {
             long id = Long.parseLong(value);
@@ -76,5 +61,21 @@ public class UserProfileService { // 定义用户资料服务类
 
     private static UpdateUserProfileRequest defaultRequest() {
         return new UpdateUserProfileRequest("新用户", null, "zh-CN", "Asia/Shanghai", 0);
+    }
+
+    // AI-generated: method implementation
+    public UserProfileView get(String userId) {
+        long id = parse(userId);
+        return repository.findByUserId(id)
+                .orElseGet(() -> repository.save(id, defaultRequest())
+                        .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT)));
+    }
+
+    // AI-generated: method implementation
+    public UserProfileView update(String userId, UpdateUserProfileRequest request) {
+        validate(request);
+        long id = parse(userId);
+        return repository.save(id, request)
+                .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT));
     }
 }
