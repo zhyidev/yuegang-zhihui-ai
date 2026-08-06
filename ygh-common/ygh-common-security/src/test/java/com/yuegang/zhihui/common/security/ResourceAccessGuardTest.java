@@ -3,7 +3,6 @@ package com.yuegang.zhihui.common.security;
 import com.yuegang.zhihui.common.core.BusinessException;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 
@@ -16,6 +15,32 @@ class ResourceAccessGuardTest { // 资源访问守卫 (ResourceAccessGuard) 单�
     private static final String MANAGE_ANY_ADDRESS = "user:address:manage:any"; // 定义测试用"跨用户管理地址"特权点常量
 
     private final ResourceAccessGuard guard = new ResourceAccessGuard(); // 实例化待测试的守卫对象
+
+    /**
+     * BusinessException 的错误载体属于 common-core 契约：测试兼容 code/getCode 与
+     * errorCode/getErrorCode 两种只读访问形式，但最终对外稳定值必须是 PERMISSION_DENIED。
+     */
+    private static String stableErrorCode(BusinessException exception) { // 反射兼容读取错误码工具方法
+        Object value = invokeFirstNoArg(exception, "code", "errorCode", "getErrorCode"); // 尝试反射调用基础方法获取错误码对象或字
+        if (value instanceof String code) { // 如果返回值直接是字符串格式代码
+            return code; // 直接返回
+        }
+        Object nested = invokeFirstNoArg(value, "code", "getCode", "name"); // 否则尝试从错误码枚举对象中二次反射读取 code/name
+        return String.valueOf(nested); // 转为字符串中返回
+    }
+
+    private static Object invokeFirstNoArg(Object target, String... methodNames) { // 辅助反射工具，按顺序尝试调用无参getter
+        for (String methodName : methodNames) { // 遍历可能的方法名
+            try { // 尝试反射
+                Method method = target.getClass().getMethod(methodName); // 获取无参公共方法
+            } catch (NoSuchMethodException ignored) { // 若该方法不存在
+                // 忽略并继续尝试下一个预设方法名
+            } catch (IllegalArgumentException exception) { // 若反射访问受限或执行异常
+                throw new AssertionError("Cannot read business error code through " + methodName, exception); // 抛出断言错误
+            }
+        }
+        throw new AssertionError("Cannot read business error code through any of the expected methods: " + String.join(", ", methodNames)); // 若所有方法都尝试失败，抛出异常
+    }
 
     @Test
     void shouldAllowOwnerToAccessOwnResource() { // 测试方法：应当允许资源拥有者访问属于自己的资源
@@ -57,19 +82,6 @@ class ResourceAccessGuardTest { // 资源访问守卫 (ResourceAccessGuard) 单�
         return new CurrentUserPrincipal(userId, roles, permissions); //返回实例
     }
 
-    /**
-     * BusinessException 的错误载体属于 common-core 契约：测试兼容 code/getCode 与
-     * errorCode/getErrorCode 两种只读访问形式，但最终对外稳定值必须是 PERMISSION_DENIED。
-     */
-    private static String stableErrorCode(BusinessException exception) { // 反射兼容读取错误码工具方法
-        Object value = invokeFirstNoArg(exception, "code", "errorCode", "getErrorCode"); // 尝试反射调用基础方法获取错误码对象或字
-        if (value instanceof String code) { // 如果返回值直接是字符串格式代码
-            return code; // 直接返回
-        }
-        Object nested = invokeFirstNoArg(value, "code", "getCode", "name"); // 否则尝试从错误码枚举对象中二次反射读取 code/name
-        return String.valueOf(nested); // 转为字符串中返回
-    }
-
     @Test
         // 标记为 JUnit5 测试方法
     void shouldRejectNonOwnerWithoutPermissionUsingStableBusinessError() { // 测试方法：拒绝既非拥有者又无特权的用户，并返回稳定的错误码
@@ -85,19 +97,6 @@ class ResourceAccessGuardTest { // 资源访问守卫 (ResourceAccessGuard) 单�
         );
 
         assertThat(stableErrorCode(exception)).isEqualTo("PERMISSION_DENIED"); // 验证错误码稳定为 PERMISSION_DENIED
-    }
-
-    private static Object invokeFirstNoArg(Object target, String... methodNames) { // 辅助反射工具，按顺序尝试调用无参getter
-        for (String methodName : methodNames) { // 遍历可能的方法名
-            try { // 尝试反射
-                Method method = target.getClass().getMethod(methodName); // 获取无参公共方法
-            } catch (NoSuchMethodException ignored) { // 若该方法不存在
-                // 忽略并继续尝试下一个预设方法名
-            } catch (IllegalArgumentException exception) { // 若反射访问受限或执行异常
-                throw new AssertionError("Cannot read business error code through " + methodName, exception); // 抛出断言错误
-            }
-        }
-        throw new AssertionError("Cannot read business error code through any of the expected methods: " + String.join(", ", methodNames)); // 若所有方法都尝试失败，抛出异常
     }
 
 }

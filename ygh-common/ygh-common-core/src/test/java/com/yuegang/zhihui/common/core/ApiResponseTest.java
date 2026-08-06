@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.time.OffsetDateTime;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ApiResponseTest { // 定义 API 响应测试类
     @Test
@@ -21,6 +20,7 @@ public class ApiResponseTest { // 定义 API 响应测试类
         assertThat(response.timestamp()).isAfterOrEqualTo(before); // 断言时间戳在执行前之后是否相等
 
     }
+
     @Test
     void failureResponseDoesNotBusinessData() { // 测试失败响应是否携带外壳字段
         var response = ApiResponse.failure(ErrorCode.VALIDATION_ERROR, "参数错误", "trace-002"); // 创建失败相应

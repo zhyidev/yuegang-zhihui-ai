@@ -1,7 +1,6 @@
 package com.yuegang.zhihui.common.web;
 
 
-
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.headers.Header;
@@ -129,7 +128,6 @@ public class YghOpenApiAutoConfiguration { // 定义类
                 .content(new io.swagger.v3.oas.models.media.Content() // 设置返回内容
                         .addMediaType("application/json", mediaType))); // 绑定 JSON 映射
     }
-
 
 
     private Schema<?> require(Schema<?> schema, String... propertyNames) {

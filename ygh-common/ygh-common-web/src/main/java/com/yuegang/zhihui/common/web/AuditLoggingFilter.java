@@ -43,7 +43,7 @@ public class AuditLoggingFilter extends OncePerRequestFilter { // 定义审计�
             if (user == null || !ID.matcher(user).matches()) user = "service-or-anonymous"; // 校验 ID，若为空或非法则标记为系统或匿名
             String trace = TraceIdResolver.resolve(r); // 获取本次请求的 Trace ID (追踪 ID)
             // 打印一行结构化的审计日志，包含用户、方法、路径、状态码和追踪 ID
-            LOG.info("business_mutation userId=" + user + " method=" + r.getMethod() + " path=" + r.getRequestURI() + " status="+ (failed ? 500 : p.getStatus()) + " traceId=" + trace);
+            LOG.info("business_mutation userId=" + user + " method=" + r.getMethod() + " path=" + r.getRequestURI() + " status=" + (failed ? 500 : p.getStatus()) + " traceId=" + trace);
         }
 
     }

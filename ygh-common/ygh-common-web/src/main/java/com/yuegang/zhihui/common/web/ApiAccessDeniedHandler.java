@@ -9,18 +9,20 @@ import org.springframework.security.web.access.AccessDeniedHandler;
 
 import java.io.IOException;
 
-/** 针对被拒绝的 Servlet 安全请求提供的标准。 */
+/**
+ * 针对被拒绝的 Servlet 安全请求提供的标准。
+ */
 public class ApiAccessDeniedHandler implements AccessDeniedHandler { // 定义最终类实现权限拒绝接口
 
     @Override // 标记重写父类方法
     public void handle( // 实现处理权限拒绝的核心方法
-            HttpServletRequest request, // 传入请求对象
-            HttpServletResponse response, // 传入响应对象
-            AccessDeniedException accessDeniedException // 传入具体拒绝异常
+                        HttpServletRequest request, // 传入请求对象
+                        HttpServletResponse response, // 传入响应对象
+                        AccessDeniedException accessDeniedException // 传入具体拒绝异常
     ) throws IOException, ServletException {
         // 调用底层 API 响应器，写入 403 状态码和“权限不足”错误码
         try {
-            SecurityApiResponseWriter.write(request,response,403, ErrorCode.PERMISSION_DENIED);
+            SecurityApiResponseWriter.write(request, response, 403, ErrorCode.PERMISSION_DENIED);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

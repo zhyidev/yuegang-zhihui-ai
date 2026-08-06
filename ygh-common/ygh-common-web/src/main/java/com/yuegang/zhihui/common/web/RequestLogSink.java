@@ -1,6 +1,8 @@
 package com.yuegang.zhihui.common.web;
 
-/** 接收经过清洗的结构化请求完成事件。 */
+/**
+ * 接收经过清洗的结构化请求完成事件。
+ */
 @FunctionalInterface // 标识这是一个函数式接口
 public interface RequestLogSink { // 定义接口
 

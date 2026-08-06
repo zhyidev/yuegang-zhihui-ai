@@ -29,8 +29,8 @@ public class ReactiveRedisSessionValidator implements ReactiveSessionValidator {
         if (jwtId == null || !jwtId.matches("[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"))
             return Mono.just(false); // JWT ID格式非法返回无效
         return redis.execute(VALIDATE_SCRIPT, List.of( // 执行 Lua 脚本进行了校验
-                keys.session(accountId, jwtId), keys.revoked(accountId, jwtId),
-                keys.accountState(accountId)), List.of(Long.toString(accountId)))
+                        keys.session(accountId, jwtId), keys.revoked(accountId, jwtId),
+                        keys.accountState(accountId)), List.of(Long.toString(accountId)))
                 .singleOrEmpty().map(value -> value == 1L).defaultIfEmpty(false); // 将结果 1/0 转换为布尔值，默认返回 false
     }
 }

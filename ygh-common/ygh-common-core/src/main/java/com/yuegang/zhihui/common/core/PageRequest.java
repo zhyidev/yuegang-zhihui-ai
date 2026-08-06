@@ -22,8 +22,8 @@ public record PageRequest(int pageNo, int pageSize) { // 分页记录
         return new PageRequest(DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE); // 返回 1, 20
     }
 
-    public long offset(){ //计算数据库查询所需的偏移量（offset）
-        return Math.multiplyExact((long) pageNo -1L,pageSize);
+    public long offset() { //计算数据库查询所需的偏移量（offset）
+        return Math.multiplyExact((long) pageNo - 1L, pageSize);
     }
 
 }

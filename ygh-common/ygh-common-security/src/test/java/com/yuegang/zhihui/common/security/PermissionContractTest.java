@@ -6,7 +6,6 @@ import java.lang.reflect.Method;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
 
 public class PermissionContractTest { // 权限注解（RequiresPermission）与所有权契约单元测试类
@@ -27,7 +26,7 @@ public class PermissionContractTest { // 权限注解（RequiresPermission）与
     void shouldUseDomainOwnershipCheckerWithoutGrantingImplicitAdminByPass() { // 测试方法：使用领域所有权检查器，且不向未明确授权的 ADMIN 角色授予隐式绕过权限
         ResourceAccessGuard guard = new ResourceAccessGuard(); // 实例化资源访问守卫
         CurrentUserPrincipal principal = new CurrentUserPrincipal("review-1", Set.of("ADMIN"), Set.of()); // 构建仅有 ADMIN 角色但无显式跨所有者权限
-        ResourceOwnershipChecker<String> checker = (currentUser,  documentId) -> // 定义模拟的资源所有权逻辑
+        ResourceOwnershipChecker<String> checker = (currentUser, documentId) -> // 定义模拟的资源所有权逻辑
                 currentUser.userId().equals("owner-of-" + documentId); // 规则：用户ID必须为"owner-of-" + 文档ID
         assertThatCode(() -> guard.requireOwnerOrPermission(
                 new CurrentUserPrincipal("owner-of-doc-1", Set.of(), Set.of()), // 拥有者用户

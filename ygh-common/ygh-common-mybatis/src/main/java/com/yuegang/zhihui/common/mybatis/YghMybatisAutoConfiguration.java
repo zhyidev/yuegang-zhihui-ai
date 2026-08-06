@@ -63,7 +63,7 @@ public class YghMybatisAutoConfiguration {
                     && paginationInterceptors.getFirst().getMaxLimit() >= 1
                     && paginationInterceptors.getFirst().getMaxLimit() <= PageRequest.MAX_PAGE_SIZE
                     && !paginationInterceptors.getFirst().isOverflow();
-            if( !boundedPagination) {
+            if (!boundedPagination) {
                 throw new IllegalStateException("MybatisPlusInterceptor must include pagination limited to" + PageRequest.MAX_PAGE_SIZE);
             }
         };
@@ -71,22 +71,22 @@ public class YghMybatisAutoConfiguration {
 
     @Bean // 注册 Flyway 安全定制器
     @Order(Ordered.LOWEST_PRECEDENCE) // 保证最低优先级，从而覆盖第三方或 Spring 的默认设置
-    public FlywayConfigurationCustomizer yghFlywaySafeCustomizer(){
+    public FlywayConfigurationCustomizer yghFlywaySafeCustomizer() {
         return new YghFlywaySafetyCustomizer();
     }
 
     @Bean // 注册迁移策略政策 Bean
-    public FlywayMigrationPolicy flywayMigrationPolicy(){
+    public FlywayMigrationPolicy flywayMigrationPolicy() {
         return new FlywayMigrationPolicy();
     }
 
     @Bean // 注册配置守卫
-    public FlywayConfigurationGuard flywayConfigurationGuard(){
+    public FlywayConfigurationGuard flywayConfigurationGuard() {
         return new FlywayConfigurationGuard();
     }
 
     @Bean // 注册历史校验
-    public FlywayHistoryValidator flywayHistoryValidator(){
+    public FlywayHistoryValidator flywayHistoryValidator() {
         return new FlywayHistoryValidator();
     }
 
@@ -96,7 +96,7 @@ public class YghMybatisAutoConfiguration {
             FlywayMigrationPolicy migrationPolicy,
             FlywayConfigurationGuard configurationGuard,
             FlywayHistoryValidator historyValidator
-    ){
+    ) {
         return new YghFlywayMigrationStrategy(migrationPolicy, configurationGuard, historyValidator);
     }
 

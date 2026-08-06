@@ -3,15 +3,17 @@ package com.yuegang.zhihui.common.web;
 import java.util.LinkedHashMap;
 import java.util.Map; // 导入 Map
 
-/** 经过清洗的请求元数据。查询字符串、请求体和凭据被排除在外。 */
+/**
+ * 经过清洗的请求元数据。查询字符串、请求体和凭据被排除在外。
+ */
 public record RequestLogEvent(// 定义日志事件 Record
-        String traceId,
-        String requestId,
-        String method,
-        String path,
-        int status,
-        long durationMs,
-        Map<String, String> headers
+                              String traceId,
+                              String requestId,
+                              String method,
+                              String path,
+                              int status,
+                              long durationMs,
+                              Map<String, String> headers
 ) { // 类体
 
     public RequestLogEvent { // 构造逻辑

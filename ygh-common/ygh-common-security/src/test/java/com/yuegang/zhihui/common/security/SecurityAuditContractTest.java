@@ -5,8 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.assertj.core.api.AssertionsForClassTypes.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 class SecurityAuditContractTest { //安全审计契约（SecurityAudit）单元测试类
 
@@ -35,7 +34,7 @@ class SecurityAuditContractTest { //安全审计契约（SecurityAudit）单元�
 
         assertThat(captured.get()).isEqualTo(event);// 验证发布者收到的事件对象与原始事件是否一致2
 
-        assertThat(event.toString()).doesNotContain("token","password","secret"); //验证事件的toString 文本绝不包含敏感信息
+        assertThat(event.toString()).doesNotContain("token", "password", "secret"); //验证事件的toString 文本绝不包含敏感信息
 
     }
 }

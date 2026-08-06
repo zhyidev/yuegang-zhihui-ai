@@ -3,7 +3,9 @@ package com.yuegang.zhihui.common.web;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-/** 针对清洗后的请求事件的默认结构化应用程序日志接收器。 */
+/**
+ * 针对清洗后的请求事件的默认结构化应用程序日志接收器。
+ */
 public class StructuredRequestLogSink implements RequestLogSink { // 定义最终类实现接口
 
     private static final Log LOGGER = LogFactory.getLog("ygh-request"); // 锁定 ygh.request 日志类别

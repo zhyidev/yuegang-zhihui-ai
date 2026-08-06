@@ -11,13 +11,13 @@ public abstract class MessageHandlingException extends RuntimeException { // 业
         this.failureCode = failureCode; // 赋值
     }
 
-    public String failureCode() { // 公开错误码访问器
-        return failureCode;
-    }
-
     private static String validate(String code) { // 获取稳定码方法
         if (code == null || !CODE.matcher(code).matches()) // 正则匹配
             throw new IllegalArgumentException("failureCode must not be a stable uppercase code"); //报错
         return code; // 返回合法的码
+    }
+
+    public String failureCode() { // 公开错误码访问器
+        return failureCode;
     }
 }

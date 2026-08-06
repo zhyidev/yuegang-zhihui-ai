@@ -1,6 +1,8 @@
 package com.yuegang.zhihui.common.web;
 
-/** 经过清洗的字段校验详情，可安全地提供给外部 API 响应使用。 */
+/**
+ * 经过清洗的字段校验详情，可安全地提供给外部 API 响应使用。
+ */
 public record FieldValidationError(String field, String message, Object rejectedValue) { // 定义 Record 数据结
 
     public FieldValidationError { // 紧凑构造函数，用于参数验证

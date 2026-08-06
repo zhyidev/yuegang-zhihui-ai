@@ -55,7 +55,8 @@ public class JdbcOutboxDispatcher { // 类开始
         return sent; // 返回不呢此发送消息的总数
 
     }
-    private record Row(String id,String aggregate,String type, String payload){ // 内部数据
+
+    private record Row(String id, String aggregate, String type, String payload) { // 内部数据
 
     }
 }

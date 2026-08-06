@@ -29,7 +29,8 @@ public class CurrentUserPrincipalTest { // 当前用户主体对象（CurrentUse
                 .isInstanceOf(UnsupportedOperationException.class); // 断言必定抛出不可修改集合的异常
     }
 
-    @Test    // 标记为 JUnit5 测试方法
+    @Test
+        // 标记为 JUnit5 测试方法
     void shouldMatchRolesAndPermissionsExactly() {  // 测试方法：验证角色与权限的对比必须精准匹配
         CurrentUserPrincipal principal = new CurrentUserPrincipal(
                 "user-1001",  // 用户ID

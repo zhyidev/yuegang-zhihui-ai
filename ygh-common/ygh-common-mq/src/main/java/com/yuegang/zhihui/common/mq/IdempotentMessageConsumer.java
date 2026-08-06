@@ -51,6 +51,13 @@ public class IdempotentMessageConsumer {
         this.ownerGenerator = new SecureMessageClaimOwnerGenerator(); // 初始化安全随机 ID 生成器
     }
 
+    private static String failureCode(Exception failure) { // 辅助方法：冲异常中提取稳定的错误标识符
+        return failure instanceof MessageHandlingException messageFailure // 判断是否为自定义的业务消息异常
+                ? messageFailure.failureCode() // 提取错误代码
+                : UNEXPECTED_FAILURE; // 否则返回预设“未知异常”
+
+    }
+
     /*  核心入口方法：执行幂等校验并处理业务 */
     public <T> MessageConsumptionResult consume( // 泛类方法
                                                  DomainEvent<T> event, // 领域事件
@@ -107,7 +114,7 @@ public class IdempotentMessageConsumer {
         } catch (Exception unexpectedFailure) { // 其他未知异常
             boolean terminal = unexpectedFailure instanceof NonRetryableMessageException // 判断是否未不可重试异常(如合同校验失败）
                     || deliveryAttempt >= maxAttempts; // 或者是否打到系统设定的最大重试次数
-            if (!terminal){ // 如果还可以抢救（允许重试）
+            if (!terminal) { // 如果还可以抢救（允许重试）
                 store.releaseForRetry(claim); // 5。 从数据库删除认领状态，使其它节点或下次投递可以重新认领
                 return MessageConsumptionResult.RETRY; // 返回 RETRY
             }
@@ -121,27 +128,21 @@ public class IdempotentMessageConsumer {
                     deliveryAttempt, // 次数
                     failureCode(unexpectedFailure), // 提取错误码
                     clock.instant()); // 失败时间
-            return store.markDeadLettered(claim,record) // 6. 在数据库标记未死信并存储
-            ? MessageConsumptionResult.DEAD_LETTERED // 成功标记为死信
-            : MessageConsumptionResult.RETRY; // 标记失败重试
+            return store.markDeadLettered(claim, record) // 6. 在数据库标记未死信并存储
+                    ? MessageConsumptionResult.DEAD_LETTERED // 成功标记为死信
+                    : MessageConsumptionResult.RETRY; // 标记失败重试
 
         }
     }
-    private MessageProcessingClaim validateClaim(MessageClaimResult result, String eventId){ //内部校验认领对象合法性
+
+    private MessageProcessingClaim validateClaim(MessageClaimResult result, String eventId) { //内部校验认领对象合法性
         MessageProcessingClaim claim = result.claim().orElseThrow( // 必须存在凭证对象
                 () -> new IllegalArgumentException("CLAIMED result has no claim") // 否则抛出异常状态
         );
-        if(!consumerGroup.equals(claim.consumerGroup()) || !eventId.equals(claim.eventId())){ // 校验组名和事件 ID 是否匹配
+        if (!consumerGroup.equals(claim.consumerGroup()) || !eventId.equals(claim.eventId())) { // 校验组名和事件 ID 是否匹配
             throw new IllegalArgumentException("store returned a claim for anther message"); // 不匹配抛异常
         }
-        return  claim; // 返回校验后的凭证对象
-    }
-
-    private static String failureCode(Exception failure){ // 辅助方法：冲异常中提取稳定的错误标识符
-        return failure instanceof MessageHandlingException messageFailure // 判断是否为自定义的业务消息异常
-        ? messageFailure.failureCode() // 提取错误代码
-        : UNEXPECTED_FAILURE; // 否则返回预设“未知异常”
-
+        return claim; // 返回校验后的凭证对象
     }
 
 }

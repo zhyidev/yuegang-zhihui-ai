@@ -28,6 +28,50 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
         this.historyValidator = Objects.requireNonNull(historyValidator, "historyValidator must not be null");
     }
 
+    // --- 内部辅助判断方法 ---
+    private static boolean isRepeatable(InfoOutput migration) {
+        boolean repeatableCategory = migration.category != null &&
+                migration.category.toLowerCase().contains("repeatable");
+        boolean SqlWithoutVersion = resolvedVersion(migration) == null &&
+                migration.filepath != null && migration.filepath.toLowerCase().endsWith(".sql");
+        return repeatableCategory || SqlWithoutVersion;
+    }
+
+    private static boolean isUndo(InfoOutput migration) { // 判断是否为 Undo
+        if (migration.filepath == null) return false;
+        String normalized = migration.filepath.replace('\\', '/');
+        int separator = normalized.lastIndexOf('/');
+        String fileName = separator >= 0 ? normalized.substring(separator + 1) : normalized;
+        return fileName.startsWith("U");
+
+
+    }
+
+    private static boolean isSqlMigration(InfoOutput migration) { // 判断是否为 SQL 类型
+        return migration.type != null && migration.type.equalsIgnoreCase("SQL");
+
+    }
+
+    private static long parseAppliedVersion(String version) { // 解析版本号为 long
+        try {
+            return Long.parseLong(version);
+        } catch (NumberFormatException exception) {
+            throw new MigrationPolicyException(MigrationViolationCode.INVALID_NAME, "Invalid migration version: " + version);
+        }
+    }
+
+    private static String resolvedVersion(InfoOutput migration) { // 获取版本对应的版本号
+        if (migration.rawVersion != null && !migration.rawVersion.isBlank())
+            return migration.rawVersion;
+        return migration.version == null || migration.version.isBlank() ? null : migration.version;
+    }
+
+    private static boolean isApplied(InfoOutput migration) {
+        if (migration.installedOnUTC != null && !migration.installedOnUTC.isBlank()) return true;
+        return migration.state != null &&
+                migration.state.equalsIgnoreCase("Success");
+    }
+
     @Override
     public void migrate(Flyway flyway) { // 核心迁移，逻辑拦截
         Objects.requireNonNull(flyway, "flyway must not be null");
@@ -72,49 +116,5 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
         migrationPolicy.validateNewMigrations(notAppliedResources, highestAppliedVersion).throwIfInvalid();// 4. 检验脚本是否合法
         flyway.migrate(); // 5. 正式执行 Flyway 迁移
         historyValidator.validateOrThrow(flyway); // 6. 钱以后再次校验历史一致性
-    }
-
-    // --- 内部辅助判断方法 ---
-    private static boolean isRepeatable(InfoOutput migration) {
-        boolean repeatableCategory = migration.category != null &&
-                migration.category.toLowerCase().contains("repeatable");
-        boolean SqlWithoutVersion = resolvedVersion(migration) == null &&
-                migration.filepath != null && migration.filepath.toLowerCase().endsWith(".sql");
-        return repeatableCategory || SqlWithoutVersion;
-    }
-
-    private static boolean isUndo(InfoOutput migration) { // 判断是否为 Undo
-        if (migration.filepath == null) return false;
-        String normalized = migration.filepath.replace('\\', '/');
-        int separator = normalized.lastIndexOf('/');
-        String fileName = separator >= 0 ? normalized.substring(separator + 1) : normalized;
-        return fileName.startsWith("U");
-
-
-    }
-
-    private static boolean isSqlMigration(InfoOutput migration) { // 判断是否为 SQL 类型
-        return migration.type != null && migration.type.equalsIgnoreCase("SQL");
-
-    }
-
-    private static long parseAppliedVersion(String version) { // 解析版本号为 long
-        try {
-            return Long.parseLong(version);
-        } catch (NumberFormatException exception) {
-            throw new MigrationPolicyException(MigrationViolationCode.INVALID_NAME, "Invalid migration version: " + version);
-        }
-    }
-
-    private static String resolvedVersion(InfoOutput migration) { // 获取版本对应的版本号
-        if (migration.rawVersion != null && !migration.rawVersion.isBlank())
-            return migration.rawVersion;
-        return migration.version == null || migration.version.isBlank() ? null : migration.version;
-    }
-
-    private static boolean isApplied(InfoOutput migration){
-        if(migration.installedOnUTC != null && !migration.installedOnUTC.isBlank()) return true;
-        return migration.state != null &&
-                migration.state.equalsIgnoreCase("Success");
     }
 }

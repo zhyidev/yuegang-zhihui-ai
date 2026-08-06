@@ -8,7 +8,9 @@ import tools.jackson.databind.json.JsonMapper;
 
 import java.nio.charset.StandardCharsets;
 
-/** 在请求到达 Spring MVC 之前（如在 Security 层）写入清洗后的安全失败响应。 */
+/**
+ * 在请求到达 Spring MVC 之前（如在 Security 层）写入清洗后的安全失败响应。
+ */
 public class SecurityApiResponseWriter { // 内部最终类
 
     private static final JsonMapper MAPPER = YghJacksonConfiguration.createMapper(); // 使用项目统一的配置闯进啊

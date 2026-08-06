@@ -40,16 +40,6 @@ public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现
         return new VersionedDomainEvent<>(metadata, payload);
     }
 
-    @Override
-    public EventMetadata metadata() { // 实现接口方法
-        return metadata; // 返回内部元数据
-    }
-
-    @Override
-    public T payload() { // 实现接口方法
-        return payload; // 返回内部负载
-    }
-
     private static Map<String, Object> immutableMap(Map<String, Object> source) { // 深度递归不可变 Map 转换
         LinkedHashMap<String, Object> copy = new LinkedHashMap<>(source.size()); // 创建有序 Map 副本
         source.forEach((String key, Object value) -> copy.put(key, immutableNestedValue(value))); // 遍历并递归处理子项
@@ -77,5 +67,15 @@ public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现
         }
         return value;  // 基础类型直接返回
 
+    }
+
+    @Override
+    public EventMetadata metadata() { // 实现接口方法
+        return metadata; // 返回内部元数据
+    }
+
+    @Override
+    public T payload() { // 实现接口方法
+        return payload; // 返回内部负载
     }
 }

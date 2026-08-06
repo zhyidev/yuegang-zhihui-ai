@@ -17,7 +17,8 @@ public class InternalServiceSignatureTest { // 微服务间隔用签名（Intern
     private final InternalServiceSignature signatures = new InternalServiceSignature(
             SECRET, Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofSeconds(30)); // 绑定密钥、固定时钟与30秒容忍时间
 
-    @Test // 标记为 JUnit5 测试方法
+    @Test
+        // 标记为 JUnit5 测试方法
     void acceptOnlyUntamperedFreshLowerHexFigures() { // 测试方法：只接受未篡改、未过期的 64 位小写十六进制签名
         var metadata = new InternalServiceSignature.Metadata(
                 "ygh-order-service", "POST", "/internal/v1/inventory/reserve", NOW); // 填充服务名、方法、路径及时间
@@ -33,7 +34,8 @@ public class InternalServiceSignatureTest { // 微服务间隔用签名（Intern
         assertThat(signatures.verify(stale, signature)).isFalse(); // 验证过期数据校验失败
     }
 
-    @Test // 标记为 JUnit5 测试方法
+    @Test
+        // 标记为 JUnit5 测试方法
     void rejectsWeakSecretsAndNullInfrastructure() { // 测试方法：拒绝弱密钥（小于32字节）以及空基础设置组件
         assertThatThrownBy(() -> new InternalServiceSignature(new byte[31], Clock.systemUTC(), Duration.ZERO)) // 传入31字节的过短密钥
                 .isInstanceOf(IllegalArgumentException.class); // 断言抛出参数非法异常
@@ -45,7 +47,8 @@ public class InternalServiceSignatureTest { // 微服务间隔用签名（Intern
                 .isInstanceOf(NullPointerException.class); // 断言抛出参数非法异常
     }
 
-    @Test // 标记为 JUnit5 测试方法
+    @Test
+        // 标记为 JUnit5 测试方法
     void metadataRejectsUnsafeCanonicalFields() { // 测试方法：元数据构造时拒绝不合法或不安全的规范字段
         assertThatThrownBy(() -> new InternalServiceSignature.Metadata(null, "GET", "/x", NOW)) // 服务名为 null
                 .isInstanceOf(IllegalArgumentException.class); // 抛出异常

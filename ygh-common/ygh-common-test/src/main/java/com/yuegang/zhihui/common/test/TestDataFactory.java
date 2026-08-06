@@ -2,7 +2,9 @@ package com.yuegang.zhihui.common.test;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-/** Deterministic factory that never emits real customer or employee identity data. */
+/**
+ * Deterministic factory that never emits real customer or employee identity data.
+ */
 public final class TestDataFactory {
 
     private final long seed;

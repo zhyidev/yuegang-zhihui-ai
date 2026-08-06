@@ -25,6 +25,17 @@ public final class AuditMetaObjectHandler implements MetaObjectHandler { // 实�
         this.clock = Objects.requireNonNull(clock, "clock must not be null"); // 校验注入
     }
 
+    private static boolean hasAnyAuditProperty(MetaObject metaObject) { // 检查对象是否存在 setter 方法判断是否需要填充
+        return metaObject.hasSetter(CREATED_BY) || metaObject.hasSetter(CREATED_AT) || metaObject.hasSetter(UPDATED_BY) || metaObject.hasSetter(UPDATED_AT);
+
+    }
+
+    private static void setIfPresent(MetaObject metaObject, String property, Object value) { // 安全填充方法
+        if (metaObject.hasSetter(property)) { // 仅当字段存在 Setter 时才赋值
+            metaObject.setValue(property, value);
+        }
+    }
+
     @Override
     public void insertFill(MetaObject metaObject) { // 插入数据时填充逻辑
         Objects.requireNonNull(metaObject, "metaObject must not be null"); // 校验元对象
@@ -40,7 +51,6 @@ public final class AuditMetaObjectHandler implements MetaObjectHandler { // 实�
         setIfPresent(metaObject, UPDATED_BY, auditor); // 填充修改人(初始与创建人一致）
         setIfPresent(metaObject, UPDATED_AT, now); // 填充修改时间
     }
-
 
     @Override
     public void updateFill(MetaObject metaObject) { // 更新数据时填充逻辑
@@ -61,15 +71,5 @@ public final class AuditMetaObjectHandler implements MetaObjectHandler { // 实�
             throw new IllegalArgumentException("currentAuditor must not be null or blank");
         }
         return auditor;
-    }
-
-    private static boolean hasAnyAuditProperty(MetaObject metaObject) { // 检查对象是否存在 setter 方法判断是否需要填充
-        return metaObject.hasSetter(CREATED_BY) || metaObject.hasSetter(CREATED_AT) || metaObject.hasSetter(UPDATED_BY) || metaObject.hasSetter(UPDATED_AT);
-
-    }
-    private static void setIfPresent(MetaObject metaObject, String property, Object value) { // 安全填充方法
-        if (metaObject.hasSetter(property)) { // 仅当字段存在 Setter 时才赋值
-            metaObject.setValue(property, value);
-        }
     }
 }

@@ -1,9 +1,12 @@
 package com.yuegang.zhihui.common.test;
 
-import java.util.Objects;
 import org.testcontainers.containers.GenericContainer;
 
-/** Runtime-generated JDBC Testcontainer credentials with redacted diagnostic output. */
+import java.util.Objects;
+
+/**
+ * Runtime-generated JDBC Testcontainer credentials with redacted diagnostic output.
+ */
 public final class JdbcContainerFixture implements AutoCloseable {
 
     private final GenericContainer<?> container;

@@ -17,6 +17,27 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
     public FlywayMigrationPolicy() {
     }
 
+    private static String normalize(String resourcePath) {
+        return resourcePath.replace('\\', '/'); //统一斜杠
+    }
+
+    public static MigrationPolicyException invalid(String path) { // 命名错误工厂
+        String displayPath = safeDisplay(path);
+        return new MigrationPolicyException(
+                MigrationViolationCode.INVALID_NAME,
+                "migration name must match db/migration/V<positive integer>_<lower snake case>.sql: " + displayPath);
+    }
+
+    private static String safeDisplay(String path) { // 路径脱敏显示，防止字符过长路径破坏日志排版
+        if (path == null || path.isBlank()) return "<blank>";
+        String normalized = normalize(path).replace("[\\p{Ctrl}]", "?"); // 过滤控制字符
+        int separator = normalized.lastIndexOf("/");
+        String fileName = separator >= 0 ? normalized.substring(separator + 1) : normalized;
+        if (fileName.isBlank()) fileName = "<unnamed>";
+        return fileName.length() <= 128 ? fileName : fileName.substring(0, 128); // 限制文件长度
+
+    }
+
     public MigrationDescriptor migrationDescriptor(String resourcePath) { //解析脚本路径为描述对象
         Objects.requireNonNull(resourcePath, "resourcePath must not be null");
         String normalized = normalize(resourcePath); // 规范化斜杠
@@ -118,27 +139,6 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
             }
         }
         return new MigrationValidationReport(violations); // 返回汇总表
-    }
-
-    private static String normalize(String resourcePath) {
-        return resourcePath.replace('\\', '/'); //统一斜杠
-    }
-
-    public static MigrationPolicyException invalid(String path) { // 命名错误工厂
-        String displayPath = safeDisplay(path);
-        return new MigrationPolicyException(
-                MigrationViolationCode.INVALID_NAME,
-                "migration name must match db/migration/V<positive integer>_<lower snake case>.sql: " + displayPath);
-    }
-
-    private static String safeDisplay(String path) { // 路径脱敏显示，防止字符过长路径破坏日志排版
-        if (path == null || path.isBlank()) return "<blank>";
-        String normalized = normalize(path).replace("[\\p{Ctrl}]", "?"); // 过滤控制字符
-        int separator = normalized.lastIndexOf("/");
-        String fileName = separator >= 0 ? normalized.substring(separator + 1) : normalized;
-        if (fileName.isBlank()) fileName = "<unnamed>";
-        return fileName.length() <= 128 ? fileName : fileName.substring(0, 128); // 限制文件长度
-
     }
 }
 

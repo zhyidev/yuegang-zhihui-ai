@@ -3,7 +3,9 @@ package com.yuegang.zhihui.common.mybatis;
 import org.flywaydb.core.api.configuration.FluentConfiguration;
 import org.springframework.boot.flyway.autoconfigure.FlywayConfigurationCustomizer;
 
-/** 为每个业务服务强制执行"仅向前，快速失败"的 Flyway 设置。 */
+/**
+ * 为每个业务服务强制执行"仅向前，快速失败"的 Flyway 设置。
+ */
 public final class YghFlywaySafetyCustomizer implements FlywayConfigurationCustomizer { // 解耦 MyBatis Plus 与业务 API
     @Override
     public void customize(FluentConfiguration configuration) {

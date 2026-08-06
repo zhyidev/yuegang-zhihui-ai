@@ -52,6 +52,39 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
 
     }
 
+    /**
+     * 校验当前内存中的凭证是否匹配数据库快照且未超时
+     *
+     */
+    private static boolean isCurrentClaim(ConsumptionRow row, MessageProcessingClaim claim, Instant now) { // 必须满足：有数据、状态是处理中、持有者一致、租约过期
+        return row != null && PROCESSING.equals(row.status) && claim.owner().equals(row.owner()) && row.leaseUntil().isAfter(now);
+
+    }
+
+    /**
+     * Timestamp 转 Instant 的转换辅助
+     */
+    private static Instant toInstant(Timestamp timestamp) {
+        return timestamp == null ? null : timestamp.toInstant();
+    }
+
+    /**
+     * 构造基础设施的异常构造辅助方法
+     */
+    private static MessageInfrastructureException infrastructure(String operation, RuntimeException cause) {
+        return new MessageInfrastructureException(operation, cause);
+    }
+
+    /**
+     * 校验租约合法性范围（1秒到15分钟
+     */
+    private static void requireLease(Duration lease) {
+        Objects.requireNonNull(lease, "lease must note be null"); // 判断空
+        if (lease.compareTo(Duration.ofSeconds(1)) < 0 || lease.compareTo(Duration.ofMinutes(15)) > 0) { // 范围校验
+            throw new IllegalArgumentException("lease must be between 1 second and 15 minutes"); // 抛出异常
+        }
+    }
+
     @Override
     public MessageClaimResult claim(String consumerGroup, // 尝试认领消息处理权的方法
                                     String eventId, // 组名
@@ -268,26 +301,11 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
     }
 
     /**
-     * 校验当前内存中的凭证是否匹配数据库快照且未超时
-     *
+     * 函数式接口：用于重复认领回调监听
      */
-    private static boolean isCurrentClaim(ConsumptionRow row, MessageProcessingClaim claim, Instant now) { // 必须满足：有数据、状态是处理中、持有者一致、租约过期
-        return row != null && PROCESSING.equals(row.status) && claim.owner().equals(row.owner()) && row.leaseUntil().isAfter(now);
-
-    }
-
-    /**
-     * Timestamp 转 Instant 的转换辅助
-     */
-    private static Instant toInstant(Timestamp timestamp) {
-        return timestamp == null ? null : timestamp.toInstant();
-    }
-
-    /**
-     * 构造基础设施的异常构造辅助方法
-     */
-    private static MessageInfrastructureException infrastructure(String operation, RuntimeException cause) {
-        return new MessageInfrastructureException(operation, cause);
+    @FunctionalInterface
+    interface DuplicateClaimObserver {
+        void afterDuplicate(String consumerGroup, String eventId);
     }
 
     /**
@@ -310,23 +328,5 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
         private Exception original() {
             return original; // 获取原始异常类
         }
-    }
-
-    /**
-     * 校验租约合法性范围（1秒到15分钟
-     */
-    private static void requireLease(Duration lease) {
-        Objects.requireNonNull(lease, "lease must note be null"); // 判断空
-        if (lease.compareTo(Duration.ofSeconds(1)) < 0 || lease.compareTo(Duration.ofMinutes(15)) > 0) { // 范围校验
-            throw new IllegalArgumentException("lease must be between 1 second and 15 minutes"); // 抛出异常
-        }
-    }
-
-    /**
-     * 函数式接口：用于重复认领回调监听
-     */
-    @FunctionalInterface
-    interface DuplicateClaimObserver {
-        void afterDuplicate(String consumerGroup, String eventId);
     }
 }

@@ -29,7 +29,7 @@ public record ExternalId(String value) { // 使用 Record 包装字符串 ID
     }
 
     @Override
-    public String toString(){ //重写toString
+    public String toString() { //重写toString
         return value; //返回内部值
     }
 }

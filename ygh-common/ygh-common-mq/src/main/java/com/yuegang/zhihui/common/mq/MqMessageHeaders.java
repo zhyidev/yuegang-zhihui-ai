@@ -16,13 +16,14 @@ public class MqMessageHeaders { // 消息头工具类
     // 定义标准且精准的时间格式器（包含纳秒及 UTC 偏移）
     private static final DateTimeFormatter STABLE_OFFSET_TIME = new DateTimeFormatterBuilder()
             .appendPattern("uuuu-MM-dd'T'HH:mm:ss") // 年月日时分秒
-            .appendFraction(ChronoField.NANO_OF_SECOND,0,9,true)// 处理纳秒部分，最多9位
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)// 处理纳秒部分，最多9位
             .appendOffsetId() // 处理时区偏移
             .toFormatter(); // 构建完成
 
-    private MqMessageHeaders() {} // 禁止实例化
+    private MqMessageHeaders() {
+    } // 禁止实例化
 
-    public static Map<String, String> from(DomainEvent<?> event){ // 转换方法开始
+    public static Map<String, String> from(DomainEvent<?> event) { // 转换方法开始
         MqEnvelopePolicy.validate(event); // 先执行合理性校验
         var headers = new LinkedHashMap<String, String>(); // 创建有序 Map
         headers.put("eventId", event.eventId()); // 存入 ID

@@ -66,17 +66,17 @@ public class YghRedisAutoConfiguration { // 类点=定义开始
     @Bean // 注册 Bean
     @ConditionalOnBean(RedisKeyCommands.class) // 仅在非相应时环境注册存储器
     @ConditionalOnMissingBean // 默认实现
-    public RedisSessionStateStore redisSessionStateStore(StringRedisTemplate redisTemplate,SessionRedisKeys keys){ // 注册 Session 状态仓库
-        return new RedisSessionStateStore(redisTemplate,keys); // 返回实例
+    public RedisSessionStateStore redisSessionStateStore(StringRedisTemplate redisTemplate, SessionRedisKeys keys) { // 注册 Session 状态仓库
+        return new RedisSessionStateStore(redisTemplate, keys); // 返回实例
 
     }
 
     @Bean // 注册
     @ConditionalOnBean(ReactiveStringRedisTemplate.class) // 仅在响应式 WebFlux 环境下注册校验器
     @ConditionalOnMissingBean // 默认实现
-    public ReactiveRedisSessionValidator reactiveRedisSessionValidator ( // 注册响应式 Session 校验器
-                                                                         ReactiveStringRedisTemplate reactiveStringRedisTemplate,SessionRedisKeys keys // 注入响应式模板
-    ){
-        return new ReactiveRedisSessionValidator(reactiveStringRedisTemplate,keys); // 返回实例
+    public ReactiveRedisSessionValidator reactiveRedisSessionValidator( // 注册响应式 Session 校验器
+                                                                        ReactiveStringRedisTemplate reactiveStringRedisTemplate, SessionRedisKeys keys // 注入响应式模板
+    ) {
+        return new ReactiveRedisSessionValidator(reactiveStringRedisTemplate, keys); // 返回实例
     }
 }

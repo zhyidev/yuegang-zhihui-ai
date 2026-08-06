@@ -34,6 +34,20 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
         }
     }
 
+    private static List<String> normalized(List<String> values, String name) { // 定义列表规范化静态方法 2 usages
+        Objects.requireNonNull(values, name);
+        if (values.size() > 128) throw new IllegalArgumentException(name + " exceeds limmit"); // 单个请求角色/权限不能超过 128 个
+        var copy = values.stream().peek(v -> requireSafe(v, SAFE_AUTHORITY, name)).sorted().distinct().toList(); // 流式处理：校验、排序、去重
+        if (String.join(",", copy).length() > 4096)
+            throw new IllegalArgumentException(name + " exceeds length limit"); // Header拼装后总长度不能超过4096
+        return copy; // 返回清洗后的列表
+    }
+
+    private static void requireSafe(String value, Pattern pattern, String name) {
+        if (value == null || !pattern.matcher(value).matches())
+            throw new IllegalArgumentException(name + "is unsafe");//正则匹配
+    }
+
     public String sign(Metadata metadata) {
         return HexFormat.of().formatHex(hmac(canonical(metadata)));
     }
@@ -97,19 +111,5 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
             }
             Objects.requireNonNull(timestamp); // 时间戳不能为空
         }
-    }
-
-    private static List<String> normalized(List<String> values, String name) { // 定义列表规范化静态方法 2 usages
-        Objects.requireNonNull(values, name);
-        if (values.size() > 128) throw new IllegalArgumentException(name + " exceeds limmit"); // 单个请求角色/权限不能超过 128 个
-        var copy = values.stream().peek(v -> requireSafe(v, SAFE_AUTHORITY, name)).sorted().distinct().toList(); // 流式处理：校验、排序、去重
-        if (String.join(",", copy).length() > 4096)
-            throw new IllegalArgumentException(name + " exceeds length limit"); // Header拼装后总长度不能超过4096
-        return copy; // 返回清洗后的列表
-    }
-
-    private static void requireSafe(String value, Pattern pattern, String name) {
-        if (value == null || !pattern.matcher(value).matches())
-            throw new IllegalArgumentException(name + "is unsafe");//正则匹配
     }
 }

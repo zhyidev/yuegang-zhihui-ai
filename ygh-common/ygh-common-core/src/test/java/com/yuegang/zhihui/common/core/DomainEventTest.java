@@ -8,13 +8,26 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class DomainEventTest { // 定义领域事件测试类
 
     private static final OffsetDateTime OCCURRED_AT = // 定义一个固定的测试发生时间
             OffsetDateTime.of(2026, 7, 17, 15, 0, 0, 0, ZoneOffset.ofHours(8)); //设定时间为x，东八区
+
+    private static DomainEvent<Map<String, Object>> eventWith(Map<String, Object> payload) {
+        return VersionedDomainEvent.ofMap(metadata(
+                        "ORDER_CREATED",
+                        1,
+                        OCCURRED_AT,
+                        "trace-001"),
+                payload);
+    }
+
+    private static EventMetadata metadata(String eventType, int eventVersion, OffsetDateTime occurredAt, String traceId) {
+        return new EventMetadata("evt-1", eventType, eventVersion, occurredAt, traceId, "ygh-order-service", "order-20020717-001");
+    }
 
     @Test
     void eventCarriesTheCompleteVersionedTraceableEveline() { //测试事件是否携带完整的、带版本的、可追中的外壳
@@ -142,19 +155,6 @@ public class DomainEventTest { // 定义领域事件测试类
                 .noneMatch(constructor -> Modifier.isPublic(constructor.getModifiers())); // 断言没有任何构造函数时公开的
 
 
-    }
-
-    private static DomainEvent<Map<String, Object>> eventWith(Map<String, Object> payload) {
-        return VersionedDomainEvent.ofMap(metadata(
-                        "ORDER_CREATED",
-                        1,
-                        OCCURRED_AT,
-                        "trace-001"),
-                payload);
-    }
-
-    private static EventMetadata metadata(String eventType, int eventVersion, OffsetDateTime occurredAt, String traceId) {
-        return new EventMetadata("evt-1", eventType, eventVersion, occurredAt, traceId, "ygh-order-service", "order-20020717-001");
     }
 
     private record OrderCreatePayload(String orderId) implements ImmutableEventPayload {

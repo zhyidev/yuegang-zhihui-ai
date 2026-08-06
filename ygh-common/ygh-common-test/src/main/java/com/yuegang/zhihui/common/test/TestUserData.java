@@ -1,6 +1,8 @@
 package com.yuegang.zhihui.common.test;
 
-/** Synthetic identity using reserved domains and an explicit test namespace. */
+/**
+ * Synthetic identity using reserved domains and an explicit test namespace.
+ */
 public record TestUserData(String userId, String username, String email, String displayName) {
 
     public TestUserData {

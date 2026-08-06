@@ -22,9 +22,10 @@ public interface MessageConsumptionStore { // 定义存储契约
                                      MessageBusinessOperation businessOperation // 执行业务逻辑
 
     ) throws Exception; // 业务异常向上抛出
+
     boolean releaseForRetry(MessageProcessingClaim claim); // 主动释放权力接口，用于手动放弃处理
-    
+
     boolean markDeadLettered(MessageProcessingClaim claim, DeadLetterRecord record); // 原子地将消息标记为死信
-    
+
 
 }

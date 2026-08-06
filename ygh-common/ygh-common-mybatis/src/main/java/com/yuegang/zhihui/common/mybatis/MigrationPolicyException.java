@@ -7,7 +7,7 @@ public final class MigrationPolicyException extends RuntimeException {
 
     public MigrationPolicyException(MigrationViolationCode code, String message) {
         super(message); // 传递消息给父类（不是继承？）
-        this.code = Objects.requireNonNull(code,"code must not be null"); // 强制非空代码
+        this.code = Objects.requireNonNull(code, "code must not be null"); // 强制非空代码
     }
 
     public MigrationViolationCode getCode() { // 获取代码

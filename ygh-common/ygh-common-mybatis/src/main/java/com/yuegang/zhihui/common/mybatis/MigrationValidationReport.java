@@ -14,19 +14,21 @@ public record MigrationValidationReport(List<MigrationViolation> migrationViolat
             Comparator.comparing(MigrationViolation::code)
                     .thenComparing(MigrationViolation::resourcePath);
 
-    public MigrationValidationReport{ // 构造函数
-        Objects.requireNonNull(migrationViolationlist,"migrationViolation must not be null");
+    public MigrationValidationReport { // 构造函数
+        Objects.requireNonNull(migrationViolationlist, "migrationViolation must not be null");
         migrationViolationlist = migrationViolationlist.stream().sorted(ORDER).toList(); // 执行排序并转化为不可变的列表
 
 
     }
 
-    public boolean valid(){return migrationViolationlist.isEmpty();}
+    public boolean valid() {
+        return migrationViolationlist.isEmpty();
+    }
 
-    public void throwIfInvalid(){ //如果不合法，抛出包含首个错误信息的异常
-        if(!valid()){
+    public void throwIfInvalid() { //如果不合法，抛出包含首个错误信息的异常
+        if (!valid()) {
             var firstViolation = migrationViolationlist.getFirst();
-            throw new MigrationPolicyException(firstViolation.code(),"migration policy failed with violation: "
+            throw new MigrationPolicyException(firstViolation.code(), "migration policy failed with violation: "
                     + migrationViolationlist.size() + " violation(s), first violation: " + firstViolation.message());
         }
 

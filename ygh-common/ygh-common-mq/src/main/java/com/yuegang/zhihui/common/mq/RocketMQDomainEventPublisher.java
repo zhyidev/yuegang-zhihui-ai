@@ -42,13 +42,13 @@ public final class RocketMQDomainEventPublisher implements DomainEventPublisher 
             if (result.getSendStatus() != SendStatus.SEND_OK) // 如果确认状态不是 SEND_OK
                 throw new IllegalArgumentException("RocketMQ send status" + result.getSendStatus());// 报错
 
-        } catch (Exception e    ) { // 捕获发送异常
-            throw new MessageInfrastructureException("RocketMQ event publish failed",e); // 抛出基础设施异常
+        } catch (Exception e) { // 捕获发送异常
+            throw new MessageInfrastructureException("RocketMQ event publish failed", e); // 抛出基础设施异常
 
         }
     }
 
-    public void close(){ // 实现 AutoCloseable 接口
+    public void close() { // 实现 AutoCloseable 接口
         producer.shutdown(); // 优雅的关闭RocketMQ 实例
 
     }

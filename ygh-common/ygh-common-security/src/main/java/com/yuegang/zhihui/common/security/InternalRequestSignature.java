@@ -1,7 +1,6 @@
 package com.yuegang.zhihui.common.security;
 
 
-
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
@@ -22,12 +21,13 @@ public class InternalRequestSignature {
     private final SecretKeySpec key; // 声明存储 HMAC 秘钥的规格对象
     private final Clock clock; // 声明映射对象，用于获取当前时间进行有效性比对
     private final Duration maximumSkew; // 声明允许的最大时间偏差，防止重放攻击
+
     public InternalRequestSignature(byte[] secret, Clock clock, Duration maximumSkew) {
         if (secret == null || secret.length < 32) { // 如果秘钥数组为空或长度不足 32 字节 (256位)
             throw new IllegalArgumentException("internal request secret must contain at least 32 bytes"); // 抛出异常：秘钥至少需要32字节
         }
-        this.key = new SecretKeySpec(Arrays.copyOf(secret, secret.length),  "HmacSHA256"); // 根据输入字节数组创建 HmacSHA256 秘钥规格
-        this.clock = Objects.requireNonNull(clock,  "clock must not be null"); // 初始化时钟，确保其不为空
+        this.key = new SecretKeySpec(Arrays.copyOf(secret, secret.length), "HmacSHA256"); // 根据输入字节数组创建 HmacSHA256 秘钥规格
+        this.clock = Objects.requireNonNull(clock, "clock must not be null"); // 初始化时钟，确保其不为空
         this.maximumSkew = Objects.requireNonNull(maximumSkew, "maximumSkew must not be null"); // 初始化时间偏差阈值
         if (maximumSkew.compareTo(Duration.ofSeconds(1)) < 0 // 如果偏差设置小于 1 秒
                 || maximumSkew.compareTo(Duration.ofMinutes(5)) > 0) { // 或者偏差设置大于 5 分钟
@@ -41,7 +41,8 @@ public class InternalRequestSignature {
     }
 
     public boolean verify(Metadata metadata, String presentedSignature) { // 定义验证签名的方法 no usages
-        if (presentedSignature == null || !presentedSignature.matches("[0-9a-f]{64}")) return false; // 如果传入的签名不是 64 位小写 16 进制
+        if (presentedSignature == null || !presentedSignature.matches("[0-9a-f]{64}"))
+            return false; // 如果传入的签名不是 64 位小写 16 进制
         Duration skew = Duration.between(metadata.timestamp(), clock.instant()).abs(); // 计算元数据时间戳与当前系统时间的绝对差值
         if (skew.compareTo(maximumSkew) > 0) return false; // 如果差值超过了允许的最大偏差，验证失败 (请求可能已过期或被篡改)
         byte[] expected = hmac(canonical(metadata)); // 根据当前元数据计算一份预期的签名哈希
@@ -87,7 +88,7 @@ public class InternalRequestSignature {
                             String path,        // 资源路径字段 9 usages
                             Instant timestamp   // 签名生成的时间戳字段 2 usages
     ) {
-    public Metadata { // 校验逻辑 no usages
+        public Metadata { // 校验逻辑 no usages
             if (clientIp == null || !SAFE_IP.matcher(clientIp).matches()) { // 如果 IP 为空或不符合安全格式
                 throw new IllegalArgumentException("clientIp is unsafe"); // 抛出异常：客户端 IP 不安全
             }
@@ -100,10 +101,10 @@ public class InternalRequestSignature {
             }
             if (path == null || path.isBlank() || path.length() > 2048 //如果路径为空，太长
                     || path.charAt(0) != '/' || path.codePoints().anyMatch(Character::isISOControl)) { //或不以斜杠开头，含控制符
-                throw  new IllegalArgumentException("path is unsafe"); //抛出异常，请求路径不安全
+                throw new IllegalArgumentException("path is unsafe"); //抛出异常，请求路径不安全
 
             }
-            Objects.requireNonNull(timestamp,"timestamp must not be null");//时间戳必须不能为空
+            Objects.requireNonNull(timestamp, "timestamp must not be null");//时间戳必须不能为空
         }
     }
 

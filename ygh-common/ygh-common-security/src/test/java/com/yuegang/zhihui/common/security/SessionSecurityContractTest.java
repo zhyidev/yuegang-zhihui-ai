@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class SessionSecurityContractTest { //会话安全契约（SessionSecurtiy/SessionRevocationStore) 单元测试类 ）
     @Test
@@ -46,6 +44,7 @@ class SessionSecurityContractTest { //会话安全契约（SessionSecurtiy/Sessi
             revokedUser = userId; // 记录撤销的用户 ID
             revokeBefore = issuedBefore; // 记录撤销截止时间
         }
+
         @Override // 实现接口方法
         public boolean isTokenRevoked(String tokenId) { // 检验 token 是否已撤销
             return tokenId.equals(revokedToken); // 匹配已记录的 Token

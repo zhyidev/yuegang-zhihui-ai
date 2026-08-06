@@ -26,12 +26,19 @@ public final class RedisDistributedLock { //类定义开始
 
     }
 
+    static void requireLease(Duration lease) { // 金泰工具：租约范围校验
+        Objects.requireNonNull(lease, "lease must not be null"); // 不能为空
+        if (lease.compareTo(MIN_LEASE) < 0 || lease.compareTo(MAX_LEASE) > 0) {
+            throw new IllegalArgumentException("lease must be between 1 second and 5 minutes"); //不合法抛出异常
+        }
+    }
+
     public Optional<RedisLockHandle> tryAcquire(String key, Duration lease) { //尝试获取锁定方法
         requireCanonicalKey(key); // 检验 key 是否符合规范
         requireLease(lease); // 检验租约是否允许的
         String owner = ownerTokens.generate(); // 生成本次请求唯一持有者标识
-        var handle = new RedisLockHandle(key,owner,lease); // 构造锁句柄
-        return commands.setIfAbsent(key,owner,lease) ? Optional.of(handle) : Optional.empty(); // 执行
+        var handle = new RedisLockHandle(key, owner, lease); // 构造锁句柄
+        return commands.setIfAbsent(key, owner, lease) ? Optional.of(handle) : Optional.empty(); // 执行
 
     }
 
@@ -45,14 +52,7 @@ public final class RedisDistributedLock { //类定义开始
         Objects.requireNonNull(handle, "handle must not be null"); // 句柄不能为空
         requireCanonicalKey(handle.key());
         requireLease(lease);
-        return commands.renewIfOwner(handle.key(),handle.owner(),lease);
-    }
-
-    static void requireLease(Duration lease) { // 金泰工具：租约范围校验
-        Objects.requireNonNull(lease, "lease must not be null"); // 不能为空
-        if (lease.compareTo(MIN_LEASE) < 0 || lease.compareTo(MAX_LEASE) > 0) {
-            throw new IllegalArgumentException("lease must be between 1 second and 5 minutes"); //不合法抛出异常
-        }
+        return commands.renewIfOwner(handle.key(), handle.owner(), lease);
     }
 
     private void requireCanonicalKey(String key) { // 私有方法：强制要求 key 使用系统规范的格式
