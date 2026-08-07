@@ -146,17 +146,13 @@ public final class JdbcRefreshTokenRepository implements RefreshTokenRepository 
                 Timestamp revoked = result.getTimestamp("revoked_at", utcCalendar()); // 取撤销时间
                 long replaced = result.getLong("replaced_by_token_id"); // 取替换ID
                 boolean replacedIsNull = result.wasNull(); // 检查字段是否是NULL
-                return new CurrentToken(result.getLong("id"), result.getLong("account_id"),
-                        result.getString("token_family"),
-                        result.getTimestamp("expires_at", utcCalendar()).toInstant(),
-                        revoked == null ? null : revoked.toInstant(), replacedIsNull ? null : replaced);
+                return new CurrentToken(result.getLong("id"), result.getLong("account_id"), result.getString("token_family"), result.getTimestamp("expires_at", utcCalendar()).toInstant(), revoked == null ? null : revoked.toInstant(), replacedIsNull ? null : replaced);
             }
         }
     }
 
     private void revokeOne(Connection connection, long id, Instant now, String reason) throws SQLException { // 撤销单条
-        try (PreparedStatement update = connection.prepareStatement(
-                "UPDATE auth_refresh_token SET revoked_at = ?, revoke_reason = ? WHERE id = ?")) {
+        try (PreparedStatement update = connection.prepareStatement("UPDATE auth_refresh_token SET revoked_at = ?, revoke_reason = ? WHERE id = ?")) {
             setInstant(update, 1, now);
             update.setString(2, reason);
             update.setLong(3, id);

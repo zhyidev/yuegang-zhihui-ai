@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.auth.infrastructure;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWK;
 import com.nimbusds.jose.jwk.JWKSet;
@@ -47,8 +48,8 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
             requirePrivatePermissions(root); // 核心安全：校验目录权限（防止被非Root用户写入）
             List<Path> publicFiles;
             try (var paths = Files.list(root)) { // 获取目录下的所有文件
-                publicFiles = paths.filter(  path -> path.getFileName().toString().endsWith(".public.pem")) // 筛选公钥文件
-                        .sorted(Comparator.comparing(  path -> path.getFileName().toString())).toList(); // 排序以便确定性
+                publicFiles = paths.filter(path -> path.getFileName().toString().endsWith(".public.pem")) // 筛选公钥文件
+                        .sorted(Comparator.comparing(path -> path.getFileName().toString())).toList(); // 排序以便确定性
             }
             if (publicFiles.isEmpty() || publicFiles.size() > MAX_PUBLIC_KEYS) {
                 throw new IllegalStateException("JWT public key count is outside allowed bounds"); // 公钥数量检查
@@ -62,8 +63,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
                 if (!SAFE_KID.matcher(kid).matches()) throw new IllegalStateException("JWT key id is unsafe"); // 内部ID校验
                 RSAPublicKey publicKey = readPublic(publicFile); // 从 PEM 文件读取公钥
                 requireStrength(publicKey); // 核心安全：校验公钥模数长度（必须 >= 2048位）
-                RSAKey jwk = new RSAKey.Builder(publicKey).keyID(kid).keyUse(KeyUse.SIGNATURE)
-                        .algorithm(JWSAlgorithm.RS256).build(); // 组装 JWT 对象
+                RSAKey jwk = new RSAKey.Builder(publicKey).keyID(kid).keyUse(KeyUse.SIGNATURE).algorithm(JWSAlgorithm.RS256).build(); // 组装 JWT 对象
                 publicKeys.add(jwk); // 加入集合
                 if (kid.equals(activeKid)) activePublic = jwk; // 标记匹配活动ID的公钥项
             }
@@ -71,10 +71,20 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
             Path privateFile = root.resolve(activeKid + ".private.pem").normalize(); // 定位私钥文件
             requireRegularChild(root, privateFile); // 安全校验私钥文件
             RSAPrivateKey privateKey = readPrivate(privateFile); // 读取私钥
+            // 校验公钥和私钥函数是否匹配
+            if (!privateKey.getModulus().equals(activePublic.toRSAPublicKey().getModulus())) {
+                throw new IllegalStateException("active JWT key pair does not match");
+            }
+            // 进一步通过公指数校验匹配度（如果是 CRT 密钥）
+            if (!(privateKey instanceof RSAPrivateKey crtKey) || !crtKey.getPrivateExponent().equals(activePublic.toRSAPublicKey().getPublicExponent())) {
+                throw new IllegalStateException("active JWT pair exponent does not match");
+            }
+            verifyKeyPair(privateKey, activePublic.toRSAPublicKey()); // 核心验证: 通过一次模拟签名/验签确认密钥对有效
+            RSAKey active = new RSAKey.Builder(activePublic).privateKey(privateKey).build(); // 组装完整私钥 JWK
+            return new RsaSigningKeyRing(active, publicKeys); // 返回密钥环
 
-
-        } catch (Exception e){
-
+        } catch (IOException | java.security.GeneralSecurityException | JOSEException failure) { // 捕获底层安全/IO异常
+            throw new IllegalStateException("JWT signing key ring cannot be loaded", failure);
         }
     }
 
@@ -88,8 +98,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
 
     private static void requireRegularChild(Path root, Path file) throws IOException { // 文件属性强制校验方法
         Path normalized = file.toAbsolutePath().normalize(); // 规范化
-        if (!normalized.getParent().equals(root) || !Files.isRegularFile(normalized, LinkOption.NOFOLLOW_LINKS) ||
-                Files.isSymbolicLink(normalized)) { // 禁止跨目录、禁止非普通文件、禁止符号链接
+        if (!normalized.getParent().equals(root) || !Files.isRegularFile(normalized, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(normalized)) { // 禁止跨目录、禁止非普通文件、禁止符号链接
             throw new IOException("JWT key file is not a regular direct child");
         }
         if (normalized.getFileName().toString().endsWith("private.pem"))
@@ -100,12 +109,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         try {
             var permissions = Files.getPosixFilePermissions(file, LinkOption.NOFOLLOW_LINKS); // 获取文件权限
             var forbidden = java.util.EnumSet.of( // 定义严禁出现的权限: 任何组或他人的读、写、执行权限
-                    PosixFilePermission.GROUP_READ,
-                    PosixFilePermission.GROUP_WRITE,
-                    PosixFilePermission.GROUP_EXECUTE,
-                    PosixFilePermission.OTHERS_READ,
-                    PosixFilePermission.OTHERS_WRITE,
-                    PosixFilePermission.OTHERS_EXECUTE);
+                    PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE);
             if (permissions.stream().anyMatch(forbidden::contains)) { // 如果存在危险权限
                 throw new IOException("JWT private key permissions are too broad"); // 报错: 私钥权限范围过大
             }
@@ -117,8 +121,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
     private static void requireDirectoryPermissions(Path directory) throws IOException { // 目录权限校验（防止同组用户替换密钥）
         try {
             var permissions = Files.getPosixFilePermissions(directory, LinkOption.NOFOLLOW_LINKS);
-            if (permissions.contains(PosixFilePermission.GROUP_WRITE)
-                    || permissions.contains(PosixFilePermission.OTHERS_WRITE)) {
+            if (permissions.contains(PosixFilePermission.GROUP_WRITE) || permissions.contains(PosixFilePermission.OTHERS_WRITE)) {
                 throw new IOException("JWT kwy directory is writeable by group or others"); // 禁止其他用户有写权限
             }
         } catch (UnsupportedEncodingException ignoredOnNonPosixFilesSystem) {
@@ -180,6 +183,9 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
             try {
                 return Base64.getMimeDecoder().decode(body);
             } // 执行 MIME 解码
+            catch (IllegalArgumentException malformed) {
+                throw new IOException("invalid PEM body", malformed);
+            }
         } catch (IllegalArgumentException malformed) {
             throw new IOException("invalid PEM body", malformed);
         } finally {
@@ -193,8 +199,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         try (var directory = Files.newDirectoryStream(parent)) { // 获取目录流
             java.nio.channels.SeekableByteChannel channel;
             if (directory instanceof SecureDirectoryStream<Path> secureDirectory) { // 针对支持安全流的 OS 使用原子句柄
-                channel = secureDirectory.newByteChannel(
-                        path.getFileName(), java.util.Set.of(StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS));
+                channel = secureDirectory.newByteChannel(path.getFileName(), java.util.Set.of(StandardOpenOption.READ, LinkOption.NOFOLLOW_LINKS));
             } else {
                 // 如果不支持安全流，至少在打开前检查权限视图是否一致
                 if (Files.getFileAttributeView(parent, java.nio.file.attribute.PosixFileAttributeView.class, LinkOption.NOFOLLOW_LINKS) != null)
@@ -242,8 +247,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
 
     private static boolean validBase64Body(byte[] body) { // 手动校验 Base64 字符合法性（含换行符）
         for (byte value : body) {
-            boolean base64 = value >= 'A' && value <= 'Z' || value >= 'a' && value <= 'z'
-                    || value >= '0' && value <= '9' || value == '+' || value == '/' || value == '=';
+            boolean base64 = value >= 'A' && value <= 'Z' || value >= 'a' && value <= 'z' || value >= '0' && value <= '9' || value == '+' || value == '/' || value == '=';
             boolean whitespace = value == ' ' || value == '\r' || value == '\n' || value == '\t';
             if (!base64 && !whitespace) return false;
         }

@@ -1,8 +1,10 @@
 package com.yuegang.zhihui.auth.infrastructure;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import com.yuegang.zhihui.auth.domain.AccessToken;
@@ -55,7 +57,12 @@ public final class NimbusAccessTokenIssuer implements AccessTokenIssuer { // 实
         var key = keyRing.activeSigningKey(); // 获取密钥环中当前激活的私钥
         var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.PS256) // 创建头部的 JWT，指定 RS256 算法
                 .keyID(key.getKeyID()).type(JOSEObjectType.JWT).build(), claims); // 关键 Key ID 和类型
-        return null;
+        try {
+            jwt.sign(new RSASSASigner(key.toRSAPrivateKey())); // 使用私钥进行数字签名
+            return new AccessToken(jwt.serialize(), jwtId, expiresAt); // 序列化并返回
+        } catch (JOSEException signingFailure) { // 捕获签名失败
+            throw new IllegalStateException("access token signing failed", signingFailure);
+        }
     }
 
     private static String requireText(String value, String name) { // 文本非空检查辅助
