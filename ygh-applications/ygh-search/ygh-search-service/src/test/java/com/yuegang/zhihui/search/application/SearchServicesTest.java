@@ -2,7 +2,10 @@ package com.yuegang.zhihui.search.application;
 
 import com.sun.net.httpserver.HttpServer;
 import com.yuegang.zhihui.common.core.BusinessException;
-import com.yuegang.zhihui.search.api.*;
+import com.yuegang.zhihui.search.api.IndexChunkCommand;
+import com.yuegang.zhihui.search.api.ProductSearchRequest;
+import com.yuegang.zhihui.search.api.SearchRequest;
+import com.yuegang.zhihui.search.api.SwitchIndexRequest;
 import com.yuegang.zhihui.search.infrastructure.DoubaoEmbeddingGateway;
 import com.yuegang.zhihui.search.infrastructure.EmbeddingGateway;
 import org.junit.jupiter.api.AfterEach;
