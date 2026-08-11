@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.auth.domain;
 
+import org.bouncycastle.crypto.generators.Argon2BytesGenerator;
 import org.bouncycastle.crypto.params.Argon2Parameters;
 
 import java.nio.ByteBuffer;
@@ -31,7 +32,7 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
     private static final int MAX_ACCEPTED_PARALLELISM = 2; // 最大允许并行度
     // 正则匹配 Argon2 标准编码格式的正则表达式
     private static final Pattern ARGON2_ENCODING = Pattern.compile("^\\$argon2id\\$v=19\\$m=([1-9][0-9]{0,5}),t=([1-9][0-9]?),p=([1-9][0-9]?)" +
-            "\\$([A-Za-z0-9+/]{22})={0,2}\\$([A-Za-z0-9+/]{43})={0,2}$");
+        "\\$([A-Za-z0-9+/]{22})={0,2}\\$([A-Za-z0-9+/]{43})={0,2}$");
     private final int saltLength; // 盐长度
     private final int hashLength; // 哈希长度
     private final int parallelism; // 并行度
@@ -50,9 +51,9 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
                                  int maximumConcurrentOperations, Duration capacityWait) {
         // 参数合法性校验：严格遵守安全基准
         if (saltLength != 16 || hashLength != 32 || parallelism < 1
-                || parallelism > MAX_ACCEPTED_PARALLELISM
-                || memoryKiB < 8 || memoryKiB > MAX_ACCEPTED_MEMORY_KIB
-                || iterations < 1 || iterations > MAX_ACCEPTED_ITERATIONS) {
+            || parallelism > MAX_ACCEPTED_PARALLELISM
+            || memoryKiB < 8 || memoryKiB > MAX_ACCEPTED_MEMORY_KIB
+            || iterations < 1 || iterations > MAX_ACCEPTED_ITERATIONS) {
             throw new IllegalArgumentException("invalid Argon2id parameters");
         }
         if (maximumConcurrentOperations < 1) {
@@ -86,8 +87,8 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
                 generate(rawPassword, salt, hash, memoryKiB, iterations, parallelism); // 生成哈希
                 // 按照标准格式拼接字符串
                 String encoded = "$argon2id$v=19$m=" + memoryKiB + ",t=" + iterations + ",p=" + parallelism
-                        + "$" + Base64.getEncoder().withoutPadding().encodeToString(salt)
-                        + "$" + Base64.getEncoder().withoutPadding().encodeToString(hash);
+                    + "$" + Base64.getEncoder().withoutPadding().encodeToString(salt)
+                    + "$" + Base64.getEncoder().withoutPadding().encodeToString(hash);
                 return new PasswordDigest(encoded, ALGORITHM, VERSION);
             } finally {
                 Arrays.fill(salt, (byte) 0); // 擦除内存中的敏感数据
@@ -121,8 +122,8 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
         }
         try {
             return parsed.memoryKiB() != memoryKiB || parsed.iterations() != iterations
-                    || parsed.parallelism() != parallelism || parsed.salt().length != saltLength
-                    || parsed.hash().length != hashLength;
+                || parsed.parallelism() != parallelism || parsed.salt().length != saltLength
+                || parsed.hash().length != hashLength;
         } finally {
             parsed.clear();
         }
@@ -130,7 +131,7 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
 
     private ParsedEncoding parse(PasswordDigest digest) { // 解析编码字符串为内部对象
         if (digest == null || !ALGORITHM.equals(digest.algorithm().toUpperCase(Locale.ROOT)) || digest.version() != VERSION || digest.hash() == null
-                || digest.hash().length() > MAX_ENCODED_LENGTH) {
+            || digest.hash().length() > MAX_ENCODED_LENGTH) {
             return null;
         }
         Matcher matcher = ARGON2_ENCODING.matcher(digest.hash()); // 正则匹配
@@ -142,7 +143,7 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
             int time = Integer.parseInt(matcher.group(2));
             int lanes = Integer.parseInt(matcher.group(3));
             if (memory < 8 || memory > MAX_ACCEPTED_MEMORY_KIB || time > MAX_ACCEPTED_ITERATIONS
-                    || lanes > MAX_ACCEPTED_PARALLELISM) {
+                || lanes > MAX_ACCEPTED_PARALLELISM) {
                 return null;
             }
             byte[] salt = Base64.getDecoder().decode(matcher.group(4)); // 解码盐
@@ -161,15 +162,15 @@ public final class Argon2PasswordHasher { // 使用 Argon2id 算法的密码哈�
     private void generate(char[] password, byte[] salt, byte[] output, int memory, int time, int lanes) { // 核心生成逻辑
         byte[] encodedPassword = encodingUtf8(password); // 将字符数组转为 UTF-8 字节数组
         Argon2Parameters parameters = new Argon2Parameters.Builder(Argon2Parameters.ARGON2_id)
-                .withVersion(ARGON2_VERSION_13).withSalt(salt).withMemoryAsKB(memory)
-                .withIterations(time).withParallelism(lanes).build();
+            .withVersion(ARGON2_VERSION_13).withSalt(salt).withMemoryAsKB(memory)
+            .withIterations(time).withParallelism(lanes).build();
 
-        try { // TODO comment not delete
-//            var generator = new Argon2BytesGenerator() // 实例化生成器
-//                    .init(parameters); // 生成器初始化
-//            generator.generateBytes(encodedPassword, output); // 计算结果
+        try {
+            var generator = new Argon2BytesGenerator(); // 实例化生成器
+            generator.init(parameters); // 生成器初始化
+            generator.generateBytes(encodedPassword, output); // 计算结果
         } finally {
-//            parameters.clear(); // 清理参数
+            parameters.clear(); // 清理参数
             Arrays.fill(encodedPassword, (byte) 0); // 清理密码字节
         }
     }
