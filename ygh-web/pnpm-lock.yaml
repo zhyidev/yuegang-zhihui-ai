@@ -42,8 +42,8 @@ importers:
         specifier: 2.10.4
         version: 2.10.4(vue@3.5.18(typescript@5.8.3))
       pinia:
-        specifier: 3.0.3
-        version: 3.0.3(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3))
+        specifier: 4.0.2
+        version: 4.0.2(@vue/devtools-api@7.7.10)(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3))
       vue:
         specifier: 3.5.18
         version: 3.5.18(typescript@5.8.3)
@@ -79,8 +79,8 @@ importers:
         specifier: 2.10.4
         version: 2.10.4(vue@3.5.18(typescript@5.8.3))
       pinia:
-        specifier: 3.0.3
-        version: 3.0.3(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3))
+        specifier: 4.0.2
+        version: 4.0.2(@vue/devtools-api@7.7.10)(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3))
       vue:
         specifier: 3.5.18
         version: 3.5.18(typescript@5.8.3)
@@ -107,8 +107,8 @@ importers:
         specifier: 1.18.1
         version: 1.18.1
       pinia:
-        specifier: 3.0.3
-        version: 3.0.3(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3))
+        specifier: 4.0.2
+        version: 4.0.2(@vue/devtools-api@7.7.10)(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3))
       vue:
         specifier: 3.5.18
         version: 3.5.18(typescript@5.8.3)
@@ -769,6 +769,11 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
+  acorn@8.18.0:
+    resolution: {integrity: sha512-lGq+9yr1/GuAWaVYIHRjvvySG5/4VfKIvC8EWxStPdcDh/Ka7FG3twP6v4d5BkravUilhIAsG4Qj83t02LWUPQ==}
+    engines: {node: '>=0.4.0'}
+    hasBin: true
+
   agent-base@6.0.2:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
@@ -1255,6 +1260,9 @@ packages:
   normalize-wheel-es@1.2.0:
     resolution: {integrity: sha512-Wj7+EJQ8mSuXr2iWfnujrimU35R2W4FAErEyTmJoJ7ucwTn2hOUSsRehMb5RSYkxXGTM7Y9QpvPmp++w5ftoJw==}
 
+  nostics@1.2.0:
+    resolution: {integrity: sha512-FGqEfhQjrvo1lL8KFifdTQiNwwQHJxC1jtYE1Rc54qF/jxONUNL+kC9gS1krX8Q65PgrQ5fCqH/I4NhWBvdSqg==}
+
   nth-check@2.1.1:
     resolution: {integrity: sha512-lqjrjmaOoAnWfMmBPL+XNnynZh2+swxiX3WUE0s4yEHI6m+AwrK2UZOimIRl3X/4QctVqS8AiZjFqyOGrMXb/w==}
 
@@ -1299,11 +1307,12 @@ packages:
     resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
     engines: {node: '>=12'}
 
-  pinia@3.0.3:
-    resolution: {integrity: sha512-ttXO/InUULUXkMHpTdp9Fj4hLpD/2AoJdmAbAeW2yu1iy1k+pkFekQXw5VpC0/5p51IOR/jDaDRfRWRnMMsGOA==}
+  pinia@4.0.2:
+    resolution: {integrity: sha512-yKVVA7bSj5oRZFp/Ab9wLlmyb5gPUYEiIm4ryiWTe/xe7PtkRdMVOp1X1ggvq0c6Uj7Q0Du1HnV2mtAwM0Ks1g==}
     peerDependencies:
-      typescript: '>=4.4.4'
-      vue: ^2.7.0 || ^3.5.11
+      '@vue/devtools-api': ^8.1.5
+      typescript: '>=5.6.0'
+      vue: ^3.5.11
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -2130,7 +2139,13 @@ snapshots:
     dependencies:
       acorn: 8.17.0
 
+  acorn-jsx@5.3.2(acorn@8.18.0):
+    dependencies:
+      acorn: 8.18.0
+
   acorn@8.17.0: {}
+
+  acorn@8.18.0: {}
 
   agent-base@6.0.2:
     dependencies:
@@ -2406,8 +2421,8 @@ snapshots:
 
   espree@11.2.0:
     dependencies:
-      acorn: 8.17.0
-      acorn-jsx: 5.3.2(acorn@8.17.0)
+      acorn: 8.18.0
+      acorn-jsx: 5.3.2(acorn@8.18.0)
       eslint-visitor-keys: 5.0.1
 
   esquery@1.7.0:
@@ -2640,6 +2655,8 @@ snapshots:
 
   normalize-wheel-es@1.2.0: {}
 
+  nostics@1.2.0: {}
+
   nth-check@2.1.1:
     dependencies:
       boolbase: 1.0.0
@@ -2679,9 +2696,10 @@ snapshots:
 
   picomatch@4.0.5: {}
 
-  pinia@3.0.3(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3)):
+  pinia@4.0.2(@vue/devtools-api@7.7.10)(typescript@5.8.3)(vue@3.5.18(typescript@5.8.3)):
     dependencies:
       '@vue/devtools-api': 7.7.10
+      nostics: 1.2.0
       vue: 3.5.18(typescript@5.8.3)
     optionalDependencies:
       typescript: 5.8.3
