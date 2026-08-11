@@ -39,7 +39,7 @@ public final class AccountLockPolicy { // 账号锁定策略逻辑类
         int failures = Math.min(maximumFailures, priorFailures + 1); // 累加计数，不超过最大次数
         // 如果达到最大次数，则计算截止时间
         Optional<Instant> lockedUntil = failures >= maximumFailures
-                ? Optional.of(now.plus(lockDuration)) : Optional.empty();
+            ? Optional.of(now.plus(lockDuration)) : Optional.empty();
         return new AccountAccessState(state.status(), failures, lockedUntil); // 返回更新后的状态
     }
 

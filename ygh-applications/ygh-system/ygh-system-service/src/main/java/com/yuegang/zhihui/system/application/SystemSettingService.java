@@ -39,7 +39,7 @@ public final class SystemSettingService { // 定义最终类，系统设置服�
 
     public List<SystemSettingView> list() { //方法:列出所有设置项
         return jdbc.query("SELECT setting_key, setting_value, value_type, secret, version FROM system_setting ORDER BY setting_key", (r, n) -> new SystemSettingView(r.getString("setting_key"), //r.getString("1"),
-                r.getString("setting_value"), r.getString("value_type"), r.getBoolean("secret"), r.getLong("version"))); //逻辑：如果标记为secret（秘密），则对值进行脱敏显示（[REDACTED]）
+            r.getString("setting_value"), r.getString("value_type"), r.getBoolean("secret"), r.getLong("version"))); //逻辑：如果标记为secret（秘密），则对值进行脱敏显示（[REDACTED]）
     }
 
     public SystemSettingView update(String key, UpdateSystemSettingRequest c, long operator) { // 方法: 更新设置项

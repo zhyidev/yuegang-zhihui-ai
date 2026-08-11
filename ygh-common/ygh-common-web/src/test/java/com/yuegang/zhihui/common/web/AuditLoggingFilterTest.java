@@ -1,12 +1,12 @@
 package com.yuegang.zhihui.common.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import jakarta.servlet.FilterChain;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AuditLoggingFilterTest {
     private final AuditLoggingFilter filter = new AuditLoggingFilter();
@@ -41,7 +41,8 @@ class AuditLoggingFilterTest {
         for (String user : new String[]{null, "not-a-number", "123456789012345678901"}) {
             var request = new MockHttpServletRequest("DELETE", "/internal/v1/resource");
             if (user != null) request.addHeader("X-YGH-User-Id", user);
-            filter.doFilterInternal(request, new MockHttpServletResponse(), (req, res) -> { });
+            filter.doFilterInternal(request, new MockHttpServletResponse(), (req, res) -> {
+            });
         }
     }
 
@@ -51,8 +52,10 @@ class AuditLoggingFilterTest {
         var response = new MockHttpServletResponse();
 
         assertThatThrownBy(() -> filter.doFilterInternal(request, response,
-                (req, res) -> { throw new IllegalStateException("synthetic failure"); }))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("synthetic failure");
+            (req, res) -> {
+                throw new IllegalStateException("synthetic failure");
+            }))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessage("synthetic failure");
     }
 }

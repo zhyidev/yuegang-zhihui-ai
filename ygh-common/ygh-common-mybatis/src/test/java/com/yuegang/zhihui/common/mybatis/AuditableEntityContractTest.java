@@ -1,14 +1,20 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
-import java.time.Instant;
 import org.junit.jupiter.api.Test;
 
+import java.time.Instant;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 class AuditableEntityContractTest {
+
+    private static void assertFill(String fieldName, FieldFill expected) throws NoSuchFieldException {
+        var field = AuditableEntity.class.getDeclaredField(fieldName);
+        assertThat(field.getAnnotation(TableField.class).fill()).isEqualTo(expected);
+    }
 
     @Test
     void newEntityStartsWithoutForgedAuditData() {
@@ -27,9 +33,9 @@ class AuditableEntityContractTest {
         assertFill("updatedBy", FieldFill.INSERT_UPDATE);
         assertFill("updatedAt", FieldFill.INSERT_UPDATE);
         assertThat(AuditableEntity.class.getDeclaredField("createdBy")
-                .getAnnotation(TableField.class).updateStrategy()).isEqualTo(FieldStrategy.NEVER);
+            .getAnnotation(TableField.class).updateStrategy()).isEqualTo(FieldStrategy.NEVER);
         assertThat(AuditableEntity.class.getDeclaredField("createdAt")
-                .getAnnotation(TableField.class).updateStrategy()).isEqualTo(FieldStrategy.NEVER);
+            .getAnnotation(TableField.class).updateStrategy()).isEqualTo(FieldStrategy.NEVER);
     }
 
     @Test
@@ -46,11 +52,6 @@ class AuditableEntityContractTest {
         assertThat(entity.getCreatedAt()).isEqualTo(now);
         assertThat(entity.getUpdatedBy()).isEqualTo("SYSTEM");
         assertThat(entity.getUpdatedAt()).isEqualTo(now);
-    }
-
-    private static void assertFill(String fieldName, FieldFill expected) throws NoSuchFieldException {
-        var field = AuditableEntity.class.getDeclaredField(fieldName);
-        assertThat(field.getAnnotation(TableField.class).fill()).isEqualTo(expected);
     }
 
     private static final class TestEntity extends AuditableEntity {

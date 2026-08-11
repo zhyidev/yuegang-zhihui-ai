@@ -43,7 +43,7 @@ public class IdempotentMessageConsumer {
         }
         Objects.requireNonNull(claimLease, "claimLease must not be null");
         if (claimLease.compareTo(Duration.ofSeconds(1)) < 0
-                || claimLease.compareTo(Duration.ofMinutes(15)) > 0) {
+            || claimLease.compareTo(Duration.ofMinutes(15)) > 0) {
             throw new IllegalArgumentException("claimLease must be between 1 second and 15 minutes");
         }
         this.consumerGroup = consumerGroup;
@@ -54,10 +54,16 @@ public class IdempotentMessageConsumer {
         this.ownerGenerator = new SecureMessageClaimOwnerGenerator();
     }
 
+    private static String failureCode(Exception failure) {
+        return failure instanceof MessageHandlingException messageFailure
+            ? messageFailure.failureCode()
+            : UNEXPECTED_FAILURE;
+    }
+
     public <T> MessageConsumptionResult consume(
-            DomainEvent<T> event,
-            int deliveryAttempt,
-            MessageHandler<T> handler
+        DomainEvent<T> event,
+        int deliveryAttempt,
+        MessageHandler<T> handler
     ) {
         Objects.requireNonNull(event, "event must not be null");
         Objects.requireNonNull(handler, "handler must not be null");
@@ -68,16 +74,16 @@ public class IdempotentMessageConsumer {
         MqEnvelopePolicy.validate(event);
         try {
             MessageClaimResult claimResult = store.claim(
-                    consumerGroup,
-                    event.eventId(),
-                    ownerGenerator.generate(),
-                    claimLease);
+                consumerGroup,
+                event.eventId(),
+                ownerGenerator.generate(),
+                claimLease);
             return switch (claimResult.status()) {
                 case DUPLICATE -> MessageConsumptionResult.DUPLICATE;
                 case IN_PROGRESS -> MessageConsumptionResult.RETRY;
                 case CLAIMED -> processClaim(
-                        event, deliveryAttempt, handler,
-                        validatedClaim(claimResult, event.eventId()));
+                    event, deliveryAttempt, handler,
+                    validatedClaim(claimResult, event.eventId()));
             };
         } catch (MessageInfrastructureException infrastructureFailure) {
             return MessageConsumptionResult.RETRY;
@@ -85,17 +91,17 @@ public class IdempotentMessageConsumer {
     }
 
     private <T> MessageConsumptionResult processClaim(
-            DomainEvent<T> event,
-            int deliveryAttempt,
-            MessageHandler<T> handler,
-            MessageProcessingClaim claim
+        DomainEvent<T> event,
+        int deliveryAttempt,
+        MessageHandler<T> handler,
+        MessageProcessingClaim claim
     ) {
         try {
             boolean completed = store.executeAndMarkSucceeded(
-                    claim, () -> handler.handle(event));
+                claim, () -> handler.handle(event));
             return completed
-                    ? MessageConsumptionResult.ACKNOWLEDGED
-                    : MessageConsumptionResult.RETRY;
+                ? MessageConsumptionResult.ACKNOWLEDGED
+                : MessageConsumptionResult.RETRY;
         } catch (InterruptedException interrupted) {
             Thread.currentThread().interrupt();
             return MessageConsumptionResult.RETRY;
@@ -103,39 +109,33 @@ public class IdempotentMessageConsumer {
             return MessageConsumptionResult.RETRY;
         } catch (Exception failure) {
             boolean terminal = failure instanceof NonRetryableMessageException
-                    || deliveryAttempt >= maxAttempts;
+                || deliveryAttempt >= maxAttempts;
             if (!terminal) {
                 store.releaseForRetry(claim);
                 return MessageConsumptionResult.RETRY;
             }
             var record = new DeadLetterRecord(
-                    event.eventId(),
-                    event.eventType(),
-                    event.eventVersion(),
-                    consumerGroup,
-                    event.businessKey(),
-                    event.traceId(),
-                    deliveryAttempt,
-                    failureCode(failure),
-                    clock.instant());
+                event.eventId(),
+                event.eventType(),
+                event.eventVersion(),
+                consumerGroup,
+                event.businessKey(),
+                event.traceId(),
+                deliveryAttempt,
+                failureCode(failure),
+                clock.instant());
             return store.markDeadLettered(claim, record)
-                    ? MessageConsumptionResult.DEAD_LETTERED
-                    : MessageConsumptionResult.RETRY;
+                ? MessageConsumptionResult.DEAD_LETTERED
+                : MessageConsumptionResult.RETRY;
         }
     }
 
     private MessageProcessingClaim validatedClaim(MessageClaimResult result, String eventId) {
         MessageProcessingClaim claim = result.claim().orElseThrow(
-                () -> new IllegalStateException("CLAIMED result has no claim"));
+            () -> new IllegalStateException("CLAIMED result has no claim"));
         if (!consumerGroup.equals(claim.consumerGroup()) || !eventId.equals(claim.eventId())) {
             throw new IllegalStateException("store returned a claim for another message");
         }
         return claim;
-    }
-
-    private static String failureCode(Exception failure) {
-        return failure instanceof MessageHandlingException messageFailure
-                ? messageFailure.failureCode()
-                : UNEXPECTED_FAILURE;
     }
 }

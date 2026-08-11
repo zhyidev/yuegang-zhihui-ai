@@ -19,14 +19,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SystemServicesIntegrationTest {
     private static void assertBusinessError(Runnable call, ErrorCode expected) {
         assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
+            error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 
     @Test
     void managesRbacDictionariesFlagsAndSettingsWithOptimisticConcurrency() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
             Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential())
-                    .locations("classpath:db/migration").load().migrate();
+                .locations("classpath:db/migration").load().migrate();
             var dataSource = new DriverManagerDataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential());
             var authorization = new AuthorizationService(new JdbcAuthorizationRepository(dataSource));
             assertThat(authorization.snapshot("42").roles()).containsExactly("USER");
@@ -69,18 +69,18 @@ class SystemServicesIntegrationTest {
             assertBusinessError(() -> settings.update("ai.prompt", new UpdateSystemSettingRequest("x", "STRING", false, 999), 7), ErrorCode.BUSINESS_CONFLICT);
 
             var providers = new AiProviderConfigService(dataSource, new SystemSecretCipher(
-                    "01234567890123456789012345678901".getBytes(StandardCharsets.UTF_8)));
+                "01234567890123456789012345678901".getBytes(StandardCharsets.UTF_8)));
             assertThat(providers.view().apiKeyConfigured()).isFalse();
             var configured = providers.update(new UpdateAiProviderConfigRequest("DOUBAO_ARK",
-                    "https://ark.cn-beijing.volces.com/api/v3", "doubao-chat-test",
-                    "doubao-embedding-test", true, "ark-api-key-sensitive", 0), 7);
+                "https://ark.cn-beijing.volces.com/api/v3", "doubao-chat-test",
+                "doubao-embedding-test", true, "ark-api-key-sensitive", 0), 7);
             assertThat(configured.apiKeyConfigured()).isTrue();
             assertThat(configured.webSearchEnabled()).isTrue();
             assertThat(configured.apiKeyMasked()).doesNotContain("sensitive");
             assertThat(providers.internal().apiKey()).isEqualTo("ark-api-key-sensitive");
             assertBusinessError(() -> providers.update(new UpdateAiProviderConfigRequest("DOUBAO_ARK",
-                    "http://insecure.example", "doubao-chat-test", "doubao-embedding-test", true, null,
-                    configured.version()), 7), ErrorCode.VALIDATION_ERROR);
+                "http://insecure.example", "doubao-chat-test", "doubao-embedding-test", true, null,
+                configured.version()), 7), ErrorCode.VALIDATION_ERROR);
         }
     }
 }

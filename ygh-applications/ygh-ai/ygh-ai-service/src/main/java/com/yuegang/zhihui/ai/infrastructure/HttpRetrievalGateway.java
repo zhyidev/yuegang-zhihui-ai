@@ -5,6 +5,8 @@ import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.search.api.SearchHit;
 import com.yuegang.zhihui.search.api.SearchRequest;
+import org.springframework.web.client.RestClient;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -13,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.springframework.web.client.RestClient;
 
 public final class HttpRetrievalGateway implements RetrievalGateway {
     private static final String PATH = "/internal/v1/search/hybrid";
@@ -23,6 +24,19 @@ public final class HttpRetrievalGateway implements RetrievalGateway {
     public HttpRetrievalGateway(String baseUrl, byte[] secret) {
         client = RestClient.builder().baseUrl(baseUrl).build();
         signatures = new InternalServiceSignature(secret, Clock.systemUTC(), Duration.ofSeconds(30));
+    }
+
+    private static Number number(Object value) {
+        return value instanceof Number number ? number : 0;
+    }
+
+    private static OffsetDateTime date(Object value) {
+        try {
+            String text = Objects.toString(value, "");
+            return text.isBlank() ? null : OffsetDateTime.parse(text);
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     @Override
@@ -36,24 +50,16 @@ public final class HttpRetrievalGateway implements RetrievalGateway {
         var metadata = new InternalServiceSignature.Metadata("ygh-ai-service", "POST", PATH, now);
         @SuppressWarnings("unchecked")
         ApiResponse<List<Map<String, Object>>> response = client.post().uri(PATH)
-                .header("X-YGH-Service", "ygh-ai-service")
-                .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
-                .header("X-YGH-Service-Signature", signatures.sign(metadata))
-                .body(new SearchRequest(query, limit, category, visibilities)).retrieve().body(ApiResponse.class);
+            .header("X-YGH-Service", "ygh-ai-service")
+            .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
+            .header("X-YGH-Service-Signature", signatures.sign(metadata))
+            .body(new SearchRequest(query, limit, category, visibilities)).retrieve().body(ApiResponse.class);
         if (response == null || response.data() == null) return List.of();
         return response.data().stream().map(value -> new SearchHit(
-                Objects.toString(value.get("documentId")), Objects.toString(value.get("chunkId")),
-                Objects.toString(value.get("title")), Objects.toString(value.get("excerpt")),
-                number(value.get("documentVersion")).longValue(), date(value.get("sourceUpdatedAt")),
-                number(value.get("lexicalScore")).doubleValue(), number(value.get("vectorScore")).doubleValue(),
-                number(value.get("finalScore")).doubleValue())).toList();
-    }
-
-    private static Number number(Object value) { return value instanceof Number number ? number : 0; }
-    private static OffsetDateTime date(Object value) {
-        try {
-            String text = Objects.toString(value, "");
-            return text.isBlank() ? null : OffsetDateTime.parse(text);
-        } catch (Exception ignored) { return null; }
+            Objects.toString(value.get("documentId")), Objects.toString(value.get("chunkId")),
+            Objects.toString(value.get("title")), Objects.toString(value.get("excerpt")),
+            number(value.get("documentVersion")).longValue(), date(value.get("sourceUpdatedAt")),
+            number(value.get("lexicalScore")).doubleValue(), number(value.get("vectorScore")).doubleValue(),
+            number(value.get("finalScore")).doubleValue())).toList();
     }
 }

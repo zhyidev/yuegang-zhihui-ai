@@ -1,20 +1,21 @@
 package com.yuegang.zhihui.common.redis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.testcontainers.containers.GenericContainer;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SpringDataRedisLockIntegrationTest {
 
@@ -41,6 +42,22 @@ class SpringDataRedisLockIntegrationTest {
             connectionFactory.destroy();
         }
         REDIS.stop();
+    }
+
+    private static void awaitKeyExpiry(String key, Duration timeout) throws InterruptedException {
+        long deadline = System.nanoTime() + timeout.toNanos();
+        while (Boolean.TRUE.equals(template.hasKey(key)) && System.nanoTime() < deadline) {
+            Thread.sleep(25L);
+        }
+        assertThat(template.hasKey(key)).isFalse();
+    }
+
+    private static String key(String business) {
+        return "ygh:test:common-redis:" + business + ':' + UUID.randomUUID();
+    }
+
+    private static String owner() {
+        return UUID.randomUUID().toString().replace("-", "");
     }
 
     @Test
@@ -100,21 +117,5 @@ class SpringDataRedisLockIntegrationTest {
         } finally {
             template.delete(key);
         }
-    }
-
-    private static void awaitKeyExpiry(String key, Duration timeout) throws InterruptedException {
-        long deadline = System.nanoTime() + timeout.toNanos();
-        while (Boolean.TRUE.equals(template.hasKey(key)) && System.nanoTime() < deadline) {
-            Thread.sleep(25L);
-        }
-        assertThat(template.hasKey(key)).isFalse();
-    }
-
-    private static String key(String business) {
-        return "ygh:test:common-redis:" + business + ':' + UUID.randomUUID();
-    }
-
-    private static String owner() {
-        return UUID.randomUUID().toString().replace("-", "");
     }
 }

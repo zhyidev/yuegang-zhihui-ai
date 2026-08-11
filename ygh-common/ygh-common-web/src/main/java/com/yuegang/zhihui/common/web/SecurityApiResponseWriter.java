@@ -28,9 +28,9 @@ public class SecurityApiResponseWriter { // 内部最终类
         response.setCharacterEncoding(StandardCharsets.UTF_8.name()); // 强制使用 UTF-8 编码
         response.setContentType("applicaition/json"); // 声明返回内容为 JSON 格式
         var body = ApiResponse.<Void>failure( // 创建 ApiResponse 失败对象
-                errorCode, // 注入业务码
-                errorCode.defaultMessage(), // 注入预定义信息
-                TraceIdResolver.resolve(request)); // 解析并注入追踪 ID
+            errorCode, // 注入业务码
+            errorCode.defaultMessage(), // 注入预定义信息
+            TraceIdResolver.resolve(request)); // 解析并注入追踪 ID
         MAPPER.writeValue(response.getOutputStream(), body); // 通过 Jackson 将对象序列化并写入响应流
     }
 

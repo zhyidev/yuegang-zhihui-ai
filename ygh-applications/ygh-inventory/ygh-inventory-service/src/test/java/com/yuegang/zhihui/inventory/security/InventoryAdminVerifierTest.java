@@ -23,7 +23,7 @@ class InventoryAdminVerifierTest {
         Instant now = Instant.now();
         var request = new MockHttpServletRequest("GET", "/api/v1/admin/inventory");
         var metadata = new InternalUserContextSignature.Metadata(
-                "42", roles, permissions, "trace-1234", "request-1234", "GET", request.getRequestURI(), now);
+            "42", roles, permissions, "trace-1234", "request-1234", "GET", request.getRequestURI(), now);
         var signatures = new InternalUserContextSignature(SECRET, Clock.systemUTC(), Duration.ofSeconds(30));
         request.addHeader("X-YGH-User-Id", "42");
         request.addHeader("X-YGH-Roles", String.join(",", roles));
@@ -38,11 +38,11 @@ class InventoryAdminVerifierTest {
     @Test
     void acceptsAdminOrReadPermissionAndRejectsUntrustedContexts() {
         assertThatCode(() -> verifier.require(signed(List.of("ADMIN"), List.of())))
-                .doesNotThrowAnyException();
+            .doesNotThrowAnyException();
         assertThatCode(() -> verifier.require(signed(List.of("EMPLOYEE"), List.of("inventory:read"))))
-                .doesNotThrowAnyException();
+            .doesNotThrowAnyException();
         assertThatThrownBy(() -> verifier.require(signed(List.of("USER"), List.of())))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
 
         var forged = signed(List.of("ADMIN"), List.of());
         forged.removeHeader("X-YGH-User-Context-Signature");

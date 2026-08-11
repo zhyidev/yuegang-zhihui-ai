@@ -1,9 +1,9 @@
 package com.yuegang.zhihui.common.redis;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.jupiter.api.Test;
 
 class RedisKeyBuilderTest {
 
@@ -12,23 +12,23 @@ class RedisKeyBuilderTest {
     @Test
     void buildsCanonicalNamespacedKey() {
         assertThat(keys.build("dev", "product", "detail", "10001"))
-                .isEqualTo("ygh:dev:product:detail:10001");
+            .isEqualTo("ygh:dev:product:detail:10001");
         assertThat(keys.build("prod-cn", "auth", "blacklist", "01JZ_A.b-9"))
-                .isEqualTo("ygh:prod-cn:auth:blacklist:01JZ_A.b-9");
+            .isEqualTo("ygh:prod-cn:auth:blacklist:01JZ_A.b-9");
     }
 
     @Test
     void rejectsAmbiguousOrDangerousSegments() {
         assertThatThrownBy(() -> keys.build("DEV", "auth", "captcha", "id"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> keys.build("dev", "auth:admin", "captcha", "id"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> keys.build("dev", "auth", "captcha", "{id}"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> keys.build("dev", "auth", "captcha", "../id"))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> keys.build("dev", "auth", "captcha", " "))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -47,7 +47,7 @@ class RedisKeyBuilderTest {
         assertThat(identifier).matches("[0-9a-f]{64}").doesNotContain(raw);
         assertThat(RedisKeyIdentifier.sha256(raw)).isEqualTo(identifier);
         assertThatThrownBy(() -> RedisKeyIdentifier.sha256(" "))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
@@ -56,10 +56,10 @@ class RedisKeyBuilderTest {
         var secondPepper = "abcdef0123456789abcdef0123456789".getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
         assertThat(RedisKeyIdentifier.hmacSha256("user@example.com", firstPepper))
-                .matches("[0-9a-f]{64}")
-                .isNotEqualTo(RedisKeyIdentifier.hmacSha256("user@example.com", secondPepper));
+            .matches("[0-9a-f]{64}")
+            .isNotEqualTo(RedisKeyIdentifier.hmacSha256("user@example.com", secondPepper));
         assertThatThrownBy(() -> RedisKeyIdentifier.hmacSha256("user@example.com", new byte[16]))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

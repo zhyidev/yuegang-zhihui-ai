@@ -20,7 +20,7 @@ class ProductAdminVerifierTest {
     private static MockHttpServletRequest signed(Instant time, List<String> roles) {
         var request = new MockHttpServletRequest("POST", "/api/v1/admin/products");
         var metadata = new InternalUserContextSignature.Metadata("42", roles, List.of("product:write"), "trace", "request",
-                "POST", request.getRequestURI(), time);
+            "POST", request.getRequestURI(), time);
         var signatures = new InternalUserContextSignature(SECRET, Clock.systemUTC(), Duration.ofSeconds(30));
         request.addHeader("X-YGH-User-Id", "42");
         request.addHeader("X-YGH-Roles", String.join(",", roles));
@@ -42,6 +42,6 @@ class ProductAdminVerifierTest {
         request.removeHeader("X-YGH-User-Context-Signature");
         assertThatThrownBy(() -> verifier.verify(request)).isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> verifier.verify(signed(now.minusSeconds(60), List.of("ADMIN"))))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
     }
 }

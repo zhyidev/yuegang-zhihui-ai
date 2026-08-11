@@ -1,10 +1,11 @@
 package com.yuegang.zhihui.auth.domain;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 import java.time.Instant;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class AccountLockPolicyTest {
 
@@ -32,11 +33,11 @@ class AccountLockPolicyTest {
         assertThat(policy.recordSuccess(failed, now).failedLoginCount()).isZero();
 
         var locked = new AccountAccessState(
-                AccountStatus.ACTIVE, 5, java.util.Optional.of(now.plusSeconds(60)));
+            AccountStatus.ACTIVE, 5, java.util.Optional.of(now.plusSeconds(60)));
         assertThat(policy.recordSuccess(locked, now)).isEqualTo(locked);
 
         var expired = new AccountAccessState(
-                AccountStatus.ACTIVE, 5, java.util.Optional.of(now.minusSeconds(1)));
+            AccountStatus.ACTIVE, 5, java.util.Optional.of(now.minusSeconds(1)));
         var afterFailure = policy.recordFailure(expired, now);
         assertThat(afterFailure.failedLoginCount()).isEqualTo(1);
         assertThat(afterFailure.lockedUntil()).isEmpty();

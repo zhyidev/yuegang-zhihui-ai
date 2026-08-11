@@ -45,9 +45,9 @@ public final class TrustedUserContextResolver { // 定义受信任的内部用�
             List<String> permissions = values(request.getHeader("X-YGH-Permissions")); // 获取并解析用户权限列表
             Instant timestamp = Instant.ofEpochMilli(Long.parseLong(header(request, "X-YGH-User-Context-Timestamp"))); // 解析请求头中的时间戳
             var metadata = new InternalUserContextSignature.Metadata(userId, roles, permissions, // 构建签名元数据对象
-                    header(request, "X-Trace-Id"), header(request, "X-Request-Id"),
-                    request.getMethod(), // 包含追踪ID、请求ID、请求方法
-                    request.getRequestURI(), timestamp); // 包含请求URI和时间戳
+                header(request, "X-Trace-Id"), header(request, "X-Request-Id"),
+                request.getMethod(), // 包含追踪ID、请求ID、请求方法
+                request.getRequestURI(), timestamp); // 包含请求URI和时间戳
             if (!signatures.verify(metadata, header(request, "X-YGH-User-Context-Signature")))
                 throw unauthenticated(); // 校验签名，若失败则
             long numericId = Long.parseLong(userId); // 将用户ID转换为长整型以进行格式校验

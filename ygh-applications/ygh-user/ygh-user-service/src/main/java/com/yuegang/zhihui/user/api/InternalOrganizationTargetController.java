@@ -47,11 +47,11 @@ public final class InternalOrganizationTargetController { // 定义内部组织�
         long target = positive(id);//转换并校验ID为长整型
         List<String> users = switch (type) { // 根据查询类型执行不同的 SQL 逻辑
             case "DEPARTMENT" ->
-                    jdbc.queryForList("SELECT CAST(user_id AS CHAR) FROM user_employee WHERE department_id=? AND employment_status='ACTIVE'", String.class, target); // 按部门查询在职员工的用户ID
+                jdbc.queryForList("SELECT CAST(user_id AS CHAR) FROM user_employee WHERE department_id=? AND employment_status='ACTIVE'", String.class, target); // 按部门查询在职员工的用户ID
             case "POSITION" ->
-                    jdbc.queryForList("SELECT CAST(e.user_id AS CHAR) FROM user_employee e JOIN user_employee_position ep ON ep.employee_id=e.id WHERE ep.position_id=? AND e.employent_status='ACTIVE'", String.class, target); // 按员工ID 查询其对应的用户ID（确保存活）
+                jdbc.queryForList("SELECT CAST(e.user_id AS CHAR) FROM user_employee e JOIN user_employee_position ep ON ep.employee_id=e.id WHERE ep.position_id=? AND e.employent_status='ACTIVE'", String.class, target); // 按员工ID 查询其对应的用户ID（确保存活）
             case "EMPLOYEE" ->
-                    jdbc.queryForList("SELECT CAST(user_id AS CHAR) FROM user_employee WHERE id=? AND employment_status='ACTIVE'", String.class, target); // 按员工ID 查询其对应的用户ID（确保存活）
+                jdbc.queryForList("SELECT CAST(user_id AS CHAR) FROM user_employee WHERE id=? AND employment_status='ACTIVE'", String.class, target); // 按员工ID 查询其对应的用户ID（确保存活）
             default -> throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 类型不匹配抛出校验异常
         };
         return ApiResponse.success(users, TraceIdResolver.resolve(r)); // 返回查询结果及追踪ID

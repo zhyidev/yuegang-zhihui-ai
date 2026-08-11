@@ -19,14 +19,14 @@ public final class JdbcContainerFixture implements AutoCloseable {
     private final String jdbcScheme;
 
     JdbcContainerFixture(
-            GenericContainer<?> container,
-            String database,
-            String username,
-            String credential,
-            String adminUsername,
-            String adminCredential,
-            int port,
-            String jdbcScheme
+        GenericContainer<?> container,
+        String database,
+        String username,
+        String credential,
+        String adminUsername,
+        String adminCredential,
+        int port,
+        String jdbcScheme
     ) {
         this.container = Objects.requireNonNull(container, "container must not be null");
         this.database = Objects.requireNonNull(database, "database must not be null");
@@ -72,7 +72,7 @@ public final class JdbcContainerFixture implements AutoCloseable {
             throw new IllegalStateException("container must be started before requesting JDBC URL");
         }
         return "jdbc:" + jdbcScheme + "://" + container.getHost() + ':'
-                + container.getMappedPort(port) + '/' + database;
+            + container.getMappedPort(port) + '/' + database;
     }
 
     @Override
@@ -83,7 +83,7 @@ public final class JdbcContainerFixture implements AutoCloseable {
     @Override
     public String toString() {
         return "JdbcContainerFixture[image=" + container.getDockerImageName()
-                + ", database=" + database + ", username=" + username
-                + ", credential=[REDACTED]]";
+            + ", database=" + database + ", username=" + username
+            + ", credential=[REDACTED]]";
     }
 }

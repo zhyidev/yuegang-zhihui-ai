@@ -8,17 +8,10 @@ import com.yuegang.zhihui.training.security.TrainingUserContext;
 import com.yuegang.zhihui.training.security.TrainingUserResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/training")
@@ -32,6 +25,10 @@ public final class TrainingContentController {
         this.service = service;
         this.users = users;
         this.access = access;
+    }
+
+    private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
+        return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }
 
     @GetMapping("/courses")
@@ -58,7 +55,7 @@ public final class TrainingContentController {
         List<QuestionView> questions = service.questions(id);
         if (!user.courseManager()) {
             questions = questions.stream().map(question -> new QuestionView(question.id(), question.gateId(),
-                    question.type(), question.stem(), question.options(), null, question.score())).toList();
+                question.type(), question.stem(), question.options(), null, question.score())).toList();
         }
         return ok(questions, request);
     }
@@ -96,12 +93,8 @@ public final class TrainingContentController {
 
     @PostMapping(value = "/admin/chapters/{id}/documents", consumes = "multipart/form-data")
     ApiResponse<TrainingDocumentView> document(@PathVariable String id, @RequestPart MultipartFile file,
-                                                HttpServletRequest request) {
+                                               HttpServletRequest request) {
         users.requirePermission(request, "training:course:write");
         return ok(service.upload(id, file), request);
-    }
-
-    private static <T> ApiResponse<T> ok(T value, HttpServletRequest request) {
-        return ApiResponse.success(value, TraceIdResolver.resolve(request));
     }
 }

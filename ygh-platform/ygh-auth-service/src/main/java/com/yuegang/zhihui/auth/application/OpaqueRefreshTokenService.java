@@ -1,6 +1,10 @@
 package com.yuegang.zhihui.auth.application;
 
-import com.yuegang.zhihui.auth.domain.*;
+import com.yuegang.zhihui.auth.domain.NewRefreshToken;
+import com.yuegang.zhihui.auth.domain.RefreshRotationStatus;
+import com.yuegang.zhihui.auth.domain.RefreshTokenPair;
+import com.yuegang.zhihui.auth.domain.RefreshTokenRepository;
+
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -11,11 +15,7 @@ import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HexFormat;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 public final class OpaqueRefreshTokenService {
     private final RefreshTokenRepository repository;
@@ -65,8 +65,8 @@ public final class OpaqueRefreshTokenService {
             long id = random.nextLong(1, Long.MAX_VALUE);
             try {
                 return new GeneratedToken(
-                        new RefreshTokenPair(raw, expiresAt),
-                        new NewRefreshToken(id, hash(rawCharacters), issuedAt, expiresAt));
+                    new RefreshTokenPair(raw, expiresAt),
+                    new NewRefreshToken(id, hash(rawCharacters), issuedAt, expiresAt));
             } finally {
                 Arrays.fill(rawCharacters, '\0');
             }
@@ -93,13 +93,20 @@ public final class OpaqueRefreshTokenService {
     }
 
     private byte[] sha256(byte[] value) {
-        try { return MessageDigest.getInstance("SHA-256").digest(value); }
-        catch (NoSuchAlgorithmException impossible) { throw new IllegalStateException("SHA-256 unavailable", impossible); }
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value);
+        } catch (NoSuchAlgorithmException impossible) {
+            throw new IllegalStateException("SHA-256 unavailable", impossible);
+        }
     }
 
-    private record GeneratedToken(RefreshTokenPair pair, NewRefreshToken stored) {}
+    private record GeneratedToken(RefreshTokenPair pair, NewRefreshToken stored) {
+    }
 
     public record RotatedRefreshToken(RefreshRotationResult result, RefreshTokenPair replacement) {
-        @Override public String toString() { return "RotatedRefreshToken[result=" + result.status() + ", replacement=[REDACTED]]"; }
+        @Override
+        public String toString() {
+            return "RotatedRefreshToken[result=" + result.status() + ", replacement=[REDACTED]]";
+        }
     }
 }

@@ -1,23 +1,26 @@
 package com.yuegang.zhihui.gateway;
 
 import com.yuegang.zhihui.common.security.InternalRequestSignature;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
+
 import java.net.InetSocketAddress;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.gateway.filter.GatewayFilterChain;
-import org.springframework.cloud.gateway.filter.GlobalFilter;
-import org.springframework.core.Ordered;
-import org.springframework.stereotype.Component;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.web.server.ServerWebExchange;
-import reactor.core.publisher.Mono;
 
-/** Replaces client-supplied IP metadata with a signed edge-observed address. */
+/**
+ * Replaces client-supplied IP metadata with a signed edge-observed address.
+ */
 @Component
 @ConditionalOnProperty(prefix = "ygh.internal-request", name = "enabled", havingValue = "true", matchIfMissing = true)
 final class TrustedClientIpFilter implements GlobalFilter, Ordered {
@@ -44,6 +47,11 @@ final class TrustedClientIpFilter implements GlobalFilter, Ordered {
         }
     }
 
+    private static String stripScope(String address) {
+        int scope = address.indexOf('%');
+        return scope < 0 ? address : address.substring(0, scope);
+    }
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         InetSocketAddress remote = exchange.getRequest().getRemoteAddress();
@@ -55,8 +63,8 @@ final class TrustedClientIpFilter implements GlobalFilter, Ordered {
         String requestId = exchange.getRequest().getHeaders().getFirst(GatewayHeaders.REQUEST_ID);
         Instant timestamp = clock.instant();
         var metadata = new InternalRequestSignature.Metadata(
-                clientIp, traceId, requestId, exchange.getRequest().getMethod().name(),
-                exchange.getRequest().getPath().pathWithinApplication().value(), timestamp);
+            clientIp, traceId, requestId, exchange.getRequest().getMethod().name(),
+            exchange.getRequest().getPath().pathWithinApplication().value(), timestamp);
         String signature = signatures.sign(metadata);
         var request = exchange.getRequest().mutate().headers(headers -> {
             headers.remove(GatewayHeaders.CLIENT_IP);
@@ -69,10 +77,8 @@ final class TrustedClientIpFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(request).build());
     }
 
-    @Override public int getOrder() { return Ordered.HIGHEST_PRECEDENCE + 25; }
-
-    private static String stripScope(String address) {
-        int scope = address.indexOf('%');
-        return scope < 0 ? address : address.substring(0, scope);
+    @Override
+    public int getOrder() {
+        return Ordered.HIGHEST_PRECEDENCE + 25;
     }
 }

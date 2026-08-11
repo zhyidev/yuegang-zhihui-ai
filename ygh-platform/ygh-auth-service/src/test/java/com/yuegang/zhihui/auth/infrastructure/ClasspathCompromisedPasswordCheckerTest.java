@@ -1,9 +1,9 @@
 package com.yuegang.zhihui.auth.infrastructure;
 
+import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import org.junit.jupiter.api.Test;
 
 class ClasspathCompromisedPasswordCheckerTest {
 
@@ -21,13 +21,13 @@ class ClasspathCompromisedPasswordCheckerTest {
     @Test
     void missingOrIntegrityMismatchedDatasetFailsClosedAtConstruction() {
         assertThatThrownBy(() -> new ClasspathCompromisedPasswordChecker("/missing.bin", 1, "00".repeat(32)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("unavailable");
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("unavailable");
         assertThatThrownBy(() -> new ClasspathCompromisedPasswordChecker(
-                ClasspathCompromisedPasswordChecker.DEFAULT_RESOURCE,
-                ClasspathCompromisedPasswordChecker.EXPECTED_ENTRIES,
-                "00".repeat(32)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("integrity");
+            ClasspathCompromisedPasswordChecker.DEFAULT_RESOURCE,
+            ClasspathCompromisedPasswordChecker.EXPECTED_ENTRIES,
+            "00".repeat(32)))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("integrity");
     }
 }

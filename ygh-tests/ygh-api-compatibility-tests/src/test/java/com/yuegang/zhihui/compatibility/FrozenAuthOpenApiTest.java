@@ -1,21 +1,33 @@
 package com.yuegang.zhihui.compatibility;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 class FrozenAuthOpenApiTest {
     private static final Set<String> PATHS = Set.of(
-            "/.well-known/jwks.json", "/api/v1/auth/captcha", "/api/v1/auth/register",
-            "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout",
-            "/api/v1/auth/password-reset/request", "/api/v1/auth/password-reset/confirm",
-            "/api/v1/auth/password", "/api/v1/auth/admin/users",
-            "/api/v1/auth/admin/users/{userId}/status");
+        "/.well-known/jwks.json", "/api/v1/auth/captcha", "/api/v1/auth/register",
+        "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/logout",
+        "/api/v1/auth/password-reset/request", "/api/v1/auth/password-reset/confirm",
+        "/api/v1/auth/password", "/api/v1/auth/admin/users",
+        "/api/v1/auth/admin/users/{userId}/status");
 
-    @Test void frozenContractIsEnvironmentNeutralAndComplete() throws Exception {
+    private static Path repositoryRoot() {
+        Path cursor = Path.of("").toAbsolutePath();
+        while (cursor != null) {
+            if (Files.isRegularFile(cursor.resolve("spec/backend-delivery.md"))) return cursor;
+            cursor = cursor.getParent();
+        }
+        throw new IllegalStateException("repository root cannot be located");
+    }
+
+    @Test
+    void frozenContractIsEnvironmentNeutralAndComplete() throws Exception {
         Path root = repositoryRoot();
         String raw = Files.readString(root.resolve("spec/openapi/auth-service-v1.json"));
         var api = JsonMapper.builder().build().readTree(raw);
@@ -32,17 +44,8 @@ class FrozenAuthOpenApiTest {
             assertThat(logout.path("responses").has(status)).as("logout response %s", status).isTrue();
         }
         assertThat(api.path("components").path("schemas").path("RegisterRequest")
-                .path("properties").path("password").path("writeOnly").asBoolean()).isTrue();
+            .path("properties").path("password").path("writeOnly").asBoolean()).isTrue();
         assertThat(api.path("components").path("schemas").path("LogoutRequest")
-                .path("properties").path("refreshToken").path("writeOnly").asBoolean()).isTrue();
-    }
-
-    private static Path repositoryRoot() {
-        Path cursor = Path.of("").toAbsolutePath();
-        while (cursor != null) {
-            if (Files.isRegularFile(cursor.resolve("spec/backend-delivery.md"))) return cursor;
-            cursor = cursor.getParent();
-        }
-        throw new IllegalStateException("repository root cannot be located");
+            .path("properties").path("refreshToken").path("writeOnly").asBoolean()).isTrue();
     }
 }

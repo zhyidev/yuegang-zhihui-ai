@@ -32,7 +32,7 @@ public class JdbcOutboxDispatcher { // 类开始
         jdbc.update("UPDATE " + table + " SET status='RETRY',next_retry_at=NOW(6),claimed_at=NULL WHERE status='PROCESSING' AND created_at < DATE_SUB(NOW(6), INTERVAL 2 MINUTE)");
         // 2. 批量扫描：获取前 50 条待发布（PENDING）或等待重试（RETRY）的消息
         List<Row> rows = jdbc.query("SELECT id, aggregate_id, event_type, payload FROM " + table + " WHERE status IN ('PENDING', 'RETRY') AND next_retry_at<=NOW(6) ORDER BY create_at LIMIT 50",
-                (r, n) -> new Row(r.getString(1), r.getString(2), r.getString(3), r.getString(4)));
+            (r, n) -> new Row(r.getString(1), r.getString(2), r.getString(3), r.getString(4)));
 
         int sent = 0; // 已发送的计数器
         for (Row row : rows) { // 遍历待转发的信息
@@ -48,7 +48,7 @@ public class JdbcOutboxDispatcher { // 类开始
                 String message = e.getClass().getCanonicalName() + ":" + String.valueOf(e.getMessage()); // 提取错误简报
                 // 5. 失败处理：重试次数累加，计算下次重试时间（指数级退避），超过 15 次则标记为 FAILED
                 jdbc.update("UPDATE " + table + " SET status=CASE WHEN retry_count>=15 THEN 'FAILED' ELSE 'RETRY' END,retry_count=retry_count+1,next_retry_at=DATE_ADD(NOW(6), INTERVAL LEAST(2, retry_count) SECOND),claimed_at=NULL,last_error=? WHERE id=?",
-                        message.substring(0, Math.min(1000, message.length())), row.id());
+                    message.substring(0, Math.min(1000, message.length())), row.id());
             }
 
         }

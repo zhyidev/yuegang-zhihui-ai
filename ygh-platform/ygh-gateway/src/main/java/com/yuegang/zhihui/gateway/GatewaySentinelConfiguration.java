@@ -18,10 +18,10 @@ class GatewaySentinelConfiguration {
 
     @Bean
     Set<GatewayFlowRule> gatewaySentinelRules(
-            @Value("${ygh.gateway.sentinel.auth-qps:20}") double authQps,
-            @Value("${ygh.gateway.sentinel.auth-burst:5}") int authBurst,
-            @Value("${ygh.gateway.sentinel.service-qps:100}") double serviceQps,
-            @Value("${ygh.gateway.sentinel.service-burst:10}") int serviceBurst) {
+        @Value("${ygh.gateway.sentinel.auth-qps:20}") double authQps,
+        @Value("${ygh.gateway.sentinel.auth-burst:5}") int authBurst,
+        @Value("${ygh.gateway.sentinel.service-qps:100}") double serviceQps,
+        @Value("${ygh.gateway.sentinel.service-burst:10}") int serviceBurst) {
         // 创建规则集合
         Set<GatewayFlowRule> rules = GatewaySentinelRuleSet.create(authQps, authBurst, serviceQps, serviceBurst);
         // 加载到 sentinel 规则管理器种

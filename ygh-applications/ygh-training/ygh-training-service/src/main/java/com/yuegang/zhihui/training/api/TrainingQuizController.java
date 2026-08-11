@@ -16,6 +16,14 @@ import org.springframework.web.bind.annotation.RestController;
 public final class TrainingQuizController {
     private final TrainingQuizService service;
     private final TrainingUserResolver users;
-    public TrainingQuizController(TrainingQuizService service, TrainingUserResolver users){this.service=service;this.users=users;}
-    @PostMapping("/attempts") ApiResponse<QuizAttemptView> submit(@Valid @RequestBody SubmitQuizRequest request, HttpServletRequest servletRequest){return ApiResponse.success(service.submit(users.resolve(servletRequest),request), TraceIdResolver.resolve(servletRequest));}
+
+    public TrainingQuizController(TrainingQuizService service, TrainingUserResolver users) {
+        this.service = service;
+        this.users = users;
+    }
+
+    @PostMapping("/attempts")
+    ApiResponse<QuizAttemptView> submit(@Valid @RequestBody SubmitQuizRequest request, HttpServletRequest servletRequest) {
+        return ApiResponse.success(service.submit(users.resolve(servletRequest), request), TraceIdResolver.resolve(servletRequest));
+    }
 }

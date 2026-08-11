@@ -42,7 +42,7 @@ public final class ClasspathCompromisedPasswordChecker implements CompromisedPas
         }
         // 校验长度是否等于条数乘以每条长度，并校验文件内容的哈希值是否匹配
         if (sortedDigests.length != Math.multiplyExact(expectedEntries, DIGEST_LENGTH)
-                || !MessageDigest.isEqual(sha256(sortedDigests), HexFormat.of().parseHex(expectedSha256))) {
+            || !MessageDigest.isEqual(sha256(sortedDigests), HexFormat.of().parseHex(expectedSha256))) {
             Arrays.fill(sortedDigests, (byte) 0); // 校验失败，擦除内存数据
             throw new IllegalStateException("compromised-password dataset integrity check failed"); // 抛出异常: 完整性检验失败
         }
@@ -60,7 +60,7 @@ public final class ClasspathCompromisedPasswordChecker implements CompromisedPas
     private static int compare(byte[] left, int leftOffset, byte[] right, int rightOffset) { // 比较两个字节数组切片的内部方法
         for (int index = 0; index < DIGEST_LENGTH; index++) { // 逐字节比较
             int comparison = Integer.compare(
-                    Byte.toUnsignedInt(left[leftOffset + index]), Byte.toUnsignedInt(right[rightOffset + index]));
+                Byte.toUnsignedInt(left[leftOffset + index]), Byte.toUnsignedInt(right[rightOffset + index]));
             if (comparison != 0) return comparison; // 发现差异立即返回
         }
         return 0; // 完全一致

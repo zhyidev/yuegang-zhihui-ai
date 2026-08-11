@@ -38,9 +38,9 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
 
     @Override    // 标记重写
     protected void doFilterInternal(
-            HttpServletRequest request, // 请求
-            HttpServletResponse response, // 响应
-            FilterChain filterChain // 链
+        HttpServletRequest request, // 请求
+        HttpServletResponse response, // 响应
+        FilterChain filterChain // 链
     ) throws ServletException, IOException { // 异常声明
         long startedAt = System.nanoTime(); // 纳秒精度起始时间
         String traceId = resolveOrCreateTraceId(request); // 解析或创建 TraceId
@@ -62,8 +62,8 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             long durationMs = Math.max(0, (System.nanoTime() - startedAt) / 1_000_000); // 计算执行毫秒数
             int status = failed ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : response.getStatus(); // 计算最终状态码
             publishSafely(new RequestLogEvent( // 构造日志事件并发布
-                    traceId, requestId, request.getMethod(), request.getRequestURI(), // 填入元数据
-                    status, durationMs, safeHeaders(request)
+                traceId, requestId, request.getMethod(), request.getRequestURI(), // 填入元数据
+                status, durationMs, safeHeaders(request)
             )); // 填入消耗时间和脱敏后抛头信息
             MDC.remove("traceId"); // 清理 MDC 中的 TraceId
             MDC.remove("requestId"); // 清理 MDC 中的 RequestId
@@ -100,22 +100,22 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         String withoutControlCharacters = CONTROL_CHARACTERS.matcher(userAgent).replaceAll(""); // 去除控制字符 (防注入)
         String normalized = withoutControlCharacters.toLowerCase(Locale.ROOT); // 转小写
         if (normalized.contains("token") // 包含敏感关键字检查
-                || normalized.contains("secret")
-                || normalized.contains("password")
-                || normalized.contains("cookie")
-                || normalized.contains("authorization")) { //命中
+            || normalized.contains("secret")
+            || normalized.contains("password")
+            || normalized.contains("cookie")
+            || normalized.contains("authorization")) { //命中
             return REDACTED; // 强制脱敏
         }
         return withoutControlCharacters.substring(// 拦截处理，防止日志过长
-                0, Math.min(withoutControlCharacters.length(), MAX_CORRELATION_ID_LENGTH)); // 返回
+            0, Math.min(withoutControlCharacters.length(), MAX_CORRELATION_ID_LENGTH)); // 返回
     }
 
     private boolean isSafeIdentifier(String value) { // ID 格式校验
         return value != null // 不为空
-                && !value.isBlank() // 不为空白
-                && !"unavailable".equals(value) // 不是保留关键字
-                && value.length() <= MAX_CORRELATION_ID_LENGTH // 长度不超限
-                && SAFE_CORRELATION_ID.matcher(value).matches(); // 正则匹配
+            && !value.isBlank() // 不为空白
+            && !"unavailable".equals(value) // 不是保留关键字
+            && value.length() <= MAX_CORRELATION_ID_LENGTH // 长度不超限
+            && SAFE_CORRELATION_ID.matcher(value).matches(); // 正则匹配
     }
 
     private void publishSafely(RequestLogEvent event) { // 安全发布，不影响业务请求

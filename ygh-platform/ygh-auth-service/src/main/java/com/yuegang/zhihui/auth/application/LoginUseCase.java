@@ -7,6 +7,7 @@ import com.yuegang.zhihui.auth.domain.*;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.redis.SessionStateStore;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Arrays;
@@ -26,16 +27,16 @@ public final class LoginUseCase {
     private final Clock clock;
 
     public LoginUseCase(
-            LoginAccountRepository accounts,
-            LoginRateLimiter rateLimiter,
-            AccountLockService accountLocks,
-            Argon2PasswordHasher passwordHasher,
-            PasswordDigest dummyDigest,
-            AccessTokenIssuer accessTokens,
-            OpaqueRefreshTokenService refreshTokens,
-            LoginAuditService audit,
-            SessionStateStore sessions,
-            Clock clock
+        LoginAccountRepository accounts,
+        LoginRateLimiter rateLimiter,
+        AccountLockService accountLocks,
+        Argon2PasswordHasher passwordHasher,
+        PasswordDigest dummyDigest,
+        AccessTokenIssuer accessTokens,
+        OpaqueRefreshTokenService refreshTokens,
+        LoginAuditService audit,
+        SessionStateStore sessions,
+        Clock clock
     ) {
         this.accounts = Objects.requireNonNull(accounts, "accounts must not be null");
         this.rateLimiter = Objects.requireNonNull(rateLimiter, "rateLimiter must not be null");
@@ -49,6 +50,10 @@ public final class LoginUseCase {
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
     }
 
+    private static BusinessException unauthenticated() {
+        return new BusinessException(ErrorCode.UNAUTHENTICATED);
+    }
+
     public AuthenticationResponse login(LoginRequest request, LoginSecurityContext context) {
         Objects.requireNonNull(request, "request must not be null");
         Objects.requireNonNull(context, "context must not be null");
@@ -56,7 +61,7 @@ public final class LoginUseCase {
         LoginRateLimitDecision rate = rateLimiter.consume(principal, context.clientIp());
         if (!rate.allowed()) {
             audit.record(null, principal, context.clientIp(), LoginAttemptResult.RATE_LIMITED,
-                    "RATE_LIMIT_" + rate.rejectedDimension().name(), context.traceId());
+                "RATE_LIMIT_" + rate.rejectedDimension().name(), context.traceId());
             throw new BusinessException(ErrorCode.RATE_LIMITED);
         }
 
@@ -66,7 +71,7 @@ public final class LoginUseCase {
             if (account == null) {
                 passwordHasher.matches(rawPassword, dummyDigest);
                 audit.record(null, principal, context.clientIp(), LoginAttemptResult.INVALID_CREDENTIALS,
-                        "ACCOUNT_NOT_FOUND", context.traceId());
+                    "ACCOUNT_NOT_FOUND", context.traceId());
                 throw unauthenticated();
             }
 
@@ -74,15 +79,15 @@ public final class LoginUseCase {
             boolean authenticationAllowed = accountLocks.authenticationAllowed(account.accountId());
             if (!authenticationAllowed) {
                 LoginAttemptResult result = account.status() == AccountStatus.DISABLED
-                        ? LoginAttemptResult.ACCOUNT_DISABLED : LoginAttemptResult.ACCOUNT_LOCKED;
+                    ? LoginAttemptResult.ACCOUNT_DISABLED : LoginAttemptResult.ACCOUNT_LOCKED;
                 audit.record(account.accountId(), principal, context.clientIp(), result,
-                        result.name(), context.traceId());
+                    result.name(), context.traceId());
                 throw unauthenticated();
             }
             if (!passwordMatches) {
                 accountLocks.recordFailure(account.accountId());
                 audit.record(account.accountId(), principal, context.clientIp(),
-                        LoginAttemptResult.INVALID_CREDENTIALS, "BAD_CREDENTIALS", context.traceId());
+                    LoginAttemptResult.INVALID_CREDENTIALS, "BAD_CREDENTIALS", context.traceId());
                 throw unauthenticated();
             }
 
@@ -94,19 +99,19 @@ public final class LoginUseCase {
     }
 
     private AuthenticationResponse issueAndAudit(
-            LoginAccount account, String principal, LoginSecurityContext context) {
+        LoginAccount account, String principal, LoginSecurityContext context) {
         RefreshTokenPair refresh = null;
         AccessToken access = null;
         try {
             refresh = refreshTokens.issueInitial(account.accountId());
             access = accessTokens.issue(new TokenPrincipal(
-                    account.accountId(), account.userId(), Set.of(account.accountType()), Set.of()));
+                account.accountId(), account.userId(), Set.of(account.accountType()), Set.of()));
             audit.record(account.accountId(), principal, context.clientIp(),
-                    LoginAttemptResult.SUCCESS, null, context.traceId());
+                LoginAttemptResult.SUCCESS, null, context.traceId());
             long accessSeconds = positiveSeconds(access.expiresAt());
             long refreshSeconds = positiveSeconds(refresh.expiresAt());
             return new AuthenticationResponse(Long.toString(account.userId()),
-                    new TokenResponse(access.value(), refresh.value(), "Bearer", accessSeconds, refreshSeconds));
+                new TokenResponse(access.value(), refresh.value(), "Bearer", accessSeconds, refreshSeconds));
         } catch (RuntimeException failure) {
             compensate(account.accountId(), refresh, access, failure);
             throw failure;
@@ -135,9 +140,5 @@ public final class LoginUseCase {
 
     private long positiveSeconds(java.time.Instant expiresAt) {
         return Math.max(1, Duration.between(clock.instant(), expiresAt).toSeconds());
-    }
-
-    private static BusinessException unauthenticated() {
-        return new BusinessException(ErrorCode.UNAUTHENTICATED);
     }
 }

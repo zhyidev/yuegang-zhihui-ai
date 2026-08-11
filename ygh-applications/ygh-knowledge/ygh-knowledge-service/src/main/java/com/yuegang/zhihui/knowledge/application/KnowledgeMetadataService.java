@@ -44,11 +44,11 @@ public class KnowledgeMetadataService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
         int updated = jdbc.update("""
-                UPDATE knowledge_document
-                SET issuing_authority=?,effective_from=?,expires_at=?,region=?,classification=?,visibility=?,
-                    source_name=?,metadata_version=metadata_version+1
-                WHERE id=? AND metadata_version=? AND status IN ('DRAFT','PENDING_REVIEW','REJECTED')
-                """, command.issuingAuthority(), command.effectiveFrom(), command.expiresAt() == null ? null : Timestamp.from(command.expiresAt().toInstant()), command.region(), command.classification(), command.classification(), command.sourceName(), id, command.version());
+            UPDATE knowledge_document
+            SET issuing_authority=?,effective_from=?,expires_at=?,region=?,classification=?,visibility=?,
+                source_name=?,metadata_version=metadata_version+1
+            WHERE id=? AND metadata_version=? AND status IN ('DRAFT','PENDING_REVIEW','REJECTED')
+            """, command.issuingAuthority(), command.effectiveFrom(), command.expiresAt() == null ? null : Timestamp.from(command.expiresAt().toInstant()), command.region(), command.classification(), command.classification(), command.sourceName(), id, command.version());
         if (updated != 1) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
         jdbc.update("DELETE FROM knowledge_document_tag WHERE document_id=?", id);
         for (String name : command.tags()) {
@@ -69,9 +69,9 @@ public class KnowledgeMetadataService {
 
     public KnowledgeMetadataView view(long id) {
         return jdbc.query("""
-                SELECT id,issuing_authority,effective_from,expires_at,region,classification,source_name,metadata_version
-                FROM knowledge_document WHERE id=?
-                """, result -> {
+            SELECT id,issuing_authority,effective_from,expires_at,region,classification,source_name,metadata_version
+            FROM knowledge_document WHERE id=?
+            """, result -> {
             if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
             Date effective = result.getDate(3);
             Timestamp expires = result.getTimestamp(4);

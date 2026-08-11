@@ -42,10 +42,10 @@ public class RedisKeyBuilder { //类开始定义
         }
         var segments = key.split(":", -1); // 按冒号拆分段
         return segments.length == 5 // 必须且只能有五段
-                && "ygh".equals(segments[0]) //第一段必须是ygh
-                && NAMESPACE_SEGMENT.matcher(segments[1]).matches() // 校验环境段
-                && NAMESPACE_SEGMENT.matcher(segments[2]).matches() // 校验环境段
-                && NAMESPACE_SEGMENT.matcher(segments[3]).matches() // 校验环境段
-                && IDENTIFIER.matcher(segments[4]).matches();       //校验标识符段
+            && "ygh".equals(segments[0]) //第一段必须是ygh
+            && NAMESPACE_SEGMENT.matcher(segments[1]).matches() // 校验环境段
+            && NAMESPACE_SEGMENT.matcher(segments[2]).matches() // 校验环境段
+            && NAMESPACE_SEGMENT.matcher(segments[3]).matches() // 校验环境段
+            && IDENTIFIER.matcher(segments[4]).matches();       //校验标识符段
     }
 }

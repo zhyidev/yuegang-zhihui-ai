@@ -20,9 +20,9 @@ class ChatServiceWebSearchIntegrationTest {
     void answersProfessionalQuestionFromAuditableWebSourceWhenLocalKnowledgeIsEmpty() {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
             Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential())
-                    .locations("classpath:db/migration").load().migrate();
+                .locations("classpath:db/migration").load().migrate();
             var dataSource = new DriverManagerDataSource(
-                    mysql.jdbcUrl(), mysql.username(), mysql.credential());
+                mysql.jdbcUrl(), mysql.username(), mysql.credential());
             ModelGateway webModel = new ModelGateway() {
                 @Override
                 public String answer(String systemPrompt, String userPrompt) {
@@ -32,7 +32,7 @@ class ChatServiceWebSearchIntegrationTest {
                 @Override
                 public ModelAnswer answerWithSources(String systemPrompt, String userPrompt) {
                     return new ModelAnswer("联网回答", List.of(new ModelSource(
-                            "海关总署", "进口食品监管要求", "https://www.customs.gov.cn/example")));
+                        "海关总署", "进口食品监管要求", "https://www.customs.gov.cn/example")));
                 }
 
                 @Override
@@ -41,11 +41,11 @@ class ChatServiceWebSearchIntegrationTest {
                 }
             };
             var tools = new CommerceToolGateway("http://localhost:1", "http://localhost:1",
-                    "01234567890123456789012345678901".getBytes(), new ObjectMapper());
+                "01234567890123456789012345678901".getBytes(), new ObjectMapper());
             var service = new ChatService((query, category, limit) -> List.of(), webModel, tools, dataSource);
 
             var response = service.chat(7, new ChatRequest(
-                    null, "进口零食需要哪些通关材料？", null, false));
+                null, "进口零食需要哪些通关材料？", null, false));
 
             assertThat(response.refused()).isFalse();
             assertThat(response.answer()).isEqualTo("联网回答");

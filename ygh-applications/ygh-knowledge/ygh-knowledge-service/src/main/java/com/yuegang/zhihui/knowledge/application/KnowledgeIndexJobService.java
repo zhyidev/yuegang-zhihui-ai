@@ -81,15 +81,15 @@ public final class KnowledgeIndexJobService {
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         }
         List<Long> documents = jdbc.queryForList("""
-                SELECT d.id FROM knowledge_document d
-                WHERE d.status='PUBLISHED'
-                  AND (d.expires_at IS NULL OR d.expires_at>NOW(6))
-                  AND NOT EXISTS (
-                    SELECT 1 FROM knowledge_index_job j
-                    WHERE j.document_id=d.id AND j.index_version=? AND j.job_type='UPSERT'
-                  )
-                ORDER BY d.id
-                """, Long.class, version);
+            SELECT d.id FROM knowledge_document d
+            WHERE d.status='PUBLISHED'
+              AND (d.expires_at IS NULL OR d.expires_at>NOW(6))
+              AND NOT EXISTS (
+                SELECT 1 FROM knowledge_index_job j
+                WHERE j.document_id=d.id AND j.index_version=? AND j.job_type='UPSERT'
+              )
+            ORDER BY d.id
+            """, Long.class, version);
         for (Long document : documents) {
             jdbc.update("INSERT INTO knowledge_index_job(id,document_id,index_version,job_type,status) VALUES(?,?,?,'UPSERT','PENDING')", nextId(), document, version);
         }

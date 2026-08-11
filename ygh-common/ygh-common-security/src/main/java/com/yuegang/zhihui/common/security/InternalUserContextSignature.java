@@ -29,7 +29,7 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
         this.clock = Objects.requireNonNull(clock); // 初始化时钟
         this.maximumSkew = Objects.requireNonNull(maximumSkew); // 初始化偏差设定
         if (maximumSkew.compareTo(Duration.ofSeconds(1)) < 0
-                || maximumSkew.compareTo(Duration.ofMinutes(5)) > 0) { // 偏差范围合法性检查
+            || maximumSkew.compareTo(Duration.ofMinutes(5)) > 0) { // 偏差范围合法性检查
             throw new IllegalArgumentException("maximumSkew must be between 1 second and 5 minutes"); // 超出范围报错
         }
     }
@@ -75,10 +75,10 @@ public final class InternalUserContextSignature { // 定义包含用户上下文
 
     private byte[] canonical(Metadata value) { // 定义上下文专用的规范化拼接 2 usages
         return String.join("\n", value.userId(), String.join(",", value.roles()),
-                        String.join(",", value.permissions()), value.traceId(), value.requestId(),
-                        value.method(), value.path(),
-                        Long.toString(value.timestamp().toEpochMilli())) // 连接HTTP方法，路径及时间戳
-                .getBytes(StandardCharsets.UTF_8); // 转换为字节流
+                String.join(",", value.permissions()), value.traceId(), value.requestId(),
+                value.method(), value.path(),
+                Long.toString(value.timestamp().toEpochMilli())) // 连接HTTP方法，路径及时间戳
+            .getBytes(StandardCharsets.UTF_8); // 转换为字节流
     }
 
     private byte[] hmac(byte[] value) { // HMAC 核心算法封装 2 usages

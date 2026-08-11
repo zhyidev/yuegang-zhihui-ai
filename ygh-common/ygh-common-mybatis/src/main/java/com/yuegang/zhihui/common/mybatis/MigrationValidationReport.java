@@ -11,8 +11,8 @@ import java.util.Objects;
 public record MigrationValidationReport(List<MigrationViolation> migrationViolationlist) { //包含违规清单
 
     private static final Comparator<MigrationViolation> ORDER =  // 排序规则：先代码后路径
-            Comparator.comparing(MigrationViolation::code)
-                    .thenComparing(MigrationViolation::resourcePath);
+        Comparator.comparing(MigrationViolation::code)
+            .thenComparing(MigrationViolation::resourcePath);
 
     public MigrationValidationReport { // 构造函数
         Objects.requireNonNull(migrationViolationlist, "migrationViolation must not be null");
@@ -29,7 +29,7 @@ public record MigrationValidationReport(List<MigrationViolation> migrationViolat
         if (!valid()) {
             var firstViolation = migrationViolationlist.getFirst();
             throw new MigrationPolicyException(firstViolation.code(), "migration policy failed with violation: "
-                    + migrationViolationlist.size() + " violation(s), first violation: " + firstViolation.message());
+                + migrationViolationlist.size() + " violation(s), first violation: " + firstViolation.message());
         }
 
     }

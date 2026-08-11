@@ -4,7 +4,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.Objects;
 
-/** Thread-safe 64-bit IDs with explicit worker ownership and rollback protection. */
+/**
+ * Thread-safe 64-bit IDs with explicit worker ownership and rollback protection.
+ */
 public final class SnowflakeIdGenerator {
     private static final long EPOCH_MILLIS = Instant.parse("2026-01-01T00:00:00Z").toEpochMilli();
     private static final long MAX_SEQUENCE = 4095;

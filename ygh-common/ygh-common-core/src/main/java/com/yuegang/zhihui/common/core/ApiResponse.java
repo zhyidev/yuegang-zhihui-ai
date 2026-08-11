@@ -18,11 +18,11 @@ public record ApiResponse<T>(     // 使用Java Record定义响应时间
 
     public static <T> ApiResponse<T> success(T data, String traceId) { // 静态快捷成功方法
         return new ApiResponse<>(
-                ErrorCode.SUCCESS.code(),    // 使用预定义的成功状态码
-                ErrorCode.SUCCESS.defaultMessage(), // 使用默认成功消息
-                data,                     // 传入的数据
-                traceId,                  // 传入的追踪 ID
-                OffsetDateTime.now()      // 记录当前系统时间
+            ErrorCode.SUCCESS.code(),    // 使用预定义的成功状态码
+            ErrorCode.SUCCESS.defaultMessage(), // 使用默认成功消息
+            data,                     // 传入的数据
+            traceId,                  // 传入的追踪 ID
+            OffsetDateTime.now()      // 记录当前系统时间
         );
     }//方法结束
 
@@ -38,8 +38,8 @@ public record ApiResponse<T>(     // 使用Java Record定义响应时间
     ) {
         Objects.requireNonNull(errorCode, "errorCode must not be null"); // 错误码对象不能为空
         var resolvedMessage = message == null || message.isBlank()  // 如果自定义消息为空
-                ? errorCode.defaultMessage()   // 则使用错误码
-                : message;           // 否则使用自定义消息
+            ? errorCode.defaultMessage()   // 则使用错误码
+            : message;           // 否则使用自定义消息
 
         return new ApiResponse<>(errorCode.code(), resolvedMessage, data, traceId, OffsetDateTime.now()); // 返回错误响应
     }//方法结束

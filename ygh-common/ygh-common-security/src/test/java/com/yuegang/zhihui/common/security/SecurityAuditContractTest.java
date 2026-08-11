@@ -22,12 +22,12 @@ class SecurityAuditContractTest { //安全审计契约（SecurityAudit）单元�
         AtomicReference<SecurityAuditEvent> captured = new AtomicReference<>(); //创建原子引用用于捕获发布的事件
         SecurityAuditPublisher publisher = captured::set;// 使用Lambda表达式实现审计发布接口，将事件存入原子引用
         SecurityAuditEvent event = new SecurityAuditEvent(Instant.parse("2026-07-17T:08:00:00z"),//发布时间
-                "user-1",// 操作用户
-                "READ_ADDRESS",// 动作名称
-                "user:address:read",// 所需权限
-                SecurityDecision.DENIED,// 判定结果为拒绝
-                "RESOURCE_NOT_FOUND",// 拒绝原因：非资源所有者
-                "trace-1" // 链路追踪 ID
+            "user-1",// 操作用户
+            "READ_ADDRESS",// 动作名称
+            "user:address:read",// 所需权限
+            SecurityDecision.DENIED,// 判定结果为拒绝
+            "RESOURCE_NOT_FOUND",// 拒绝原因：非资源所有者
+            "trace-1" // 链路追踪 ID
         );
 
         publisher.publish(event); //执行事件发布

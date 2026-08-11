@@ -34,7 +34,7 @@ class SystemSecurityVerifierTest {
 
         var userRequest = new MockHttpServletRequest("POST", "/api/v1/system/flags/ai.customer");
         var userMetadata = new InternalUserContextSignature.Metadata("42", List.of("ADMIN"), List.of("system:write"),
-                "trace-1", "request-1", "POST", userRequest.getRequestURI(), now);
+            "trace-1", "request-1", "POST", userRequest.getRequestURI(), now);
         var userSignatures = new InternalUserContextSignature(SECRET, Clock.systemUTC(), Duration.ofSeconds(30));
         userRequest.addHeader("X-YGH-User-Id", "42");
         userRequest.addHeader("X-YGH-Roles", "ADMIN");

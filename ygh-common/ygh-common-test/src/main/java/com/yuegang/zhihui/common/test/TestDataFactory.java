@@ -21,10 +21,10 @@ public final class TestDataFactory {
         long number = sequence.incrementAndGet();
         String suffix = seed + "-" + number;
         return new TestUserData(
-                "test-user-" + suffix,
-                "test_user_" + seed + '_' + number,
-                "test-user-" + suffix + "@example.test",
-                "测试用户" + suffix);
+            "test-user-" + suffix,
+            "test_user_" + seed + '_' + number,
+            "test-user-" + suffix + "@example.test",
+            "测试用户" + suffix);
     }
 
     public String nextOrderId() {

@@ -1,12 +1,13 @@
 package com.yuegang.zhihui.ai.infrastructure;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.sun.net.httpserver.HttpServer;
+import org.junit.jupiter.api.Test;
+
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class DoubaoModelGatewayWebSearchTest {
     @Test
@@ -16,12 +17,12 @@ class DoubaoModelGatewayWebSearchTest {
         server.createContext("/api/v3/responses", exchange -> {
             requestBody.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             byte[] body = """
-                    {"output":[{"type":"message","content":[{
-                      "type":"output_text","text":"需要提交食品标签等材料。",
-                      "annotations":[{"type":"url_citation","title":"海关总署",
-                        "url":"https://www.customs.gov.cn/example","snippet":"进口食品监管要求"}]
-                    }]}]}
-                    """.getBytes(StandardCharsets.UTF_8);
+                {"output":[{"type":"message","content":[{
+                  "type":"output_text","text":"需要提交食品标签等材料。",
+                  "annotations":[{"type":"url_citation","title":"海关总署",
+                    "url":"https://www.customs.gov.cn/example","snippet":"进口食品监管要求"}]
+                }]}]}
+                """.getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, body.length);
             exchange.getResponseBody().write(body);

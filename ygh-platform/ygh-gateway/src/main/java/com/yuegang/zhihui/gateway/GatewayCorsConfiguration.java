@@ -52,10 +52,10 @@ public class GatewayCorsConfiguration {
 
         // 过滤空白项，逐个校验来源
         Arrays.stream(configuredOrigins.split(","))
-                .map(String::trim)
-                .filter(origin -> !origin.isEmpty())
-                .map(GatewayCorsConfiguration::validateOrigin)
-                .forEach(origins::add);
+            .map(String::trim)
+            .filter(origin -> !origin.isEmpty())
+            .map(GatewayCorsConfiguration::validateOrigin)
+            .forEach(origins::add);
 
         if (origins.isEmpty()) {
             throw new IllegalArgumentException("At least one CORS origin is required");
@@ -70,8 +70,8 @@ public class GatewayCorsConfiguration {
 
         // 允许的请求头
         cors.setAllowedHeaders(List.of(
-                "Authorization", "Content-Type", "Idempotency-Key", "X-Request-Id",
-                "X-Trace-Id", "Accept-Language"));
+            "Authorization", "Content-Type", "Idempotency-Key", "X-Request-Id",
+            "X-Trace-Id", "Accept-Language"));
 
         // 暴露给客户端的响应头
         cors.setExposedHeaders(List.of("X-Request-Id", "X-Trace-Id", "Retry-After"));
@@ -120,15 +120,15 @@ public class GatewayCorsConfiguration {
 
         // 必须是 HTTP/HTTPS 协议
         boolean http = "http".equalsIgnoreCase(uri.getScheme())
-                || "https".equalsIgnoreCase(uri.getScheme());
+            || "https".equalsIgnoreCase(uri.getScheme());
 
         // 综合校验：协议、主机名、userInfo、端口、路径、查询参数、片段
         if (!http || uri.getHost() == null || uri.getUserInfo() != null
-                || uri.getPort() == 0 || uri.getPort() > 65535
-                || (uri.getPath() != null && !uri.getPath().isEmpty())
-                || uri.getQuery() != null || uri.getFragment() != null) {
+            || uri.getPort() == 0 || uri.getPort() > 65535
+            || (uri.getPath() != null && !uri.getPath().isEmpty())
+            || uri.getQuery() != null || uri.getFragment() != null) {
             throw new IllegalArgumentException(
-                    "CORS origin must be an HTTP(S) origin without a path");
+                "CORS origin must be an HTTP(S) origin without a path");
         }
         return origin;
     }
@@ -141,7 +141,7 @@ public class GatewayCorsConfiguration {
      */
     @Bean
     CorsConfigurationSource gatewayCorsConfigurationSource(
-            @Value("${ygh.gateway.cors.allowed-origins}") String allowedOrigins) {
+        @Value("${ygh.gateway.cors.allowed-origins}") String allowedOrigins) {
         return createSource(allowedOrigins);
     }
 

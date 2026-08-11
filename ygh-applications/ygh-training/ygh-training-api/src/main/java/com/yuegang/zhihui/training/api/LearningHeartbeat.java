@@ -1,1 +1,9 @@
-package com.yuegang.zhihui.training.api;import jakarta.validation.constraints.*;public record LearningHeartbeat(@NotBlank String assignmentId,@NotBlank String chapterId,@Positive @Max(300)int activeSeconds,@NotBlank String nonce){}
+package com.yuegang.zhihui.training.api;
+
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+public record LearningHeartbeat(@NotBlank String assignmentId, @NotBlank String chapterId,
+                                @Positive @Max(300) int activeSeconds, @NotBlank String nonce) {
+}

@@ -49,7 +49,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
             List<Path> publicFiles;
             try (var paths = Files.list(root)) { // 获取目录下的所有文件
                 publicFiles = paths.filter(path -> path.getFileName().toString().endsWith(".public.pem")) // 筛选公钥文件
-                        .sorted(Comparator.comparing(path -> path.getFileName().toString())).toList(); // 排序以便确定性
+                    .sorted(Comparator.comparing(path -> path.getFileName().toString())).toList(); // 排序以便确定性
             }
             if (publicFiles.isEmpty() || publicFiles.size() > MAX_PUBLIC_KEYS) {
                 throw new IllegalStateException("JWT public key count is outside allowed bounds"); // 公钥数量检查
@@ -88,14 +88,6 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         }
     }
 
-    RSAKey activeSigningKey() {
-        return activeKey;
-    } // 获取活动签名私钥
-
-    private Map<String, Object> publicJwkSet() {
-        return new JWKSet(publicKeys).toJSONObject();
-    } // 获取供外部查询的公钥集 JSON (JWKS)
-
     private static void requireRegularChild(Path root, Path file) throws IOException { // 文件属性强制校验方法
         Path normalized = file.toAbsolutePath().normalize(); // 规范化
         if (!normalized.getParent().equals(root) || !Files.isRegularFile(normalized, LinkOption.NOFOLLOW_LINKS) || Files.isSymbolicLink(normalized)) { // 禁止跨目录、禁止非普通文件、禁止符号链接
@@ -109,7 +101,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         try {
             var permissions = Files.getPosixFilePermissions(file, LinkOption.NOFOLLOW_LINKS); // 获取文件权限
             var forbidden = java.util.EnumSet.of( // 定义严禁出现的权限: 任何组或他人的读、写、执行权限
-                    PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE);
+                PosixFilePermission.GROUP_READ, PosixFilePermission.GROUP_WRITE, PosixFilePermission.GROUP_EXECUTE, PosixFilePermission.OTHERS_READ, PosixFilePermission.OTHERS_WRITE, PosixFilePermission.OTHERS_EXECUTE);
             if (permissions.stream().anyMatch(forbidden::contains)) { // 如果存在危险权限
                 throw new IOException("JWT private key permissions are too broad"); // 报错: 私钥权限范围过大
             }
@@ -225,7 +217,6 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         }
     }
 
-
     private static int indexOf(byte[] source, byte[] target, int from) { // 字节数组寻找子集的辅助方法
         outer:
         for (int index = from; index <= source.length - target.length; index++) {
@@ -258,5 +249,13 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         if (key.getModulus().bitLength() < 2048)
             throw new IllegalStateException("JWT RSA key is weaker than 2048 bits"); // 低于2048位视为不安全
     }
+
+    RSAKey activeSigningKey() {
+        return activeKey;
+    } // 获取活动签名私钥
+
+    private Map<String, Object> publicJwkSet() {
+        return new JWKSet(publicKeys).toJSONObject();
+    } // 获取供外部查询的公钥集 JSON (JWKS)
 
 }

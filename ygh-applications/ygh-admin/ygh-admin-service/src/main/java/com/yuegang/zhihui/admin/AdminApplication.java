@@ -1,1 +1,11 @@
-package com.yuegang.zhihui.admin;import org.springframework.boot.*;import org.springframework.boot.autoconfigure.*;@SpringBootApplication public class AdminApplication{public static void main(String[]a){SpringApplication.run(AdminApplication.class,a);}}
+package com.yuegang.zhihui.admin;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class AdminApplication {
+    public static void main(String[] a) {
+        SpringApplication.run(AdminApplication.class, a);
+    }
+}

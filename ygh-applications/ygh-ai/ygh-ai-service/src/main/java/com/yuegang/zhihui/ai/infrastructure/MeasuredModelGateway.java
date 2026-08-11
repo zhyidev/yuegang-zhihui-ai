@@ -18,6 +18,10 @@ public final class MeasuredModelGateway implements ModelGateway {
         completionTokens = DistributionSummary.builder("ygh.ai.completion.tokens").register(m);
     }
 
+    private static int tokens(String x) {
+        return Math.max(1, x == null ? 0 : x.codePointCount(0, x.length()) / 2);
+    }
+
     public String answer(String system, String user) {
         return answerWithSources(system, user).text();
     }
@@ -41,9 +45,5 @@ public final class MeasuredModelGateway implements ModelGateway {
 
     public boolean supportsWebSearch() {
         return delegate.supportsWebSearch();
-    }
-
-    private static int tokens(String x) {
-        return Math.max(1, x == null ? 0 : x.codePointCount(0, x.length()) / 2);
     }
 }

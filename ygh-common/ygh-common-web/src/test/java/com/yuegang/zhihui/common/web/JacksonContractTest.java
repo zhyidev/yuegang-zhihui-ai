@@ -1,15 +1,16 @@
 package com.yuegang.zhihui.common.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.yuegang.zhihui.common.core.CurrencyCode;
 import com.yuegang.zhihui.common.core.ExternalId;
 import com.yuegang.zhihui.common.core.Money;
+import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
+
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import org.junit.jupiter.api.Test;
-import tools.jackson.databind.json.JsonMapper;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class JacksonContractTest {
 
@@ -50,7 +51,7 @@ class JacksonContractTest {
     @Test
     void offsetDateTimeRoundTripsAsIso8601WithoutLosingTheOriginalOffset() throws Exception {
         var occurredAt = OffsetDateTime.of(
-                2026, 7, 11, 15, 0, 0, 0, ZoneOffset.ofHours(8));
+            2026, 7, 11, 15, 0, 0, 0, ZoneOffset.ofHours(8));
         var source = new TimeEnvelope(occurredAt);
 
         var json = mapper.writeValueAsString(source);
@@ -66,7 +67,7 @@ class JacksonContractTest {
         var legacy = new YghJacksonConfiguration().legacyObjectMapper();
 
         assertThat(legacy.writeValueAsString(java.util.Map.of("status", "ok")))
-                .isEqualTo("{\"status\":\"ok\"}");
+            .isEqualTo("{\"status\":\"ok\"}");
     }
 
     private record TimeEnvelope(OffsetDateTime occurredAt) {

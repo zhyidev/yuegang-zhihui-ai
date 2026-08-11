@@ -13,7 +13,7 @@ public record AccessToken(String value, String jwtId, Instant expireAt) { // 定
             throw new IllegalArgumentException("value must not be blank"); // 抛出参数非法异常
         }
         if (!Objects.requireNonNull(jwtId, "jwtId must not be null") // 校验 JWT ID 不能为空
-                .matches("[A-Za-z0-9][A-Za-z0-9._-]{0,127}")) { // 使用正则校验 JWT ID 是否符合安全规范（字母数字开头，允许特定符号，长度不超过12
+            .matches("[A-Za-z0-9][A-Za-z0-9._-]{0,127}")) { // 使用正则校验 JWT ID 是否符合安全规范（字母数字开头，允许特定符号，长度不超过12
             throw new IllegalArgumentException("jwtId is unsafe"); // 抛出 ID 不安全异常
         }
     }

@@ -41,8 +41,8 @@ class InventoryClientTest {
             client.release(command);
             client.returnSold(command);
             assertThat(paths).containsExactlyElementsOf(List.of(
-                    "/internal/v1/inventory/reserve", "/internal/v1/inventory/confirm",
-                    "/internal/v1/inventory/release", "/internal/v1/inventory/return-sold"));
+                "/internal/v1/inventory/reserve", "/internal/v1/inventory/confirm",
+                "/internal/v1/inventory/release", "/internal/v1/inventory/return-sold"));
         } finally {
             server.stop(0);
         }

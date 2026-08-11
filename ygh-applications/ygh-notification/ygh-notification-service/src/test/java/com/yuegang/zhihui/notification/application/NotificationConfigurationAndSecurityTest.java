@@ -27,7 +27,7 @@ class NotificationConfigurationAndSecurityTest {
         String timestamp = Long.toString(System.currentTimeMillis());
         List<String> roles = roleHeader.isBlank() ? List.of() : List.of(roleHeader.split(","));
         List<String> permissions = permissionHeader.isBlank()
-                ? List.of() : List.of(permissionHeader.split(","));
+            ? List.of() : List.of(permissionHeader.split(","));
         when(request.getMethod()).thenReturn("GET");
         when(request.getRequestURI()).thenReturn("/api/v1/notifications");
         when(request.getHeader("X-YGH-User-Id")).thenReturn(user);
@@ -37,10 +37,10 @@ class NotificationConfigurationAndSecurityTest {
         when(request.getHeader("X-Request-Id")).thenReturn("request-notification");
         when(request.getHeader("X-YGH-User-Context-Timestamp")).thenReturn(timestamp);
         var metadata = new InternalUserContextSignature.Metadata(
-                user, roles, permissions, "trace-notification", "request-notification", "GET",
-                "/api/v1/notifications", Instant.ofEpochMilli(Long.parseLong(timestamp)));
+            user, roles, permissions, "trace-notification", "request-notification", "GET",
+            "/api/v1/notifications", Instant.ofEpochMilli(Long.parseLong(timestamp)));
         when(request.getHeader("X-YGH-User-Context-Signature")).thenReturn(
-                new InternalUserContextSignature(KEY, Clock.systemUTC(), Duration.ofSeconds(30)).sign(metadata));
+            new InternalUserContextSignature(KEY, Clock.systemUTC(), Duration.ofSeconds(30)).sign(metadata));
         return request;
     }
 
@@ -53,9 +53,9 @@ class NotificationConfigurationAndSecurityTest {
         when(request.getHeader("X-YGH-Service")).thenReturn("ygh-training-service");
         when(request.getHeader("X-YGH-Service-Timestamp")).thenReturn(Long.toString(now.toEpochMilli()));
         var metadata = new InternalServiceSignature.Metadata(
-                "ygh-training-service", "POST", path, now);
+            "ygh-training-service", "POST", path, now);
         when(request.getHeader("X-YGH-Service-Signature")).thenReturn(
-                new InternalServiceSignature(KEY, Clock.systemUTC(), Duration.ofSeconds(30)).sign(metadata));
+            new InternalServiceSignature(KEY, Clock.systemUTC(), Duration.ofSeconds(30)).sign(metadata));
         return request;
     }
 
@@ -70,7 +70,7 @@ class NotificationConfigurationAndSecurityTest {
         assertThat(configuration.notificationService(dataSource)).isNotNull();
         assertThat(configuration.notificationQueryService(dataSource)).isNotNull();
         assertThat(configuration.notificationSecurity(
-                Base64.getEncoder().encodeToString(KEY))).isNotNull();
+            Base64.getEncoder().encodeToString(KEY))).isNotNull();
         NotificationDispatchJob job = configuration.notificationDispatchJob(service);
         job.dispatch();
     }
@@ -82,7 +82,7 @@ class NotificationConfigurationAndSecurityTest {
         assertThat(security.user(user)).isEqualTo(7);
         assertThat(security.require(user, "notification:compensate")).isEqualTo(7);
         assertThatThrownBy(() -> security.require(user, "notification:admin"))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         assertThat(security.require(signedUser("8", "ADMIN", ""), "anything")).isEqualTo(8);
 
         HttpServletRequest serviceRequest = signedService();
@@ -90,6 +90,6 @@ class NotificationConfigurationAndSecurityTest {
         when(serviceRequest.getHeader("X-YGH-Service-Signature")).thenReturn("invalid");
         assertThatThrownBy(() -> security.service(serviceRequest)).isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> security.user(mock(HttpServletRequest.class)))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
     }
 }

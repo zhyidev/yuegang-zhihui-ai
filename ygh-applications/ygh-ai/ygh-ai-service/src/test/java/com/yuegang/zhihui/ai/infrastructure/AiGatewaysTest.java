@@ -1,6 +1,23 @@
 package com.yuegang.zhihui.ai.infrastructure;
 
-import static org.assertj.core.api.Assertions.*;import static org.mockito.Mockito.*;import com.fasterxml.jackson.databind.ObjectMapper;import com.sun.net.httpserver.HttpServer;import com.yuegang.zhihui.ai.application.*;import com.yuegang.zhihui.ai.domain.*;import com.yuegang.zhihui.search.api.SearchHit;import io.micrometer.core.instrument.simple.SimpleMeterRegistry;import java.net.*;import java.nio.charset.StandardCharsets;import java.util.*;import org.junit.jupiter.api.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sun.net.httpserver.HttpServer;
+import com.yuegang.zhihui.ai.application.AiGovernanceService;
+import com.yuegang.zhihui.ai.domain.ModelGateway;
+import com.yuegang.zhihui.ai.domain.ModelProviderException;
+import com.yuegang.zhihui.search.api.SearchHit;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class AiGatewaysTest {
     HttpServer server;

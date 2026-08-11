@@ -24,18 +24,18 @@ public class CurrentUserPrincipalTest { // 当前用户主体对象（CurrentUse
         assertThat(principal.roles()).containsExactly("CUSTOMER"); // 验证用户内部角色集合未受到外部集合修改影响，实现防御性拷贝
         assertThat(principal.permissions()).containsExactly("user:address:read"); // 验证主体内部权限集合未受到外部集合修改影响
         assertThatThrownBy(() -> principal.roles().add("ADMIN")) // 验证尝试直接对主体内部返回的角色集合进行修改时
-                .isInstanceOf(UnsupportedOperationException.class); // 断言必定抛出不可修改集合的异常
+            .isInstanceOf(UnsupportedOperationException.class); // 断言必定抛出不可修改集合的异常
         assertThatThrownBy(() -> principal.permissions().add("user:address:manage:any")) // 验证尝试直接对主体内部返回的权限集合进行修改时
-                .isInstanceOf(UnsupportedOperationException.class); // 断言必定抛出不可修改集合的异常
+            .isInstanceOf(UnsupportedOperationException.class); // 断言必定抛出不可修改集合的异常
     }
 
     @Test
         // 标记为 JUnit5 测试方法
     void shouldMatchRolesAndPermissionsExactly() {  // 测试方法：验证角色与权限的对比必须精准匹配
         CurrentUserPrincipal principal = new CurrentUserPrincipal(
-                "user-1001",  // 用户ID
-                Set.of("KNOWLEDGE_REVIEWER"),  // 角色集合
-                Set.of("knowledge:document:review", "user:address:read")  // 权限集合
+            "user-1001",  // 用户ID
+            Set.of("KNOWLEDGE_REVIEWER"),  // 角色集合
+            Set.of("knowledge:document:review", "user:address:read")  // 权限集合
         ); // 实例化完成
 
         assertThat(principal.hasRole("KNOWLEDGE_REVIEWER")).isTrue();  // 验证完全匹配的大写角色返回 true

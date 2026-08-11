@@ -44,8 +44,8 @@ public record LoginAttempt( // 定义登录尝试审计记录 Record
     @Override
     public String toString() { // 脱敏给 toString
         return "LoginAttempt[accountId=" + accountId + ", principalHash=[REDACTED], clientIpHash=[REDACTED], result="
-                + result + ", failureReason=" + failureReason + ", occurredAt=" + occurredAt
-                + ", traceId=" + traceId + "]";
+            + result + ", failureReason=" + failureReason + ", occurredAt=" + occurredAt
+            + ", traceId=" + traceId + "]";
     }
 
 }

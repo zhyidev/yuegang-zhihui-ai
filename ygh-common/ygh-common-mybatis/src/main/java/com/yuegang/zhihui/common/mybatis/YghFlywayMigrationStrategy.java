@@ -19,9 +19,9 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
     private final FlywayHistoryValidator historyValidator; // 历史完整性校验
 
     public YghFlywayMigrationStrategy(
-            FlywayMigrationPolicy migrationPolicy,
-            FlywayConfigurationGuard configurationGuard,
-            FlywayHistoryValidator historyValidator
+        FlywayMigrationPolicy migrationPolicy,
+        FlywayConfigurationGuard configurationGuard,
+        FlywayHistoryValidator historyValidator
     ) {
         this.migrationPolicy = Objects.requireNonNull(migrationPolicy, "migrationPolicy must not be null");
         this.configurationGuard = Objects.requireNonNull(configurationGuard, "configurationGuard must not be null");
@@ -31,9 +31,9 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
     // --- 内部辅助判断方法 ---
     private static boolean isRepeatable(InfoOutput migration) {
         boolean repeatableCategory = migration.category != null &&
-                migration.category.toLowerCase().contains("repeatable");
+            migration.category.toLowerCase().contains("repeatable");
         boolean SqlWithoutVersion = resolvedVersion(migration) == null &&
-                migration.filepath != null && migration.filepath.toLowerCase().endsWith(".sql");
+            migration.filepath != null && migration.filepath.toLowerCase().endsWith(".sql");
         return repeatableCategory || SqlWithoutVersion;
     }
 
@@ -57,8 +57,8 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
             return Long.parseLong(version);
         } catch (NumberFormatException exception) {
             throw new MigrationPolicyException(
-                    MigrationViolationCode.INVALID_NAME,
-                    "applied migration uses unsupported version format");
+                MigrationViolationCode.INVALID_NAME,
+                "applied migration uses unsupported version format");
         }
     }
 
@@ -71,7 +71,7 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
     private static boolean isApplied(InfoOutput migration) {
         if (migration.installedOnUTC != null && !migration.installedOnUTC.isBlank()) return true;
         return migration.state != null &&
-                migration.state.equalsIgnoreCase("Success");
+            migration.state.equalsIgnoreCase("Success");
     }
 
     @Override

@@ -16,8 +16,8 @@ import java.util.Base64;
 class SearchConfiguration {
     @Bean
     SystemAiProviderConfigClient systemAiProviderConfigClient(
-            @Value("${ygh.search.system-base-url}") String baseUrl,
-            @Value("${ygh.internal-request.hmac-base64}") String encoded) {
+        @Value("${ygh.search.system-base-url}") String baseUrl,
+        @Value("${ygh.internal-request.hmac-base64}") String encoded) {
         byte[] key = Base64.getDecoder().decode(encoded);
         try {
             return new SystemAiProviderConfigClient(baseUrl, key);
@@ -41,8 +41,8 @@ class SearchConfiguration {
 
     @Bean
     ProductFullTextSearchService productFullTextSearchService(
-            @Value("${ygh.search.elasticsearch-base-url}") String elastic,
-            @Value("${ygh.search.product-index:product-active}") String index) {
+        @Value("${ygh.search.elasticsearch-base-url}") String elastic,
+        @Value("${ygh.search.product-index:product-active}") String index) {
         return new ProductFullTextSearchService(elastic, index);
     }
 
@@ -62,7 +62,7 @@ class SearchConfiguration {
 
     @Bean
     SearchInternalSecurity searchInternalSecurity(
-            @Value("${ygh.internal-request.hmac-base64}") String encoded) {
+        @Value("${ygh.internal-request.hmac-base64}") String encoded) {
         byte[] key = Base64.getDecoder().decode(encoded);
         try {
             return new SearchInternalSecurity(key);

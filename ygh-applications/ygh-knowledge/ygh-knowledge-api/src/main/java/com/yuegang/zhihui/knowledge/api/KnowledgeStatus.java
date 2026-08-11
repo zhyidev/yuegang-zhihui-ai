@@ -1,1 +1,3 @@
-package com.yuegang.zhihui.knowledge.api;public enum KnowledgeStatus{UPLOADED,SECURITY_CHECKED,PROCESSING,PARSED,PENDING_REVIEW,PUBLISHED,REJECTED,OFFLINE,EXPIRED}
+package com.yuegang.zhihui.knowledge.api;
+
+public enum KnowledgeStatus {UPLOADED, SECURITY_CHECKED, PROCESSING, PARSED, PENDING_REVIEW, PUBLISHED, REJECTED, OFFLINE, EXPIRED}

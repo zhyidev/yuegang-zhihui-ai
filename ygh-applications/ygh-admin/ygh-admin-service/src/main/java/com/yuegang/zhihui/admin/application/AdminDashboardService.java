@@ -1,19 +1,15 @@
 package com.yuegang.zhihui.admin.application;
 
 import com.yuegang.zhihui.admin.api.AdminDashboardView;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.web.client.RestClient;
+
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import org.springframework.http.client.SimpleClientHttpRequestFactory;
-import org.springframework.web.client.RestClient;
 
 public final class AdminDashboardService {
     private static final Duration CONNECT_TIMEOUT = Duration.ofMillis(800);
@@ -38,19 +34,31 @@ public final class AdminDashboardService {
         client = RestClient.builder().requestFactory(requestFactory).build();
     }
 
+    private static AdminDashboardView.ServiceStatus completed(
+        Future<AdminDashboardView.ServiceStatus> probe) {
+        try {
+            return probe.get();
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException("service health aggregation interrupted", interrupted);
+        } catch (java.util.concurrent.ExecutionException failure) {
+            throw new IllegalStateException("service health aggregation failed", failure.getCause());
+        }
+    }
+
     public AdminDashboardView dashboard() {
         List<AdminDashboardView.ServiceStatus> statuses = probeConcurrently();
         long healthy = statuses.stream().filter(status -> "UP".equals(status.status())).count();
         var pending = statuses.stream()
-                .filter(status -> !"UP".equals(status.status()))
-                .map(status -> new AdminDashboardView.PendingMetric(
-                        "SERVICE_UNAVAILABLE", 1, status.service()))
-                .toList();
+            .filter(status -> !"UP".equals(status.status()))
+            .map(status -> new AdminDashboardView.PendingMetric(
+                "SERVICE_UNAVAILABLE", 1, status.service()))
+            .toList();
         return new AdminDashboardView(
-                new AdminDashboardView.Summary(statuses.size(), healthy, statuses.size() - healthy),
-                statuses,
-                pending,
-                OffsetDateTime.now(ZoneOffset.UTC));
+            new AdminDashboardView.Summary(statuses.size(), healthy, statuses.size() - healthy),
+            statuses,
+            pending,
+            OffsetDateTime.now(ZoneOffset.UTC));
     }
 
     private List<AdminDashboardView.ServiceStatus> probeConcurrently() {
@@ -77,18 +85,6 @@ public final class AdminDashboardService {
             status = "DOWN";
         }
         return new AdminDashboardView.ServiceStatus(
-                name, status, (System.nanoTime() - startedAt) / 1_000_000);
-    }
-
-    private static AdminDashboardView.ServiceStatus completed(
-            Future<AdminDashboardView.ServiceStatus> probe) {
-        try {
-            return probe.get();
-        } catch (InterruptedException interrupted) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("service health aggregation interrupted", interrupted);
-        } catch (java.util.concurrent.ExecutionException failure) {
-            throw new IllegalStateException("service health aggregation failed", failure.getCause());
-        }
+            name, status, (System.nanoTime() - startedAt) / 1_000_000);
     }
 }

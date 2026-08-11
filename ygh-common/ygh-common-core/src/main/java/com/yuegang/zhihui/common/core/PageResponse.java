@@ -7,11 +7,11 @@ import java.util.Objects;
  * 在 {@link ApiResponse} 内部返回的稳定的分页数据负载。
  */
 public record PageResponse<T>(
-        List<T> records,    // 当前页的数据列表
-        int pageNo,         // 当前页码
-        int pageSize,       // 每页记录
-        long total,         // 总记录数
-        long pages) {       // 总页数
+    List<T> records,    // 当前页的数据列表
+    int pageNo,         // 当前页码
+    int pageSize,       // 每页记录
+    long total,         // 总记录数
+    long pages) {       // 总页数
 
     public PageResponse { // 构造逻辑
         records = List.copyOf(Objects.requireNonNull(records, "records must not be null")); // 强制要求记录非空并转为不可变列表

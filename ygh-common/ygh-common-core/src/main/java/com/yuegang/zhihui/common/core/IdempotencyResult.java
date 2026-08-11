@@ -34,9 +34,9 @@ public record IdempotencyResult<T>( // 泛型 T 代表操作成功的返回值
     }
 
     public static <T> IdempotencyResult<T> completed(
-            String idempotencyKey, //键
-            T value, //结果数据
-            OffsetDateTime completedAt //完成时间
+        String idempotencyKey, //键
+        T value, //结果数据
+        OffsetDateTime completedAt //完成时间
     ) {
         return new IdempotencyResult<>(idempotencyKey, IdempotencyStatus.COMPLETED, value, completedAt); //返回实例
     }

@@ -18,10 +18,10 @@ import java.util.function.LongSupplier;
  */
 public final class JdbcLoginAttemptRepository implements LoginAttemptRepository {
     private static final String INSERT_SQL = """
-            INSERT INTO auth_login_attempt
-            (id, account_id, principal_hash, client_ip_hash, result, failure_reason, occurred_at, trace_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """; // 审计日志插入SQL
+        INSERT INTO auth_login_attempt
+        (id, account_id, principal_hash, client_ip_hash, result, failure_reason, occurred_at, trace_id)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        """; // 审计日志插入SQL
 
     private final DataSource dataSource; // 声明数据源
     private final LongSupplier idSupplier; // 声明ID供应器

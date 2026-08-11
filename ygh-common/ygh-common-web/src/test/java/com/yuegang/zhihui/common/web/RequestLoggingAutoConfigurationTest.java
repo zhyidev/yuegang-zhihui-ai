@@ -1,19 +1,20 @@
 package com.yuegang.zhihui.common.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.core.Ordered;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 class RequestLoggingAutoConfigurationTest {
 
     private final WebApplicationContextRunner contextRunner = new WebApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(RequestLoggingAutoConfiguration.class));
+        .withConfiguration(AutoConfigurations.of(RequestLoggingAutoConfiguration.class));
 
     @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -35,7 +36,7 @@ class RequestLoggingAutoConfigurationTest {
 
             var auditRegistration = registrations.get("auditLoggingFilterRegistration");
             assertThat(auditRegistration.getFilter())
-                    .isSameAs(context.getBean(AuditLoggingFilter.class));
+                .isSameAs(context.getBean(AuditLoggingFilter.class));
             assertThat(auditRegistration.isEnabled()).isTrue();
             assertThat(auditRegistration.getOrder()).isEqualTo(Ordered.HIGHEST_PRECEDENCE + 20);
             assertThat(auditRegistration.getUrlPatterns()).containsExactly("/api/*", "/internal/*");
@@ -47,12 +48,12 @@ class RequestLoggingAutoConfigurationTest {
         var resourceName = "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
 
         try (var input = RequestLoggingAutoConfigurationTest.class
-                .getClassLoader()
-                .getResourceAsStream(resourceName)) {
+            .getClassLoader()
+            .getResourceAsStream(resourceName)) {
             assertThat(input).as(resourceName).isNotNull();
             var registrations = new String(input.readAllBytes(), StandardCharsets.UTF_8);
             assertThat(registrations)
-                    .contains("com.yuegang.zhihui.common.web.RequestLoggingAutoConfiguration");
+                .contains("com.yuegang.zhihui.common.web.RequestLoggingAutoConfiguration");
         }
     }
 }

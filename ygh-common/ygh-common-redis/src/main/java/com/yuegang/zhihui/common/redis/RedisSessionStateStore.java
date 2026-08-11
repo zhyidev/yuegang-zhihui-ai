@@ -10,10 +10,10 @@ import java.util.Objects;
 
 public class RedisSessionStateStore implements SessionStateStore { // 定义 Session 存储实现类
     private static final DefaultRedisScript<Long> REVOKE_SCRIPT = new DefaultRedisScript<>("""
-            local existed = redis.call('DEL', KEYS[1])
-            redis.call('SET', KEYS[2], '1', 'PX', ARGV[1])
-            return existed
-            """, Long.class); // 定义原子撤销脚本：删除 Session 的同时将其 JTI 加入黑名单，有效期与原 Session 一致
+        local existed = redis.call('DEL', KEYS[1])
+        redis.call('SET', KEYS[2], '1', 'PX', ARGV[1])
+        return existed
+        """, Long.class); // 定义原子撤销脚本：删除 Session 的同时将其 JTI 加入黑名单，有效期与原 Session 一致
     private final StringRedisTemplate redis; // 声明 Redis 模板
     private final SessionRedisKeys keys; // 声明 Session 键工具
 
@@ -28,7 +28,7 @@ public class RedisSessionStateStore implements SessionStateStore { // 定义 Ses
         Duration ttl = positiveTtl(expiresAt, now); // 计算剩余生存时间
         redis.opsForValue().setIfAbsent(keys.accountState(accountId), "ACTIVE"); // 如果用户账户状态不存在，初始化为ACTIVE
         Boolean stored = redis.opsForValue().setIfAbsent( // 原子性存储 Session
-                keys.session(accountId, jwtId), Long.toString(accountId), ttl);// 存储账户ID，并设置TTL
+            keys.session(accountId, jwtId), Long.toString(accountId), ttl);// 存储账户ID，并设置TTL
         if (!Boolean.TRUE.equals(stored)) throw new IllegalStateException("Session already exists");
 
     }
@@ -37,7 +37,7 @@ public class RedisSessionStateStore implements SessionStateStore { // 定义 Ses
     public void revoke(long accountId, String jwtId, Instant expiresAt, Instant now) {
         Duration ttl = positiveTtl(expiresAt, now); // 计算需要拉黑的时长
         redis.execute(REVOKE_SCRIPT, List.of(keys.session(accountId, jwtId), keys.revoked(accountId, jwtId)), //执行撤销的脚本
-                Long.toString(ttl.toMillis())); //传入 TTL 毫秒数
+            Long.toString(ttl.toMillis())); //传入 TTL 毫秒数
     }
 
     @Override // 禁用账户

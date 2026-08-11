@@ -13,9 +13,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.stereotype.Component;
 
 /**
  * 将经过验证的 JWT Claims 声明转换为最小化的、不可变的内部 Principal 对象。
@@ -58,9 +55,9 @@ final class JwtPrincipalMapper {
         }
         // 解析角色和权限
         return new CurrentUserPrincipal(
-                subject,
-                claimSet(jwt, "roles"),
-                claimSet(jwt, "permissions"));
+            subject,
+            claimSet(jwt, "roles"),
+            claimSet(jwt, "permissions"));
     }
 
 }

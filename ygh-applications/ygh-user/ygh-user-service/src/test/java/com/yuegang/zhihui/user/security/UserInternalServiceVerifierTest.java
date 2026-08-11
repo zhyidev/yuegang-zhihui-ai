@@ -38,8 +38,8 @@ class UserInternalServiceVerifierTest {
         request.addHeader("X-YGH-Service-Timestamp", "invalid");
         assertThatThrownBy(() -> verifier.verify(request)).isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> verifier.verify(signed(now.minusSeconds(60), "GET", "/internal/v1/users/1")))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> verifier.verify(signed(now, "POST", "/internal/v1/users/1")))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
     }
 }

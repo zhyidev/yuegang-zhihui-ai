@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class DeliveryContractTest {
@@ -23,19 +24,21 @@ class DeliveryContractTest {
 
     private static boolean isReactorRoot(Path path) {
         return Files.isRegularFile(path.resolve("pom.xml"))
-                && Files.isDirectory(path.resolve("ygh-applications"))
-                && Files.isDirectory(path.resolve("ygh-tests"));
+            && Files.isDirectory(path.resolve("ygh-applications"))
+            && Files.isDirectory(path.resolve("ygh-tests"));
     }
 
-    @Test void everyBusinessDomainPublishesAnApiModule() {
+    @Test
+    void everyBusinessDomainPublishesAnApiModule() {
         for (String domain : List.of("user", "system", "product", "inventory", "order", "wallet",
-                "knowledge", "search", "ai", "training", "notification", "admin")) {
+            "knowledge", "search", "ai", "training", "notification", "admin")) {
             Path api = ROOT.resolve("ygh-applications/ygh-" + domain + "/ygh-" + domain + "-api/pom.xml");
             assertTrue(Files.isRegularFile(api), () -> "missing API contract module: " + api);
         }
     }
 
-    @Test void versionedCollectionsAndOpenApiExportAreTracked() {
+    @Test
+    void versionedCollectionsAndOpenApiExportAreTracked() {
         assertTrue(Files.isDirectory(ROOT.resolve("spec/bruno")));
         assertTrue(Files.isRegularFile(ROOT.resolve("spec/openapi/gateway-service-v1.json")));
         assertTrue(Files.isRegularFile(ROOT.resolve("spec/backend-delivery.md")));

@@ -9,16 +9,18 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
-/** 使用 Redis 存储验证码挑战信息，采用 Lua 脚本保证"验证并删除"的原子性 */
+/**
+ * 使用 Redis 存储验证码挑战信息，采用 Lua 脚本保证"验证并删除"的原子性
+ */
 public final class RedisCaptchaChallengeStore implements CaptchaChallengeStore { // 验证码存储
     // Lua脚本: GET 获取值，若存在则删除，比较信号是否等于预期，返回 1(成功) 或 0(失败/不存在)
     private static final DefaultRedisScript<Long> CONSUME = new DefaultRedisScript<>("""
-    local actual = redis.call('GET', KEYS[1])
-    if not actual then return 0 end
-    redis.call('DEL', KEYS[1])
-    if actual == ARGV[1] then return 1 end
-    return 0
-    """, Long.class);
+        local actual = redis.call('GET', KEYS[1])
+        if not actual then return 0 end
+        redis.call('DEL', KEYS[1])
+        if actual == ARGV[1] then return 1 end
+        return 0
+        """, Long.class);
     private final StringRedisTemplate redis; // Redis操作对象
     private final RedisKeyBuilder keys; // Key构造器
     private final String environment; // 调用环境节点对象

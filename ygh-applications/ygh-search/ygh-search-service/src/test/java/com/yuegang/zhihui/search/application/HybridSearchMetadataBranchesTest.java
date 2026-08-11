@@ -11,6 +11,12 @@ import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class HybridSearchMetadataBranchesTest {
+    private static Object call(String name, Class<?> type, Object value) throws Exception {
+        Method method = HybridSearchService.class.getDeclaredMethod(name, type);
+        method.setAccessible(true);
+        return method.invoke(null, value);
+    }
+
     @Test
     void parsesEverySupportedOptionalMetadataRepresentation() throws Exception {
         OffsetDateTime now = OffsetDateTime.parse("2026-07-12T12:00:00Z");
@@ -27,11 +33,5 @@ class HybridSearchMetadataBranchesTest {
         assertThat((List<?>) call("parse", Map.class, null)).isEmpty();
         assertThat((List<?>) call("parse", Map.class, Map.of())).isEmpty();
         assertThat((List<?>) call("parse", Map.class, Map.of("hits", Map.of()))).isEmpty();
-    }
-
-    private static Object call(String name, Class<?> type, Object value) throws Exception {
-        Method method = HybridSearchService.class.getDeclaredMethod(name, type);
-        method.setAccessible(true);
-        return method.invoke(null, value);
     }
 }

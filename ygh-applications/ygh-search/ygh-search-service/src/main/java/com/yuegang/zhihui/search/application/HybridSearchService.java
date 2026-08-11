@@ -48,11 +48,11 @@ public final class HybridSearchService {
             merged.merge(hit.key(), hit.withVector(rrf), Raw::merge);
         }
         return merged.values().stream()
-                .sorted(Comparator.comparingDouble(Raw::finalScore).reversed())
-                .limit(limit)
-                .map(hit -> new SearchHit(hit.document, hit.chunk, hit.title, excerpt(hit.content),
-                        hit.documentVersion, hit.updatedAt, hit.lexical, hit.vector, hit.finalScore()))
-                .toList();
+            .sorted(Comparator.comparingDouble(Raw::finalScore).reversed())
+            .limit(limit)
+            .map(hit -> new SearchHit(hit.document, hit.chunk, hit.title, excerpt(hit.content),
+                hit.documentVersion, hit.updatedAt, hit.lexical, hit.vector, hit.finalScore()))
+            .toList();
     }
 
     private static List<Raw> parse(Map<?, ?> body) {
@@ -66,9 +66,9 @@ public final class HybridSearchService {
             var row = (Map<?, ?>) value;
             var source = (Map<?, ?>) row.get("_source");
             out.add(new Raw(Objects.toString(source.get("documentId")), Objects.toString(source.get("chunkId")),
-                    Objects.toString(source.get("title")), Objects.toString(source.get("content")),
-                    number(source.get("documentVersion")).longValue(), date(source.get("sourceUpdatedAt")),
-                    ((Number) row.get("_score")).doubleValue(), 0));
+                Objects.toString(source.get("title")), Objects.toString(source.get("content")),
+                number(source.get("documentVersion")).longValue(), date(source.get("sourceUpdatedAt")),
+                ((Number) row.get("_score")).doubleValue(), 0));
         }
         return out;
     }
@@ -118,18 +118,18 @@ public final class HybridSearchService {
             arguments.add(literal);
             arguments.add(request.limit() * 2);
             return jdbc.query("""
-                            SELECT document_id,chunk_id,title,content,document_version,source_updated_at,
-                                   1-(embedding <=> ?::vector) score
-                            FROM search_embedding
-                            WHERE index_version=(SELECT active_version FROM search_index_version WHERE alias_name=?)
-                              AND embedding IS NOT NULL
-                              AND visibility IN (%s)
-                              %s
-                            ORDER BY embedding <=> ?::vector
-                            LIMIT ?
-                            """.formatted(markers, request.category() == null ? "" : "AND category=?"),
-                    (row, index) -> new Raw(row.getString(1), row.getString(2), row.getString(3), row.getString(4),
-                            row.getLong(5), offset(row.getObject(6)), 0, row.getDouble(7)), arguments.toArray());
+                    SELECT document_id,chunk_id,title,content,document_version,source_updated_at,
+                           1-(embedding <=> ?::vector) score
+                    FROM search_embedding
+                    WHERE index_version=(SELECT active_version FROM search_index_version WHERE alias_name=?)
+                      AND embedding IS NOT NULL
+                      AND visibility IN (%s)
+                      %s
+                    ORDER BY embedding <=> ?::vector
+                    LIMIT ?
+                    """.formatted(markers, request.category() == null ? "" : "AND category=?"),
+                (row, index) -> new Raw(row.getString(1), row.getString(2), row.getString(3), row.getString(4),
+                    row.getLong(5), offset(row.getObject(6)), 0, row.getDouble(7)), arguments.toArray());
         } catch (RuntimeException exception) {
             LOGGER.warn("vector_search_unavailable alias={} type={}", alias, exception.getClass().getSimpleName());
             return List.of();
@@ -144,12 +144,12 @@ public final class HybridSearchService {
         }
         try {
             Map<?, ?> body = elastic.post().uri("/" + alias + "/_search").body(Map.of(
-                            "size", request.limit() * 2,
-                            "query", Map.of("bool", Map.of(
-                                    "must", List.of(Map.of("multi_match", Map.of(
-                                            "query", request.query(), "fields", List.of("title^3", "content")))),
-                                    "filter", filters))))
-                    .retrieve().body(Map.class);
+                    "size", request.limit() * 2,
+                    "query", Map.of("bool", Map.of(
+                        "must", List.of(Map.of("multi_match", Map.of(
+                            "query", request.query(), "fields", List.of("title^3", "content")))),
+                        "filter", filters))))
+                .retrieve().body(Map.class);
             return parse(body);
         } catch (RuntimeException exception) {
             LOGGER.warn("lexical_search_unavailable alias={} type={}", alias, exception.getClass().getSimpleName());
@@ -160,35 +160,35 @@ public final class HybridSearchService {
     public void index(IndexChunkCommand command) {
         if (!command.published()) throw new BusinessException(ErrorCode.PERMISSION_DENIED);
         String storageVersion = "knowledge-active".equals(command.indexVersion())
-                ? activeVersion("knowledge-active") : command.indexVersion();
+            ? activeVersion("knowledge-active") : command.indexVersion();
         if (!"PRODUCT".equals(command.category())) {
             indexVector(command, storageVersion);
         }
         elastic.put().uri("/" + command.indexVersion() + "/_doc/" + command.chunkId()).body(Map.of(
-                        "documentId", command.documentId(), "chunkId", command.chunkId(), "title", command.title(),
-                        "content", command.content(), "category", command.category(), "visibility", command.visibility(),
-                        "documentVersion", command.documentVersion(), "sourceUpdatedAt",
-                        command.sourceUpdatedAt() == null ? "" : command.sourceUpdatedAt().toString()))
-                .retrieve().toBodilessEntity();
+                "documentId", command.documentId(), "chunkId", command.chunkId(), "title", command.title(),
+                "content", command.content(), "category", command.category(), "visibility", command.visibility(),
+                "documentVersion", command.documentVersion(), "sourceUpdatedAt",
+                command.sourceUpdatedAt() == null ? "" : command.sourceUpdatedAt().toString()))
+            .retrieve().toBodilessEntity();
     }
 
     private void indexVector(IndexChunkCommand command, String storageVersion) {
         try {
             var vector = embeddings.embed(command.content());
             jdbc.update("INSERT INTO search_embedding(document_id,chunk_id,index_version,visibility,embedding,content_sha256,document_version,source_updated_at,title,category,content) VALUES(?,?,?,?,?::vector,encode(sha256(?::bytea),'hex'),?,?,?,?,?) ON CONFLICT(document_id,chunk_id,index_version) DO UPDATE SET embedding=EXCLUDED.embedding,visibility=EXCLUDED.visibility,document_version=EXCLUDED.document_version,source_updated_at=EXCLUDED.source_updated_at,title=EXCLUDED.title,category=EXCLUDED.category,content=EXCLUDED.content",
-                    command.documentId(), command.chunkId(), storageVersion, command.visibility(),
-                    vector.toString(), command.content().getBytes(java.nio.charset.StandardCharsets.UTF_8),
-                    command.documentVersion(), command.sourceUpdatedAt(), command.title(), command.category(),
-                    command.content());
+                command.documentId(), command.chunkId(), storageVersion, command.visibility(),
+                vector.toString(), command.content().getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                command.documentVersion(), command.sourceUpdatedAt(), command.title(), command.category(),
+                command.content());
         } catch (RuntimeException exception) {
             LOGGER.warn("vector_index_unavailable documentId={} type={}", command.documentId(),
-                    exception.getClass().getSimpleName());
+                exception.getClass().getSimpleName());
         }
     }
 
     private String activeVersion(String aliasName) {
         String version = jdbc.queryForObject(
-                "SELECT active_version FROM search_index_version WHERE alias_name=?", String.class, aliasName);
+            "SELECT active_version FROM search_index_version WHERE alias_name=?", String.class, aliasName);
         if (version == null || version.isBlank()) throw new BusinessException(ErrorCode.DEPENDENCY_UNAVAILABLE);
         return version;
     }
@@ -209,8 +209,8 @@ public final class HybridSearchService {
 
         Raw merge(Raw other) {
             return new Raw(document, chunk, title.isBlank() ? other.title : title,
-                    content.isBlank() ? other.content : content, documentVersion == 0 ? other.documentVersion : documentVersion,
-                    updatedAt == null ? other.updatedAt : updatedAt, lexical + other.lexical, vector + other.vector);
+                content.isBlank() ? other.content : content, documentVersion == 0 ? other.documentVersion : documentVersion,
+                updatedAt == null ? other.updatedAt : updatedAt, lexical + other.lexical, vector + other.vector);
         }
 
         double finalScore() {

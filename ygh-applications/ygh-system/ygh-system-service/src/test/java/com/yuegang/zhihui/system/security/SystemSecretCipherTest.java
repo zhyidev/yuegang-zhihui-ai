@@ -19,12 +19,12 @@ class SystemSecretCipherTest {
 
         var wrong = new SystemSecretCipher("abcdefghijklmnopqrstuvwxyz123456".getBytes(StandardCharsets.UTF_8));
         assertThatThrownBy(() -> wrong.decrypt(first.ciphertext(), first.nonce()))
-                .isInstanceOf(IllegalStateException.class);
+            .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void requiresAes256MasterKey() {
         assertThatThrownBy(() -> new SystemSecretCipher(new byte[16]))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

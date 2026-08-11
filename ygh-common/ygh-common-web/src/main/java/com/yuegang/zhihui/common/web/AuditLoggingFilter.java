@@ -28,10 +28,10 @@ public class AuditLoggingFilter extends OncePerRequestFilter { // 定义审计�
 
     @Override // 标记速写
     protected void doFilterInternal(
-            HttpServletRequest r, // 请求参数
-            HttpServletResponse p, // 响应参数
-            FilterChain c) // 过滤链
-            throws ServletException, IOException { // 过滤核心逻辑
+        HttpServletRequest r, // 请求参数
+        HttpServletResponse p, // 响应参数
+        FilterChain c) // 过滤链
+        throws ServletException, IOException { // 过滤核心逻辑
         boolean failed = false; // 定义失败标记位
         try { // 开启 try 块
             c.doFilter(r, p); // 将请求传递给过滤链中的下一个元素 (如业务 Controller)

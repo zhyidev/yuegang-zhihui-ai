@@ -53,8 +53,8 @@ final class GatewayJwtValidators {
 
         // 自定义受众验证器：令牌的 aud 声明必须包含配置的受众值
         OAuth2TokenValidator<Jwt> audienceValidator = new JwtClaimValidator<List<String>>(
-                JwtClaimNames.AUD,
-                aud -> aud != null && aud.contains(audience));
+            JwtClaimNames.AUD,
+            aud -> aud != null && aud.contains(audience));
 
         // 合并多个验证逻辑（全部通过才放行）
         return new DelegatingOAuth2TokenValidator<>(defaults, audienceValidator);

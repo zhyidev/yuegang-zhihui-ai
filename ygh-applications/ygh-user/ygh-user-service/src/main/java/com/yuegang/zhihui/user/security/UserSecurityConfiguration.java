@@ -17,7 +17,7 @@ public class UserSecurityConfiguration { // 定义安全配置类
     @Bean
         // 将方法返回值注册为 Spring Bean
     TrustedUserContextResolver trustedUserContextResolver(
-            @Value("${ygh.internal-request.hmac-base64}") String encodedSecret, Clock clock) { // 注入 Base64 编码的密钥和时钟
+        @Value("${ygh.internal-request.hmac-base64}") String encodedSecret, Clock clock) { // 注入 Base64 编码的密钥和时钟
         byte[] secret; // 声明字节数组用于存储密钥
         try {
             secret = Base64.getDecoder().decode(encodedSecret);
@@ -36,7 +36,7 @@ public class UserSecurityConfiguration { // 定义安全配置类
     @Bean
         // 将内部服务验证器注册为 Spring Bean
     UserInternalServiceVerifier userInternalServiceVerifier(
-            @Value("${ygh.internal-request.hmac-base64}") String encodedSecret) { // 注入相同内部的请求密钥
+        @Value("${ygh.internal-request.hmac-base64}") String encodedSecret) { // 注入相同内部的请求密钥
         byte[] secret = Base64.getDecoder().decode(encodedSecret); // 解码密钥
         try {
             return new UserInternalServiceVerifier(secret);

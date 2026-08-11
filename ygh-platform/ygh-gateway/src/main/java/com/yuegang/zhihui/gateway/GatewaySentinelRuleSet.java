@@ -24,17 +24,17 @@ public class GatewaySentinelRuleSet {
 
         //为各个微服务路由定义具体QPS和突发处理能力
         return Set.of(
-                rule("auth-service", authQps, authBurst),
-                rule("user-service", serviceQps, serviceBurst),
-                rule("system-service", serviceQps, serviceBurst),
-                rule("admin-service", serviceQps, serviceBurst));
+            rule("auth-service", authQps, authBurst),
+            rule("user-service", serviceQps, serviceBurst),
+            rule("system-service", serviceQps, serviceBurst),
+            rule("admin-service", serviceQps, serviceBurst));
     }
 
     private static GatewayFlowRule rule(String routeId, double qps, int burst) {
         return new GatewayFlowRule(routeId)
-                .setCount(qps) //每次限制次数
-                .setIntervalSec(1) //窗口1秒
-                .setBurst(burst); //允许超额突发的排队数
+            .setCount(qps) //每次限制次数
+            .setIntervalSec(1) //窗口1秒
+            .setBurst(burst); //允许超额突发的排队数
 
     }
 

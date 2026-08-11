@@ -1,1 +1,7 @@
-package com.yuegang.zhihui.training.api;import jakarta.validation.constraints.*;public record SaveGateRequest(@NotBlank String chapterId,@NotBlank @Size(max=200)String title,@Min(0)@Max(100)int passScore,@Positive Integer maximumAttempts){}
+package com.yuegang.zhihui.training.api;
+
+import jakarta.validation.constraints.*;
+
+public record SaveGateRequest(@NotBlank String chapterId, @NotBlank @Size(max = 200) String title,
+                              @Min(0) @Max(100) int passScore, @Positive Integer maximumAttempts) {
+}

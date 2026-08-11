@@ -1,13 +1,14 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yuegang.zhihui.common.core.PageRequest;
+import org.junit.jupiter.api.Test;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class MybatisPageAdapterTest {
 
@@ -68,7 +69,7 @@ class MybatisPageAdapterTest {
 
         assertThat(response.records()).containsExactly("A");
         assertThatThrownBy(() -> response.records().add("C"))
-                .isInstanceOf(UnsupportedOperationException.class);
+            .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
@@ -76,11 +77,11 @@ class MybatisPageAdapterTest {
         var source = new Page<String>(1, 20, 0);
 
         assertThatThrownBy(() -> MybatisPageAdapter.toMybatisPage(null))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> MybatisPageAdapter.toPageResponse(null, value -> value))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> MybatisPageAdapter.toPageResponse(source, null))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
     }
 
     private record EntityRow(String value) {

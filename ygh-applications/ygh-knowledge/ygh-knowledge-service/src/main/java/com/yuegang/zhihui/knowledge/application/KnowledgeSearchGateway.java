@@ -27,10 +27,10 @@ public final class KnowledgeSearchGateway {
 
     private static SearchHit hit(Map<String, Object> value) {
         return new SearchHit(Objects.toString(value.get("documentId")), Objects.toString(value.get("chunkId")),
-                Objects.toString(value.get("title")), Objects.toString(value.get("excerpt")),
-                number(value.get("documentVersion")).longValue(), date(value.get("sourceUpdatedAt")),
-                number(value.get("lexicalScore")).doubleValue(), number(value.get("vectorScore")).doubleValue(),
-                number(value.get("finalScore")).doubleValue());
+            Objects.toString(value.get("title")), Objects.toString(value.get("excerpt")),
+            number(value.get("documentVersion")).longValue(), date(value.get("sourceUpdatedAt")),
+            number(value.get("lexicalScore")).doubleValue(), number(value.get("vectorScore")).doubleValue(),
+            number(value.get("finalScore")).doubleValue());
     }
 
     private static Number number(Object value) {
@@ -51,11 +51,11 @@ public final class KnowledgeSearchGateway {
         var metadata = new InternalServiceSignature.Metadata("ygh-knowledge-service", "POST", PATH, now);
         @SuppressWarnings("unchecked")
         ApiResponse<List<Map<String, Object>>> response = client.post().uri(PATH)
-                .header("X-YGH-Service", "ygh-knowledge-service")
-                .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
-                .header("X-YGH-Service-Signature", signatures.sign(metadata))
-                .body(new SearchRequest(query, limit, category, visibilities))
-                .retrieve().body(ApiResponse.class);
+            .header("X-YGH-Service", "ygh-knowledge-service")
+            .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
+            .header("X-YGH-Service-Signature", signatures.sign(metadata))
+            .body(new SearchRequest(query, limit, category, visibilities))
+            .retrieve().body(ApiResponse.class);
         if (response == null || response.data() == null) return List.of();
         return response.data().stream().map(KnowledgeSearchGateway::hit).toList();
     }

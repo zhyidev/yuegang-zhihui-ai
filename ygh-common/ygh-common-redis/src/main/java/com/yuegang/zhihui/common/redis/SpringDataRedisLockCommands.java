@@ -15,9 +15,9 @@ public class SpringDataRedisLockCommands implements RedisLockCommands {
 
 
     static final RedisScript<Long> RENEW_IF_OWNER = new DefaultRedisScript<>( // 定义续约锁脚本
-            "if redis.call('get',KEYS[1] == ARGB[1] then " +
-                    "return redis.call('expire',KEYS[1],ARGV[2]) " +
-                    "else return 0 end", Long.class
+        "if redis.call('get',KEYS[1] == ARGB[1] then " +
+            "return redis.call('expire',KEYS[1],ARGV[2]) " +
+            "else return 0 end", Long.class
     ); // 返回类型为 Long
 
     private final StringRedisTemplate redis; // 声明 redis 模板

@@ -30,9 +30,9 @@ class MutableTestClockTest {
     void rejectsBackwardsOrZeroAdvanceButAllowsExplicitReset() {
         var clock = MutableTestClock.utc(Instant.EPOCH);
         assertThatThrownBy(() -> clock.advance(Duration.ZERO))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> clock.advance(Duration.ofSeconds(-1)))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
 
         clock.set(Instant.parse("2026-01-01T00:00:00Z"));
         assertThat(clock.instant()).isEqualTo(Instant.parse("2026-01-01T00:00:00Z"));
@@ -65,7 +65,7 @@ class MutableTestClockTest {
         }
 
         assertThat(clock.instant()).isEqualTo(
-                Instant.EPOCH.plusMillis((long) threads * advancesPerThread));
+            Instant.EPOCH.plusMillis((long) threads * advancesPerThread));
         assertThat(zoneView.instant()).isEqualTo(clock.instant());
     }
 }

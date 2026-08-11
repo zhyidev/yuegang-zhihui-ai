@@ -4,7 +4,9 @@ import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.Objects;
 
-/** Creates a per-attempt owner with 192 bits of cryptographic randomness. */
+/**
+ * Creates a per-attempt owner with 192 bits of cryptographic randomness.
+ */
 public final class SecureMessageClaimOwnerGenerator implements MessageClaimOwnerGenerator {
 
     private final SecureRandom random; // 随机源

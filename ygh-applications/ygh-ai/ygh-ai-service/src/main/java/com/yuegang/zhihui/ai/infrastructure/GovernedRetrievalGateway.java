@@ -3,6 +3,7 @@ package com.yuegang.zhihui.ai.infrastructure;
 import com.yuegang.zhihui.ai.application.AiSafetyPolicy;
 import com.yuegang.zhihui.ai.domain.RetrievalGateway;
 import com.yuegang.zhihui.search.api.SearchHit;
+
 import java.util.List;
 import java.util.Set;
 

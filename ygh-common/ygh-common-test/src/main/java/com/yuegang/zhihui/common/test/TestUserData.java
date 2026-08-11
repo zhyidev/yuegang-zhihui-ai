@@ -23,6 +23,6 @@ public record TestUserData(String userId, String username, String email, String 
     @Override
     public String toString() {
         return "TestUserData[userId=" + userId + ", username=" + username
-                + ", email=[REDACTED], displayName=" + displayName + ']';
+            + ", email=[REDACTED], displayName=" + displayName + ']';
     }
 }

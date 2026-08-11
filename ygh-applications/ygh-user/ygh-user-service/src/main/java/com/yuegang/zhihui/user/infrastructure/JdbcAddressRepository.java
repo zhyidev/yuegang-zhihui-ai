@@ -19,8 +19,8 @@ import java.util.Optional;
 public class JdbcAddressRepository implements AddressRepository { //实现地址仓储接口
 
     private static final String SELECT = """
-            SELECT id, user_id, label, recipient_name_ciphertext, recipient_phone_ciphertext, pii_key_version, country_code, province_code, province_name, city_name, district_name,address_detail_ciphertext , postal_code, is_default, version, updated_at FROM user_address
-            """; // 定义基础的查询sQL语句
+        SELECT id, user_id, label, recipient_name_ciphertext, recipient_phone_ciphertext, pii_key_version, country_code, province_code, province_name, city_name, district_name,address_detail_ciphertext , postal_code, is_default, version, updated_at FROM user_address
+        """; // 定义基础的查询sQL语句
 
     private final JdbcTemplate jdbc; // 定义核心组件
     private final TransactionTemplate tx; // 定义核心组件
@@ -48,11 +48,11 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
             boolean makeDefault = r.defaultAddress() || count(userId) == 0; // 如果用户指定或这是一条地址，则设为默认
             if (makeDefault) clearDefault(userId); // 如果新地址是默认的，先清除旧默认标记
             jdbc.update("""
-                            INSERT INTO user_address(id,user_id,label,recipient_name_ciphertext,recipient_phone_ciphertext,pii_key_version,
-                                                     country_code,province_code,province_name,city_name,district_name,address_detail_ciphertext,postal_code,is_default)
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                            """, id, userId, blankToNull(r.label()), cipher.encrypt(userId, "recipient_name", r.recipientName()), // 加密姓名
-                    cipher.encrypt(userId, "recipient_phone", r.recipientPhone()), cipher.keyVersion(), r.countryCode(), blankToNull(r.provinceCode()), r.provinceName(), r.cityName(), r.districtName(), cipher.encrypt(userId, "addressDetail", r.addressDetail()), blankToNull(r.postalCode()) //加密详细地址
+                    INSERT INTO user_address(id,user_id,label,recipient_name_ciphertext,recipient_phone_ciphertext,pii_key_version,
+                                             country_code,province_code,province_name,city_name,district_name,address_detail_ciphertext,postal_code,is_default)
+                    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    """, id, userId, blankToNull(r.label()), cipher.encrypt(userId, "recipient_name", r.recipientName()), // 加密姓名
+                cipher.encrypt(userId, "recipient_phone", r.recipientPhone()), cipher.keyVersion(), r.countryCode(), blankToNull(r.provinceCode()), r.provinceName(), r.cityName(), r.districtName(), cipher.encrypt(userId, "addressDetail", r.addressDetail()), blankToNull(r.postalCode()) //加密详细地址
             );
             return one(id, userId).orElseThrow(); // 返回新创建的地址对象
         }));
@@ -66,13 +66,13 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
             if (r.defaultAddress() && !currentlyDefault) clearDefault(userId); // 若想改为默认且原本不是，则清除旧默认
             Boolean desireDefault = r.defaultAddress() || (currentlyDefault && count(userId) == 1); // 维持唯一的默认状态
             int changed = jdbc.update("""
-                            UPDATE user_address SET
-                            label=?,recipient_name_ciphertext=?,recipient_phone_ciphertext=?,
-                            pii_key_version=?,country_code=?,province_code=?,province_name=?,city_name=?,district_name=?,
-                            address_detail_ciphertext=?,postal_code=?,is_default=?,version=version+1
-                            WHERE id=? AND user_id=? AND version=?
-                            """, blankToNull(r.label()), cipher.encrypt(userId, "recipientName", r.recipientName()), // 更新重新加密
-                    cipher.encrypt(userId, "recipientPhone", r.recipientPhone()), cipher.keyVersion(), r.countryCode(), blankToNull(r.provinceCode()), r.provinceName(), r.cityName(), r.districtName(), cipher.encrypt(userId, "addressDetail", r.addressDetail()), blankToNull(r.postalCode()), desireDefault, id, userId, r.version()); // 执行基于乐观锁 version 的更新
+                    UPDATE user_address SET
+                    label=?,recipient_name_ciphertext=?,recipient_phone_ciphertext=?,
+                    pii_key_version=?,country_code=?,province_code=?,province_name=?,city_name=?,district_name=?,
+                    address_detail_ciphertext=?,postal_code=?,is_default=?,version=version+1
+                    WHERE id=? AND user_id=? AND version=?
+                    """, blankToNull(r.label()), cipher.encrypt(userId, "recipientName", r.recipientName()), // 更新重新加密
+                cipher.encrypt(userId, "recipientPhone", r.recipientPhone()), cipher.keyVersion(), r.countryCode(), blankToNull(r.provinceCode()), r.provinceName(), r.cityName(), r.districtName(), cipher.encrypt(userId, "addressDetail", r.addressDetail()), blankToNull(r.postalCode()), desireDefault, id, userId, r.version()); // 执行基于乐观锁 version 的更新
             if (changed == 1 && currentlyDefault && !desireDefault)
                 promoteDefault(userId, id); // 若取消了默认且还有其他地址，自动选一个设为默认
             return changed == 1 ? one(id, userId) : Optional.empty(); // 返回登录
@@ -83,7 +83,7 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
     public boolean delete(long id, long userId, long version) { // 删除地址
         return Boolean.TRUE.equals(tx.execute(status -> { // 开启事务
             Boolean wasDefault = jdbc.query("SELECT is_default FROM user_address WHERE id=? AND user_id=? AND version=? FOR UPDATE",
-                    rs -> rs.next() ? rs.getBoolean(1) : null, id, userId, version); // 查询并锁定即将删除的行
+                rs -> rs.next() ? rs.getBoolean(1) : null, id, userId, version); // 查询并锁定即将删除的行
             if (wasDefault == null || jdbc.update("DELETE FROM user_address WHERE id=? AND user_id=? AND version=?", id, userId, version) != 1)
                 return false; // 若不存在或删除失败，返回 false
             if (wasDefault) promoteDefault(userId, id); // 如果删除的是默认地址，自动顺位提升一个新地址为默认
@@ -98,7 +98,7 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
             if (currentlyDefault == null) return Optional.empty(); // 不存在
             if (!currentlyDefault) clearDefault(userId); // 若当前非默认，先清空其他默认项
             if (jdbc.update("UPDATE user_address SET is_default=TRUE,version=version+1 WHERE id=? AND user_id=? AND version=?",
-                    id, userId, version) != 1)
+                id, userId, version) != 1)
                 return Optional.empty(); // 更新失败（乐观锁冲突）
             return one(id, userId); // 返回结果
         });
@@ -110,10 +110,10 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
 
     private void promoteDefault(long userId, long excludeId) { // 内部方法：选举最新的地址作为默认地址
         jdbc.update("""
-                UPDATE user_address SET is_default=TRUE,version=version+1 WHERE id=(
-                    SELECT id FROM (SELECT id FROM user_address WHERE user_id=? AND id<>? ORDER BY updated_at DESC,id DESC LIMIT 1)
-                    candidate)
-                """, userId, excludeId);
+            UPDATE user_address SET is_default=TRUE,version=version+1 WHERE id=(
+                SELECT id FROM (SELECT id FROM user_address WHERE user_id=? AND id<>? ORDER BY updated_at DESC,id DESC LIMIT 1)
+                candidate)
+            """, userId, excludeId);
     }
 
     private int count(long userId) { // 内部方法：统计用户地址总数
@@ -132,9 +132,9 @@ public class JdbcAddressRepository implements AddressRepository { //实现地址
         long owner = rs.getLong("user_id");
         int keyVersion = rs.getInt("pii_key_version");
         return new AddressView(Long.toString(rs.getLong("id")), rs.getString("label"), cipher.decrypt(owner, "recipientName", keyVersion, rs.getBytes("recipient_name_ciphertext")), // 解密姓名
-                cipher.decrypt(owner, "recipientPhone", keyVersion, rs.getBytes("recipient_phone_ciphertext")), // 解密电话
-                rs.getString("country_code"), rs.getString("province_code"), rs.getString("province_name"), rs.getString("city_name"), rs.getString("district_name"), cipher.decrypt(owner, "addressDetail", keyVersion, rs.getBytes("address_detail_ciphertext")), // 解密详细地址
-                rs.getString("postal_code"), rs.getBoolean("is_default"), rs.getLong("version"), rs.getTimestamp("updated_at").toLocalDateTime().atOffset(ZoneOffset.UTC) // 按时间戳为 UTC OffsetDateTime
+            cipher.decrypt(owner, "recipientPhone", keyVersion, rs.getBytes("recipient_phone_ciphertext")), // 解密电话
+            rs.getString("country_code"), rs.getString("province_code"), rs.getString("province_name"), rs.getString("city_name"), rs.getString("district_name"), cipher.decrypt(owner, "addressDetail", keyVersion, rs.getBytes("address_detail_ciphertext")), // 解密详细地址
+            rs.getString("postal_code"), rs.getBoolean("is_default"), rs.getLong("version"), rs.getTimestamp("updated_at").toLocalDateTime().atOffset(ZoneOffset.UTC) // 按时间戳为 UTC OffsetDateTime
         );
     }
 }

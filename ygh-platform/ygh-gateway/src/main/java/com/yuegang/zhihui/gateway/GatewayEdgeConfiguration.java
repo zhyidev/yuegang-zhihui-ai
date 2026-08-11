@@ -29,9 +29,9 @@ class GatewayEdgeConfiguration {
     static Set<String> parsePaths(String configuredPaths) {
         var paths = new LinkedHashSet<String>();
         Arrays.stream(configuredPaths.split(","))
-                .map(String::trim)
-                .filter(path -> !path.isEmpty())
-                .forEach(paths::add);
+            .map(String::trim)
+            .filter(path -> !path.isEmpty())
+            .forEach(paths::add);
         return Set.copyOf(paths);
     }
 
@@ -46,14 +46,14 @@ class GatewayEdgeConfiguration {
      */
     @Bean
     GatewayRequestGuardFilter gatewayRequestGuardFilter(
-            @Value("${ygh.gateway.request.max-size:2MB}") DataSize requestMaxSize,
-            @Value("${ygh.gateway.request.upload-max-size:50MB}") DataSize uploadMaxSize,
-            @Value("${ygh.gateway.request.upload-paths}") String uploadPaths,
-            GatewaySecurityErrorWriter errorWriter) {
+        @Value("${ygh.gateway.request.max-size:2MB}") DataSize requestMaxSize,
+        @Value("${ygh.gateway.request.upload-max-size:50MB}") DataSize uploadMaxSize,
+        @Value("${ygh.gateway.request.upload-paths}") String uploadPaths,
+        GatewaySecurityErrorWriter errorWriter) {
         return new GatewayRequestGuardFilter(
-                requestMaxSize.toBytes(),
-                uploadMaxSize.toBytes(),
-                parsePaths(uploadPaths),
-                errorWriter);
+            requestMaxSize.toBytes(),
+            uploadMaxSize.toBytes(),
+            parsePaths(uploadPaths),
+            errorWriter);
     }
 }

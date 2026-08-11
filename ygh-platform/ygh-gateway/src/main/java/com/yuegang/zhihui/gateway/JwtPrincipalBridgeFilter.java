@@ -26,16 +26,16 @@ final class JwtPrincipalBridgeFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         // 从响应式安全上下文中获取认证信息
         return ReactiveSecurityContextHolder.getContext()
-                .map(context -> context.getAuthentication())
-                .filter(auth -> auth != null && auth.isAuthenticated())
-                .map(auth -> auth.getPrincipal())
-                .filter(Jwt.class::isInstance)
-                .cast(Jwt.class)
-                // 如果存在合法JWT，解析并存入应用属性
-                .doOnNext(jwt -> exchange.getAttributes().put(
-                        GatewaySecurityAttributes.AUTHENTICATION_PRINCIPAL,
-                        principalMapper.map(jwt)))
-                .then(Mono.defer(() -> chain.filter(exchange)));
+            .map(context -> context.getAuthentication())
+            .filter(auth -> auth != null && auth.isAuthenticated())
+            .map(auth -> auth.getPrincipal())
+            .filter(Jwt.class::isInstance)
+            .cast(Jwt.class)
+            // 如果存在合法JWT，解析并存入应用属性
+            .doOnNext(jwt -> exchange.getAttributes().put(
+                GatewaySecurityAttributes.AUTHENTICATION_PRINCIPAL,
+                principalMapper.map(jwt)))
+            .then(Mono.defer(() -> chain.filter(exchange)));
     }
 
     @Override

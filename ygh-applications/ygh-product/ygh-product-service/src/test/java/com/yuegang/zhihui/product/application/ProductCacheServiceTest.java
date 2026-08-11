@@ -22,7 +22,7 @@ import static org.mockito.Mockito.*;
 class ProductCacheServiceTest {
     private static ProductView product() {
         return new ProductView("10", "1", "20", null, "商品", "SKU-1", BigDecimal.TEN, "CNY",
-                ProductStatus.PUBLISHED, List.of(), "TRACE", 1);
+            ProductStatus.PUBLISHED, List.of(), "TRACE", 1);
     }
 
     @Test
@@ -52,12 +52,12 @@ class ProductCacheServiceTest {
         assertThatThrownBy(() -> service.detail("4", () -> {
             throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
         }))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         verify(values).set("ygh:product:detail:4", "__MISS__", Duration.ofSeconds(30));
 
         when(values.get("ygh:product:catalog-version")).thenReturn("5");
         when(values.get(anyString())).thenAnswer(invocation -> invocation.getArgument(0).toString().startsWith("ygh:product:list:")
-                ? mapper.writeValueAsString(List.of(product)) : null);
+            ? mapper.writeValueAsString(List.of(product)) : null);
         assertThat(service.list("cat", " snack ", 10, List::of)).containsExactly(product);
 
         when(redis.delete(anyString())).thenThrow(new IllegalStateException("redis unavailable"));

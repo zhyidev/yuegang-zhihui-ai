@@ -9,18 +9,21 @@ import com.yuegang.zhihui.order.api.OrderPreviewView;
 import com.yuegang.zhihui.order.infrastructure.InventoryClient;
 import com.yuegang.zhihui.product.api.ProductStatus;
 import com.yuegang.zhihui.product.api.ProductView;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class CheckoutService {
     private final RestClient products;
     private final InventoryClient inventory;
 
-    public CheckoutService(String baseUrl) { this(baseUrl, null); }
+    public CheckoutService(String baseUrl) {
+        this(baseUrl, null);
+    }
 
     public CheckoutService(String baseUrl, InventoryClient inventory) {
         products = RestClient.builder().baseUrl(baseUrl).build();
@@ -34,12 +37,13 @@ public final class CheckoutService {
             ApiResponse<ProductView> response;
             try {
                 response = products.get().uri("/api/v1/products/" + requested.skuId())
-                        .retrieve().body(new ParameterizedTypeReference<>() { });
+                    .retrieve().body(new ParameterizedTypeReference<>() {
+                    });
             } catch (RestClientResponseException e) {
                 throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
             }
             if (response == null || response.data() == null
-                    || response.data().status() != ProductStatus.PUBLISHED) {
+                || response.data().status() != ProductStatus.PUBLISHED) {
                 throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
             }
             if (inventory != null) {
@@ -53,7 +57,7 @@ public final class CheckoutService {
             }
             ProductView product = response.data();
             var item = new OrderItemCommand(product.skuId(), product.skuCode(), product.name(), product.price(),
-                    requested.quantity());
+                requested.quantity());
             items.add(item);
             total = total.add(product.price().multiply(BigDecimal.valueOf(requested.quantity())));
         }

@@ -8,7 +8,9 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-/** Applies an API-only response policy after downstream processing. */
+/**
+ * Applies an API-only response policy after downstream processing.
+ */
 @Component
 final class GatewaySecurityHeadersFilter implements WebFilter, Ordered {
 
@@ -23,13 +25,13 @@ final class GatewaySecurityHeadersFilter implements WebFilter, Ordered {
             headers.set("Cross-Origin-Resource-Policy", "same-origin");
             headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
             headers.set("Content-Security-Policy",
-                    "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
+                "default-src 'none'; frame-ancestors 'none'; base-uri 'none'");
             if (headers.getFirst(HttpHeaders.CACHE_CONTROL) == null) {
                 headers.set(HttpHeaders.CACHE_CONTROL, "no-store");
             }
             if ("https".equalsIgnoreCase(exchange.getRequest().getURI().getScheme())) {
                 headers.set("Strict-Transport-Security",
-                        "max-age=31536000; includeSubDomains");
+                    "max-age=31536000; includeSubDomains");
             } else {
                 headers.remove("Strict-Transport-Security");
             }

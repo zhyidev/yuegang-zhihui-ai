@@ -1,22 +1,37 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.autoconfigure.AutoConfigurations;
+import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
+import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+
 import java.io.IOException;
 import java.time.Clock;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.flyway.autoconfigure.FlywayMigrationStrategy;
-import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class YghMybatisAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-            .withBean(AuditorProvider.class, AuditorProvider::system);
+        .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+        .withBean(AuditorProvider.class, AuditorProvider::system);
+
+    private static MybatisPlusInterceptor interceptor(long maxLimit, boolean overflow) {
+        var pagination = new PaginationInnerInterceptor();
+        pagination.setMaxLimit(maxLimit);
+        pagination.setOverflow(overflow);
+        var interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(pagination);
+        return interceptor;
+    }
+
+    private static void assertGuardRejected(Throwable failure) {
+        assertThat(failure)
+            .hasMessageContaining("MybatisPlusInterceptor must include pagination limited to 100");
+    }
 
     @Test
     void registersAuditingClockAndPaginationInfrastructure() {
@@ -34,43 +49,43 @@ class YghMybatisAutoConfigurationTest {
         AuditorProvider custom = () -> "user-1";
 
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-                .withBean(AuditorProvider.class, () -> custom)
-                .run(context -> assertThat(context.getBean(AuditorProvider.class)).isSameAs(custom));
+            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+            .withBean(AuditorProvider.class, () -> custom)
+            .run(context -> assertThat(context.getBean(AuditorProvider.class)).isSameAs(custom));
     }
 
     @Test
     void refusesToStartWithoutAnExplicitAuditorProvider() {
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-                .run(context -> assertThat(context.getStartupFailure())
-                        .hasMessageContaining("AuditorProvider"));
+            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+            .run(context -> assertThat(context.getStartupFailure())
+                .hasMessageContaining("AuditorProvider"));
     }
 
     @Test
     void rejectsCustomInterceptorThatRemovesBoundedPagination() {
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-                .withBean(AuditorProvider.class, AuditorProvider::system)
-                .withBean(MybatisPlusInterceptor.class, MybatisPlusInterceptor::new)
-                .run(context -> assertThat(context.getStartupFailure())
-                        .hasMessageContaining(
-                                "MybatisPlusInterceptor must include pagination limited to 100"));
+            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+            .withBean(AuditorProvider.class, AuditorProvider::system)
+            .withBean(MybatisPlusInterceptor.class, MybatisPlusInterceptor::new)
+            .run(context -> assertThat(context.getStartupFailure())
+                .hasMessageContaining(
+                    "MybatisPlusInterceptor must include pagination limited to 100"));
     }
 
     @Test
     void rejectsZeroLimitAndOverflowPagination() {
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-                .withBean(AuditorProvider.class, AuditorProvider::system)
-                .withBean(MybatisPlusInterceptor.class, () -> interceptor(0L, false))
-                .run(context -> assertGuardRejected(context.getStartupFailure()));
+            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+            .withBean(AuditorProvider.class, AuditorProvider::system)
+            .withBean(MybatisPlusInterceptor.class, () -> interceptor(0L, false))
+            .run(context -> assertGuardRejected(context.getStartupFailure()));
 
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-                .withBean(AuditorProvider.class, AuditorProvider::system)
-                .withBean(MybatisPlusInterceptor.class, () -> interceptor(100L, true))
-                .run(context -> assertGuardRejected(context.getStartupFailure()));
+            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+            .withBean(AuditorProvider.class, AuditorProvider::system)
+            .withBean(MybatisPlusInterceptor.class, () -> interceptor(100L, true))
+            .run(context -> assertGuardRejected(context.getStartupFailure()));
     }
 
     @Test
@@ -82,10 +97,10 @@ class YghMybatisAutoConfigurationTest {
         interceptor.addInnerInterceptor(duplicate);
 
         new ApplicationContextRunner()
-                .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
-                .withBean(AuditorProvider.class, AuditorProvider::system)
-                .withBean(MybatisPlusInterceptor.class, () -> interceptor)
-                .run(context -> assertGuardRejected(context.getStartupFailure()));
+            .withConfiguration(AutoConfigurations.of(YghMybatisAutoConfiguration.class))
+            .withBean(AuditorProvider.class, AuditorProvider::system)
+            .withBean(MybatisPlusInterceptor.class, () -> interceptor)
+            .run(context -> assertGuardRejected(context.getStartupFailure()));
     }
 
     @Test
@@ -95,21 +110,7 @@ class YghMybatisAutoConfigurationTest {
         try (var stream = getClass().getClassLoader().getResourceAsStream(path)) {
             assertThat(stream).isNotNull();
             assertThat(new String(stream.readAllBytes()))
-                    .contains(YghMybatisAutoConfiguration.class.getName());
+                .contains(YghMybatisAutoConfiguration.class.getName());
         }
-    }
-
-    private static MybatisPlusInterceptor interceptor(long maxLimit, boolean overflow) {
-        var pagination = new PaginationInnerInterceptor();
-        pagination.setMaxLimit(maxLimit);
-        pagination.setOverflow(overflow);
-        var interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(pagination);
-        return interceptor;
-    }
-
-    private static void assertGuardRejected(Throwable failure) {
-        assertThat(failure)
-                .hasMessageContaining("MybatisPlusInterceptor must include pagination limited to 100");
     }
 }

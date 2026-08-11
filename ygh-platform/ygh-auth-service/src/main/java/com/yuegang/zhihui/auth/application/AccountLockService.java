@@ -1,6 +1,8 @@
 package com.yuegang.zhihui.auth.application;
 
-import com.yuegang.zhihui.auth.domain.*;
+import com.yuegang.zhihui.auth.domain.AccountLockPolicy;
+import com.yuegang.zhihui.auth.domain.AccountSecurityRepository;
+
 import java.time.Clock;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -14,7 +16,7 @@ public final class AccountLockService {
     private final Clock clock;
 
     public AccountLockService(
-            AccountSecurityRepository repository, AccountLockPolicy policy, Clock clock) {
+        AccountSecurityRepository repository, AccountLockPolicy policy, Clock clock) {
         this.repository = Objects.requireNonNull(repository, "repository must not be null");
         this.policy = Objects.requireNonNull(policy, "policy must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
@@ -30,20 +32,20 @@ public final class AccountLockService {
 
     public boolean authenticationAllowed(long accountId) {
         var snapshot = repository.findById(accountId)
-                .orElseThrow(() -> new NoSuchElementException("account not found"));
+            .orElseThrow(() -> new NoSuchElementException("account not found"));
         return policy.authenticationAllowed(snapshot.accessState(), clock.instant());
     }
 
     private AccountAccessState update(long accountId, UnaryOperator<AccountAccessState> transition) {
         for (int attempt = 0; attempt < MAX_CAS_ATTEMPTS; attempt++) {
             var snapshot = repository.findById(accountId)
-                    .orElseThrow(() -> new NoSuchElementException("account not found"));
+                .orElseThrow(() -> new NoSuchElementException("account not found"));
             var updated = transition.apply(snapshot.accessState());
             if (updated.equals(snapshot.accessState())) {
                 return updated;
             }
             if (repository.compareAndSetAccessState(
-                    accountId, snapshot.version(), updated)) {
+                accountId, snapshot.version(), updated)) {
                 return updated;
             }
         }

@@ -29,15 +29,15 @@ final class JwtSessionValidationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return ReactiveSecurityContextHolder.getContext()
-                .map(context -> context.getAuthentication())
-                .filter(auth -> auth != null && auth.isAuthenticated())
-                .map(auth -> auth.getPrincipal())
-                .filter(Jwt.class::isInstance)
-                .cast(Jwt.class)
-                // 只有已登录用户才走验证逻辑，未登录用户跳过此过滤器（交由安全配置拦截）
-                .flatMap(jwt -> validate(jwt, exchange, chain).thenReturn(true))
-                .switchIfEmpty(Mono.defer(() -> chain.filter(exchange).thenReturn(false)))
-                .then();
+            .map(context -> context.getAuthentication())
+            .filter(auth -> auth != null && auth.isAuthenticated())
+            .map(auth -> auth.getPrincipal())
+            .filter(Jwt.class::isInstance)
+            .cast(Jwt.class)
+            // 只有已登录用户才走验证逻辑，未登录用户跳过此过滤器（交由安全配置拦截）
+            .flatMap(jwt -> validate(jwt, exchange, chain).thenReturn(true))
+            .switchIfEmpty(Mono.defer(() -> chain.filter(exchange).thenReturn(false)))
+            .then();
     }
 
     private Mono<Void> validate(Jwt jwt, ServerWebExchange exchange, GatewayFilterChain chain) {
@@ -50,13 +50,13 @@ final class JwtSessionValidationFilter implements GlobalFilter, Ordered {
         }
         // 调用分布式 Redis 查找该账号的 JTI 是否在黑名单或已失效
         return sessions.valid(accountId, jwt.getId())
-                .map(valid -> valid ? SessionCheck.ACTIVE : SessionCheck.REJECTED)
-                .onErrorReturn(SessionCheck.UNAVAILABLE)
-                .flatMap(check -> switch (check) {
-                    case ACTIVE -> chain.filter(exchange); // 会话正常，放行
-                    case REJECTED -> errors.unauthenticated(exchange); // 会话失效，拦截
-                    case UNAVAILABLE -> errors.dependencyUnavailable(exchange); // Redis 挂了，报错
-                });
+            .map(valid -> valid ? SessionCheck.ACTIVE : SessionCheck.REJECTED)
+            .onErrorReturn(SessionCheck.UNAVAILABLE)
+            .flatMap(check -> switch (check) {
+                case ACTIVE -> chain.filter(exchange); // 会话正常，放行
+                case REJECTED -> errors.unauthenticated(exchange); // 会话失效，拦截
+                case UNAVAILABLE -> errors.dependencyUnavailable(exchange); // Redis 挂了，报错
+            });
     }
 
     @Override

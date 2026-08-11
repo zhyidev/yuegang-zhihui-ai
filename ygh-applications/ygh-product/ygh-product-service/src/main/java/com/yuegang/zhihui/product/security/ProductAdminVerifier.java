@@ -81,13 +81,13 @@ public final class ProductAdminVerifier {
 
             // 构建内部用户上下文签名的元数据对象
             var m = new InternalUserContextSignature.Metadata(u,                      // 用户 ID
-                    roles,                  // 角色列表
-                    perms,                  // 权限列表
-                    h(r, "X-Trace-Id"),     // 链路追踪 ID
-                    h(r, "X-Request-Id"),   // 请求唯一 ID
-                    r.getMethod(),          // HTTP 请求方法 (GET/POST 等)
-                    r.getRequestURI(),      // 请求路径
-                    Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-User-Context-Timestamp"))) // 请求时间戳
+                roles,                  // 角色列表
+                perms,                  // 权限列表
+                h(r, "X-Trace-Id"),     // 链路追踪 ID
+                h(r, "X-Request-Id"),   // 请求唯一 ID
+                r.getMethod(),          // HTTP 请求方法 (GET/POST 等)
+                r.getRequestURI(),      // 请求路径
+                Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-User-Context-Timestamp"))) // 请求时间戳
             );
             // 执行签名校验，并同时检查用户角色中是否包含 "ADMIN"
             if (!s.verify(m, h(r, "X-YGH-User-Context-Signature")) || !roles.contains("ADMIN")) {

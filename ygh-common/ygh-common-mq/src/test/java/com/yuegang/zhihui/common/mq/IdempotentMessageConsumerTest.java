@@ -1,26 +1,41 @@
 package com.yuegang.zhihui.common.mq;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.yuegang.zhihui.common.core.EventMetadata;
 import com.yuegang.zhihui.common.core.ImmutableEventPayload;
 import com.yuegang.zhihui.common.core.VersionedDomainEvent;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
+
+import java.time.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.junit.jupiter.api.Test;
-import tools.jackson.databind.json.JsonMapper;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IdempotentMessageConsumerTest {
 
     private static final Clock CLOCK = Clock.fixed(
-            Instant.parse("2026-07-11T04:00:00Z"), ZoneOffset.UTC);
+        Instant.parse("2026-07-11T04:00:00Z"), ZoneOffset.UTC);
+
+    private static IdempotentMessageConsumer consumer(FakeStore store, int maxAttempts) {
+        return new IdempotentMessageConsumer(
+            "orders", maxAttempts, Duration.ofSeconds(30), store, CLOCK);
+    }
+
+    private static VersionedDomainEvent<TestPayload> event(String eventId) {
+        return VersionedDomainEvent.of(
+            new EventMetadata(
+                eventId,
+                "ORDER_CREATED",
+                1,
+                OffsetDateTime.parse("2026-07-11T12:00:00+08:00"),
+                "trace-1",
+                "order-service",
+                "order-1001"),
+            new TestPayload("order-1001"));
+    }
 
     @Test
     void duplicateDeliveryTenTimesProducesOneBusinessEffect() {
@@ -30,10 +45,10 @@ class IdempotentMessageConsumerTest {
         var event = event("event-1");
 
         assertThat(consumer.consume(event, 1, ignored -> effects.incrementAndGet()))
-                .isEqualTo(MessageConsumptionResult.ACKNOWLEDGED);
+            .isEqualTo(MessageConsumptionResult.ACKNOWLEDGED);
         for (int delivery = 0; delivery < 9; delivery++) {
             assertThat(consumer.consume(event, 1, ignored -> effects.incrementAndGet()))
-                    .isEqualTo(MessageConsumptionResult.DUPLICATE);
+                .isEqualTo(MessageConsumptionResult.DUPLICATE);
         }
         assertThat(effects).hasValue(1);
     }
@@ -45,8 +60,8 @@ class IdempotentMessageConsumerTest {
         var effects = new AtomicInteger();
 
         assertThat(consumer(store, 3).consume(
-                event("event-2"), 1, ignored -> effects.incrementAndGet()))
-                .isEqualTo(MessageConsumptionResult.RETRY);
+            event("event-2"), 1, ignored -> effects.incrementAndGet()))
+            .isEqualTo(MessageConsumptionResult.RETRY);
         assertThat(effects).hasValue(0);
     }
 
@@ -62,7 +77,7 @@ class IdempotentMessageConsumerTest {
             throw new RetryableMessageException("BROKER_DEPENDENCY_TIMEOUT");
         })).isEqualTo(MessageConsumptionResult.RETRY);
         assertThat(consumer.consume(event, 2, ignored -> attempts.incrementAndGet()))
-                .isEqualTo(MessageConsumptionResult.ACKNOWLEDGED);
+            .isEqualTo(MessageConsumptionResult.ACKNOWLEDGED);
         assertThat(attempts).hasValue(2);
     }
 
@@ -79,8 +94,8 @@ class IdempotentMessageConsumerTest {
         var record = store.deadLetters.get("orders:event-4");
         assertThat(record.failureCode()).isEqualTo("UNSUPPORTED_EVENT_VERSION");
         assertThat(record).extracting(DeadLetterRecord::eventId, DeadLetterRecord::eventType,
-                        DeadLetterRecord::consumerGroup, DeadLetterRecord::deliveryAttempt)
-                .containsExactly("event-4", "ORDER_CREATED", "orders", 1);
+                DeadLetterRecord::consumerGroup, DeadLetterRecord::deliveryAttempt)
+            .containsExactly("event-4", "ORDER_CREATED", "orders", 1);
         assertThat(consumer(store, 3).consume(event, 2, ignored -> {
             throw new AssertionError("terminal event must not run again");
         })).isEqualTo(MessageConsumptionResult.DUPLICATE);
@@ -95,8 +110,8 @@ class IdempotentMessageConsumerTest {
         })).isEqualTo(MessageConsumptionResult.DEAD_LETTERED);
 
         assertThat(store.deadLetters.get("orders:event-5").failureCode())
-                .isEqualTo("UNEXPECTED_CONSUMER_FAILURE")
-                .doesNotContain("detail");
+            .isEqualTo("UNEXPECTED_CONSUMER_FAILURE")
+            .doesNotContain("detail");
     }
 
     @Test
@@ -104,30 +119,32 @@ class IdempotentMessageConsumerTest {
         var store = new FakeStore();
         store.failCompletion = true;
 
-        assertThat(consumer(store, 3).consume(event("event-6"), 1, ignored -> { }))
-                .isEqualTo(MessageConsumptionResult.RETRY);
+        assertThat(consumer(store, 3).consume(event("event-6"), 1, ignored -> {
+        }))
+            .isEqualTo(MessageConsumptionResult.RETRY);
     }
 
     @Test
     void validatesDeliveryAttemptAndConsumerConfiguration() {
         var store = new FakeStore();
-        assertThatThrownBy(() -> consumer(store, 3).consume(event("event-7"), 0, ignored -> { }))
-                .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> consumer(store, 3).consume(event("event-7"), 0, ignored -> {
+        }))
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new IdempotentMessageConsumer(
-                "Orders", 3, Duration.ofSeconds(30), store, CLOCK))
-                .isInstanceOf(IllegalArgumentException.class);
+            "Orders", 3, Duration.ofSeconds(30), store, CLOCK))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void claimOwnerCapabilityIsRedactedFromLogsAndJson() {
         var claim = new MessageProcessingClaim(
-                "orders", "event-8", "owner-00000000000000000000000001");
+            "orders", "event-8", "owner-00000000000000000000000001");
 
         assertThat(claim.toString()).contains("[REDACTED]").doesNotContain(claim.owner());
         assertThat(JsonMapper.builder().build().writeValueAsString(claim))
-                .doesNotContain(claim.owner())
-                .contains("\"consumerGroup\"")
-                .contains("\"eventId\"");
+            .doesNotContain(claim.owner())
+            .contains("\"consumerGroup\"")
+            .contains("\"eventId\"");
     }
 
     @Test
@@ -158,8 +175,9 @@ class IdempotentMessageConsumerTest {
     void claimReleaseAndDeadLetterInfrastructureFailuresAllRequestRetry() {
         var claimFailure = new FakeStore();
         claimFailure.failClaimInfrastructure = true;
-        assertThat(consumer(claimFailure, 3).consume(event("event-11"), 3, ignored -> { }))
-                .isEqualTo(MessageConsumptionResult.RETRY);
+        assertThat(consumer(claimFailure, 3).consume(event("event-11"), 3, ignored -> {
+        }))
+            .isEqualTo(MessageConsumptionResult.RETRY);
 
         var releaseFailure = new FakeStore();
         releaseFailure.failReleaseInfrastructure = true;
@@ -185,24 +203,6 @@ class IdempotentMessageConsumerTest {
         assertThat(owners).hasSize(1000).allMatch(owner -> owner.matches("[A-Za-z0-9_-]{32}"));
     }
 
-    private static IdempotentMessageConsumer consumer(FakeStore store, int maxAttempts) {
-        return new IdempotentMessageConsumer(
-                "orders", maxAttempts, Duration.ofSeconds(30), store, CLOCK);
-    }
-
-    private static VersionedDomainEvent<TestPayload> event(String eventId) {
-        return VersionedDomainEvent.of(
-                new EventMetadata(
-                        eventId,
-                        "ORDER_CREATED",
-                        1,
-                        OffsetDateTime.parse("2026-07-11T12:00:00+08:00"),
-                        "trace-1",
-                        "order-service",
-                        "order-1001"),
-                new TestPayload("order-1001"));
-    }
-
     private record TestPayload(String orderId) implements ImmutableEventPayload {
     }
 
@@ -214,12 +214,16 @@ class IdempotentMessageConsumerTest {
         private boolean failReleaseInfrastructure;
         private boolean failDeadLetterInfrastructure;
 
+        private static String key(MessageProcessingClaim claim) {
+            return claim.consumerGroup() + ':' + claim.eventId();
+        }
+
         @Override
         public MessageClaimResult claim(
-                String consumerGroup,
-                String eventId,
-                String owner,
-                Duration lease
+            String consumerGroup,
+            String eventId,
+            String owner,
+            Duration lease
         ) {
             if (failClaimInfrastructure) {
                 throw new MessageInfrastructureException("claim unavailable", new IllegalStateException());
@@ -234,13 +238,13 @@ class IdempotentMessageConsumerTest {
             }
             states.put(key, "PROCESSING");
             return MessageClaimResult.claimed(new MessageProcessingClaim(
-                    consumerGroup, eventId, owner));
+                consumerGroup, eventId, owner));
         }
 
         @Override
         public boolean executeAndMarkSucceeded(
-                MessageProcessingClaim claim,
-                MessageBusinessOperation businessOperation
+            MessageProcessingClaim claim,
+            MessageBusinessOperation businessOperation
         ) throws Exception {
             if (failCompletion) {
                 return false;
@@ -267,10 +271,6 @@ class IdempotentMessageConsumerTest {
             deadLetters.put(key(claim), record);
             states.put(key(claim), "DEAD_LETTERED");
             return true;
-        }
-
-        private static String key(MessageProcessingClaim claim) {
-            return claim.consumerGroup() + ':' + claim.eventId();
         }
     }
 }

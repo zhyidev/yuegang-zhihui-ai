@@ -32,8 +32,8 @@ public record UserProfileView( // 定义公共记录类：用户资料视图
     @Override
     public String toString() { // 重写 toString 方法
         return "UserProfileView[userId=" + userId + ", displayName=" + displayName + ", avatarUrl=" + avatarUrl
-                + ", phone=<redacted>, email=<redacted>, locale=" + locale + ", timezone=" + timezone
-                + ", version=" + version + "]"; // 安全策略：在对象序列化打印时，再次强调遮蔽联系方式信息
+            + ", phone=<redacted>, email=<redacted>, locale=" + locale + ", timezone=" + timezone
+            + ", version=" + version + "]"; // 安全策略：在对象序列化打印时，再次强调遮蔽联系方式信息
     } // 方法结束
 
 } // 类定义结束

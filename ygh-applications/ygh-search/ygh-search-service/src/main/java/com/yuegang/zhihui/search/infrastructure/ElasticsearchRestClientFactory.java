@@ -19,7 +19,7 @@ public final class ElasticsearchRestClientFactory {
         if (username != null && !username.isBlank()) {
             String credentials = username + ":" + (password == null ? "" : password);
             builder.defaultHeader(HttpHeaders.AUTHORIZATION, "Basic " + Base64.getEncoder()
-                    .encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
+                .encodeToString(credentials.getBytes(StandardCharsets.UTF_8)));
         }
         return builder.build();
     }

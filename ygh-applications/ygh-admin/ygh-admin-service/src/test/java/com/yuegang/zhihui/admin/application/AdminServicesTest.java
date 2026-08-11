@@ -21,7 +21,7 @@ class AdminServicesTest {
     private String base;
 
     private static void reply(com.sun.net.httpserver.HttpExchange exchange, String body, int status)
-            throws java.io.IOException {
+        throws java.io.IOException {
         byte[] bytes = body.getBytes(StandardCharsets.UTF_8);
         exchange.getResponseHeaders().add("Content-Type", "application/json");
         exchange.sendResponseHeaders(status, bytes.length);
@@ -38,10 +38,10 @@ class AdminServicesTest {
         server.createContext("/loki/api/v1/query_range", exchange -> {
             lokiQuery.set(exchange.getRequestURI().getQuery());
             reply(exchange,
-                    "{\"data\":{\"result\":[{\"stream\":{\"job\":\"ygh-order-service\"},\"values\":["
-                            + "[\"1783872000000000000\",\"business_mutation userId=7 method=POST path=/api/v1/orders status=201 traceId=t1\"],"
-                            + "[\"1783871000000000000\",\"business_mutation userId=8 method=DELETE path=/api/v1/orders/1 status=500 traceId=t2\"]]}]}}",
-                    200);
+                "{\"data\":{\"result\":[{\"stream\":{\"job\":\"ygh-order-service\"},\"values\":["
+                    + "[\"1783872000000000000\",\"business_mutation userId=7 method=POST path=/api/v1/orders status=201 traceId=t1\"],"
+                    + "[\"1783871000000000000\",\"business_mutation userId=8 method=DELETE path=/api/v1/orders/1 status=500 traceId=t2\"]]}]}}",
+                200);
         });
         server.start();
     }
@@ -54,12 +54,12 @@ class AdminServicesTest {
     @Test
     void aggregatesHealthWithoutCrossDatabaseQueries() {
         var dashboard = new AdminDashboardService(
-                "gateway=" + base + "/health-up,unknown=" + base + "/health-empty,down=http://localhost:1/down")
-                .dashboard();
+            "gateway=" + base + "/health-up,unknown=" + base + "/health-empty,down=http://localhost:1/down")
+            .dashboard();
         assertThat(dashboard.summary().totalServices()).isEqualTo(3);
         assertThat(dashboard.summary().healthyServices()).isEqualTo(1);
         assertThat(dashboard.services()).extracting(x -> x.status())
-                .containsExactlyInAnyOrder("UP", "UNKNOWN", "DOWN");
+            .containsExactlyInAnyOrder("UP", "UNKNOWN", "DOWN");
         assertThat(dashboard.pending()).hasSize(2);
         assertThat(new AdminDashboardService("invalid-entry").dashboard().services()).isEmpty();
     }
@@ -77,13 +77,13 @@ class AdminServicesTest {
         assertThat(lokiQuery.get()).startsWith("query={job=~\".+\"}");
         assertThat(service.query(null, null, null, null, null, null, 0)).hasSize(1);
         assertThatThrownBy(() -> service.query(null, null, null, null, end, end, 10))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> service.query("bad value!", null, null, null, end.minusHours(1), end, 10))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> service.query(null, null, null, null, end.minusDays(32), end, 10))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> new AuditQueryService("http://localhost:1", new ObjectMapper())
-                .query(null, null, null, null, end.minusHours(1), end, 10))
-                .isInstanceOf(BusinessException.class);
+            .query(null, null, null, null, end.minusHours(1), end, 10))
+            .isInstanceOf(BusinessException.class);
     }
 }
