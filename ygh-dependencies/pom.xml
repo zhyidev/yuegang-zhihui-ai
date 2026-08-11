@@ -25,7 +25,7 @@
         <apache-tika.version>3.3.1</apache-tika.version>
         <rocketmq-client.version>5.3.1</rocketmq-client.version>
         <langchain4j.version>1.17.2</langchain4j.version>
-        <javassist.version>3.31.0-GA</javassist.version>
+        <javassist.version>3.32.0-GA</javassist.version>
     </properties>
 
     <dependencyManagement>
