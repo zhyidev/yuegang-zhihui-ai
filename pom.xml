@@ -116,6 +116,9 @@
             <java>
               <googleJavaFormat>
                 <version>1.28.0</version>
+                <style>AOSP</style>
+                <reflowLongStrings>false</reflowLongStrings>
+                <formatJavadoc>false</formatJavadoc>
               </googleJavaFormat>
             </java>
           </configuration>
