@@ -1,13 +1,12 @@
 package com.yuegang.zhihui.ai.infrastructure;
 
-import com.sun.net.httpserver.HttpServer;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import com.sun.net.httpserver.HttpServer;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicReference;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class DoubaoModelGatewayWebSearchTest {
     @Test

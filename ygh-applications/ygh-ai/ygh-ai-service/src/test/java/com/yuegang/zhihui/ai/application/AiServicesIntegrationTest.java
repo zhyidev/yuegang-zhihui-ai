@@ -1,8 +1,12 @@
 package com.yuegang.zhihui.ai.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yuegang.zhihui.ai.api.*;
-import com.yuegang.zhihui.ai.domain.*;
+import com.yuegang.zhihui.ai.api.ChatRequest;
+import com.yuegang.zhihui.ai.api.FeedbackRequest;
+import com.yuegang.zhihui.ai.api.SaveEvaluationCaseRequest;
+import com.yuegang.zhihui.ai.api.SavePromptConfigRequest;
+import com.yuegang.zhihui.ai.domain.ModelGateway;
+import com.yuegang.zhihui.ai.domain.RetrievalGateway;
 import com.yuegang.zhihui.ai.infrastructure.CommerceToolGateway;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
@@ -12,8 +16,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import java.time.OffsetDateTime;
-import java.util.List;
+import java.time.*;
+import java.util.*;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -47,7 +51,7 @@ class AiServicesIntegrationTest {
             assertThat(conversations.messages(7, response.conversationId())).hasSize(2).anySatisfy(message -> assertThat(message.citations()).singleElement().satisfies(citation -> {
                 assertThat(citation.documentId()).isEqualTo("10");
                 assertThat(citation.documentVersion()).isEqualTo(1);
-                assertThat(citation.sourceUpdatedAt()).isEqualTo(evidence.sourceUpdatedAt());
+                assertThat(citation.sourceUpdateAt()).isEqualTo(evidence.sourceUpdatedAt());
             }));
             conversations.feedback(7, new FeedbackRequest(response.messageId(), true, "有帮助"));
             conversations.feedback(7, new FeedbackRequest(response.messageId(), false, "需改进"));

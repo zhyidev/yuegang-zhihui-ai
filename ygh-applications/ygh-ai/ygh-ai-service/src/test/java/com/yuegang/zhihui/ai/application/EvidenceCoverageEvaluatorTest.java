@@ -1,11 +1,13 @@
 package com.yuegang.zhihui.ai.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.yuegang.zhihui.ai.api.ChatResponse;
 import com.yuegang.zhihui.ai.api.CitationView;
-import org.junit.jupiter.api.Test;
-
 import java.time.OffsetDateTime;
 import java.util.List;
+import org.junit.jupiter.api.Test;
+
 
 class EvidenceCoverageEvaluatorTest {
     private final EvidenceCoverageEvaluator evaluator = new EvidenceCoverageEvaluator();

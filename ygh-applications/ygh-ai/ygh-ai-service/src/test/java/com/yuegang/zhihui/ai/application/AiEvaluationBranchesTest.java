@@ -12,6 +12,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 class AiEvaluationBranchesTest {
     @Test
     void evaluatesExpectedRefusalAndForbiddenAnswers() {

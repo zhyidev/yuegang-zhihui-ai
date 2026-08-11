@@ -4,6 +4,9 @@ import com.yuegang.zhihui.search.api.SearchHit;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * 知识库检索接口（RAG 架构中的检索环节）
+ */
 public interface RetrievalGateway {
     List<SearchHit> search(String query, String category, int limit);
 

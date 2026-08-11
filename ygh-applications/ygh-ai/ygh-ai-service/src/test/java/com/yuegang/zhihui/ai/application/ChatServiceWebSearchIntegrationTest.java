@@ -13,6 +13,8 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 class ChatServiceWebSearchIntegrationTest {
     @Test
     void answersProfessionalQuestionFromAuditableWebSourceWhenLocalKnowledgeIsEmpty() {

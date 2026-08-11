@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import javax.sql.DataSource;
 import java.util.Base64;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.mock;
 
 class AiConfigurationTest {
