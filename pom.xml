@@ -38,7 +38,7 @@
     <cyclonedx.maven.plugin.version>2.9.2</cyclonedx.maven.plugin.version>
     <jacoco.minimum.line.coverage>0.70</jacoco.minimum.line.coverage>
     <jacoco.minimum.branch.coverage>0.60</jacoco.minimum.branch.coverage>
-    <flatten.maven.plugin.version>1.7.2</flatten.maven.plugin.version>
+    <flatten.maven.plugin.version>1.8.0</flatten.maven.plugin.version>
     <spotless.maven.plugin.version>3.9.0</spotless.maven.plugin.version>
   </properties>
 
