@@ -6,11 +6,10 @@ import com.yuegang.zhihui.search.application.SearchDeletionService;
 import com.yuegang.zhihui.search.security.SearchInternalSecurity;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Map;
 
 @RestController
 public final class SearchDeletionController {

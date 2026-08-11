@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.common.mybatis;
 
+import java.util.Objects;
 import org.flywaydb.core.Flyway;
 
 import java.util.Objects;

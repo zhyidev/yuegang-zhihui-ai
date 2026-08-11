@@ -3,12 +3,11 @@ package com.yuegang.zhihui.search.application;
 import com.yuegang.zhihui.search.api.ProductSearchHit;
 import com.yuegang.zhihui.search.api.ProductSearchRequest;
 import com.yuegang.zhihui.search.infrastructure.ElasticsearchRestClientFactory;
-import org.springframework.web.client.RestClient;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.web.client.RestClient;
 
 public final class ProductFullTextSearchService {
     private final RestClient elastic;

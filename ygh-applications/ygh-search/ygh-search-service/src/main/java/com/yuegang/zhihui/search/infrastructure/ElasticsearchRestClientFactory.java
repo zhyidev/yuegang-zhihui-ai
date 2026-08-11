@@ -23,4 +23,18 @@ public final class ElasticsearchRestClientFactory {
         }
         return builder.build();
     }
+
+    private static String setting(String primary, String fallback) {
+        String value = System.getProperty(primary);
+        if (value == null || value.isBlank()) {
+            value = System.getenv(primary);
+        }
+        if (value == null || value.isBlank()) {
+            value = System.getProperty(fallback);
+        }
+        if (value == null || value.isBlank()) {
+            value = System.getenv(fallback);
+        }
+        return value == null ? "" : value;
+    }
 }

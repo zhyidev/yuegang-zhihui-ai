@@ -1,3 +1,15 @@
+# Local secrets and runtime data
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets/*
+!**/secrets/.gitkeep
+**/data/
+**/logs/
+**/backups/
+**/runtime/
+
+# Build and IDE
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -38,3 +50,16 @@ build/
 
 ### Mac OS ###
 .DS_Store
+Thumbs.db
+*.bak-*
+
+# Credentials and private key material
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+
+# Original requirement files stay local; reviewed Markdown is the repository baseline
+/*.doc
+/*.docx

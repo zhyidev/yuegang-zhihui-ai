@@ -6,10 +6,6 @@ import com.yuegang.zhihui.system.api.AiProviderConfigView;
 import com.yuegang.zhihui.system.api.InternalAiProviderConfig;
 import com.yuegang.zhihui.system.api.UpdateAiProviderConfigRequest;
 import com.yuegang.zhihui.system.security.SystemSecretCipher;
-import org.springframework.jdbc.core.JdbcTemplate;
-
-
-import javax.sql.DataSource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -18,6 +14,8 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.HexFormat;
 import java.util.UUID;
+import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 // 该业务类负责管理 AI 供应商（如豆包）的配置信息，包含密钥加密存储与配置变更审计。
 public class AiProviderConfigService { // 定义最终类: AI 供应商配置服务

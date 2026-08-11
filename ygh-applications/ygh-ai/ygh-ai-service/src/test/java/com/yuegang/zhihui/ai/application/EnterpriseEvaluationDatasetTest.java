@@ -1,6 +1,8 @@
 package com.yuegang.zhihui.ai.application;
 
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;
+import java.sql.DriverManager;
+import java.util.HashSet;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.Test;
 

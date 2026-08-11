@@ -9,13 +9,13 @@ import java.util.Arrays;
  * 货币代码
  * /** 当前虚拟钱包版本支持的货币
  */
-public enum CurrencyCode implements StableCodeEnum { // 实现稳定代码接口 
-    CNY("CNY", "人民币"); // 定义人民币常量 
+public enum CurrencyCode implements StableCodeEnum { // 实现稳定代码接口
+    CNY("CNY", "人民币"); // 定义人民币常量
 
-    private final String code; // 货币缩写代码 
-    private final String displayName; // 货币展示名称 
+    private final String code; // 货币缩写代码
+    private final String displayName; // 货币展示名称
 
-    CurrencyCode(String code, String displayName) { // 私有构造函数 
+    CurrencyCode(String code, String displayName) { // 私有构造函数
         this.code = code; // 初始化代码
         this.displayName = displayName; // 初始化代码
     }

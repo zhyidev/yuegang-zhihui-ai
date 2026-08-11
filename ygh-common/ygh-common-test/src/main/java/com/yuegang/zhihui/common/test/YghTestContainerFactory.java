@@ -45,7 +45,7 @@ public final class YghTestContainerFactory {
     public static JdbcContainerFixture pgvector() {
         String credential = randomCredential();
         var container = bounded(new GenericContainer<>(DockerImageName.parse(
-                "pgvector/pgvector:0.8.5-pg17-bookworm"))
+                        "pgvector/pgvector:0.8.5-pg17-bookworm"))
                 .withEnv("POSTGRES_DB", "ygh_test")
                 .withEnv("POSTGRES_USER", "ygh_test")
                 .withEnv("POSTGRES_PASSWORD", credential)

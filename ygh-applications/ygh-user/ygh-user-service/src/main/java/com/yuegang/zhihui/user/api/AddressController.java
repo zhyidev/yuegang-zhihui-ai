@@ -4,9 +4,9 @@ import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.web.TraceIdResolver;
 import com.yuegang.zhihui.user.application.AddressService;
 import com.yuegang.zhihui.user.security.TrustedUserContextResolver;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;

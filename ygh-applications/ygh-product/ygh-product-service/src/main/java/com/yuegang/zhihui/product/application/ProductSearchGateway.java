@@ -2,14 +2,14 @@ package com.yuegang.zhihui.product.application;
 
 import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
-import org.springframework.web.client.RestClient;
-
+import com.yuegang.zhihui.search.api.ProductSearchRequest;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import org.springframework.web.client.RestClient;
 
 /** 实时调用搜索微服务，通过关键词检索出匹配产品 SKU ID 列表 */
 public final class ProductSearchGateway { // 定义产品搜索网关类，使用final关键字防止被继承

@@ -3,10 +3,9 @@ package com.yuegang.zhihui.search.application;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.search.infrastructure.ElasticsearchRestClientFactory;
+import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestClient;
-
-import java.util.Map;
 
 public final class SearchDeletionService {
     private final JdbcTemplate jdbc;

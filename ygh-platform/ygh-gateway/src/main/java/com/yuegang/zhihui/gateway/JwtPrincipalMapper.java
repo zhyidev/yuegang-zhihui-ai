@@ -13,15 +13,18 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Component;
 
 /**
  * 将经过验证的 JWT Claims 声明转换为最小化的、不可变的内部 Principal 对象。
  */
 @Component
-public class JwtPrincipalMapper {
+final class JwtPrincipalMapper {
 
     private static final int MAX_AUTHORITIES = 128; // 最大角色权限数限制
-    private static final int MAX_ENCODE_AUTHORITIES = 4096; // 编码后的总长度限制 
+    private static final int MAX_ENCODE_AUTHORITIES = 4096; // 编码后的总长度限制
     private static final Pattern SAFE_SUBJECT = Pattern.compile("[A-Za-z0-9][A-Za-z0-9-:.]{0,127}");
     private static final Pattern SAFE_AUTHORITY = Pattern.compile("[A-Za-z0-9][A-Za-z0-9-:.]{0,127}");
 

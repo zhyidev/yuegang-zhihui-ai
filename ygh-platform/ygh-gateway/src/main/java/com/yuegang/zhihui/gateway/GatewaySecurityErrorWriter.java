@@ -31,7 +31,7 @@ import tools.jackson.databind.ObjectMapper;
  * @since 1.0.0
  */
 @Component
-public class GatewaySecurityErrorWriter {
+final class GatewaySecurityErrorWriter {
 
     /**
      * JSON 序列化器，用于将错误响应对象转为字节数组
