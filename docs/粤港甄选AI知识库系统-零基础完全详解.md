@@ -1,16 +1,3 @@
-# 粤港甄选跨境智汇 AI 知识库系统 —— 零基础完全详解
-> 从零开始，抽丝剥茧，逐层讲透 yuegang-zhihui-ai 项目的每一个技术点。
-> 素材来源：项目 `docs/技术清单.md`（164 个技术点）+ 真实源码（396 个 Java 文件、42 个迁移脚本、58 次 git 提交）。所有代码引用均为项目原码，零编造。
-> 修订记录：2026-08-09 核对——pom 数量 47→52、system 端口补 8083、第 6 章路径加示意说明、修正 Flyway 链接；技术清单 156→164（search main 落地 7dc1247），全文档同步更新服务状态与统计数字。
----
-
-## 目录
-- [第 0 章 阅读指南：这份文档怎么用](#阅读指南与项目故事)- [第 1 章 零基础前置知识：读项目前必须懂的 10 个概念](#零基础前置知识)- [第 2 章 项目全景：技术栈、13 个服务、11 个业务域](#项目全景)- [第 3 章 目录结构逐层讲解：每个文件夹是干嘛的](#目录结构逐层讲解)- [第 4 章 Maven 多模块工程：pom.xml 全解读](#Maven多模块工程)- [第 5 章 启动与网关：程序怎么跑起来、请求怎么转发](#启动与网关)- [第 6 章 一条请求的完整旅程（全书核心，抽丝剥茧）](#一条请求的完整旅程)- [第 7 章 认证与安全：密码、令牌、加密、限流（技术清单 1-17, 38-60, 61-73）](#认证与安全)- [第 8 章 数据层：Flyway 迁移、MyBatis-Plus、42 个 SQL（技术清单 33-37, 74-79）](#数据层详解)- [第 9 章 消息可靠性：Outbox、幂等消费、RocketMQ（技术清单 24-32）](#消息可靠性)- [第 10 章 十一个业务服务逐个讲（技术清单 80-106, 140-152）](#十一个业务服务)- [第 11 章 AI 应用层：豆包网关、RAG、向量检索（技术清单 111-133）](#AI应用层与搜索)- [第 12 章 测试体系：TDD、Testcontainers、并发测试（技术清单 107-110, 146-152）](#测试体系)- [第 13 章 工程化：Enforcer、JaCoCo、SBOM（技术清单 153-156）](#工程化)- [第 14 章 术语表、FAQ、答辩指南、学习路线](#术语表FAQ答辩指南)
----
-
-
----
-
 # 第 0 章 阅读指南：这份文档怎么用
 
 > 本章目标：先知道这份文档是给谁看的、怎么读效率最高，以及用一个"人话版"故事先认识项目。
@@ -51,7 +38,7 @@
 
 **它和你见过的"小项目"最大区别**：
 
-小项目是一个程序干所有事（单机应用）；这个项目是**把一个电商系统拆成 13 个独立的小程序（微服务）**，每个小程序管自己的一块业务，它们通过网络互相调用，像一家公司的不同部门。拆开的原因和代价，就是第 2 章、第 6 章的核心内容。
+小项目是一个程序干所有事（单机应用）；这个项目是**把一个电商系统拆成 14 个独立的小程序（微服务）**，每个小程序管自己的一块业务，它们通过网络互相调用，像一家公司的不同部门。拆开的原因和代价，就是第 2 章、第 6 章的核心内容。
 
 ## 0.4 项目的"家谱"（文件里叫什么名字）
 
@@ -69,15 +56,15 @@
 | 章节 | 内容 | 零基础友好度 |
 |------|------|-------------|
 | 第 1 章 | 前置知识：进程/端口/HTTP/数据库/MQ/缓存/微服务 | ★★★★★ |
-| 第 2 章 | 项目全景：技术栈、13 个服务、11 个业务域 | ★★★★★ |
+| 第 2 章 | 项目全景：技术栈、14 个服务、11 个业务域 | ★★★★★ |
 | 第 3 章 | 目录结构逐层讲解：每个文件夹是干嘛的 | ★★★★ |
 | 第 4 章 | Maven 多模块工程：pom.xml 全解读 | ★★★ |
 | 第 5 章 | 启动与网关：程序怎么跑起来、路由怎么转发 | ★★★ |
 | 第 6 章 | 一条请求的完整旅程（全书核心，抽丝剥茧） | ★★★ |
 | 第 7 章 | 认证与安全：密码/令牌/加密/限流（含真实代码） | ★★★ |
-| 第 8 章 | 数据层：Flyway 迁移、MyBatis-Plus、42 个 SQL | ★★★ |
+| 第 8 章 | 数据层：Flyway 迁移、MyBatis-Plus、46 个 SQL | ★★★ |
 | 第 9 章 | 消息可靠性：Outbox、幂等消费、RocketMQ | ★★★ |
-| 第 10 章 | 十一个业务服务逐个讲 | ★★★★ |
+| 第 10 章 | 十二个业务服务逐个讲 | ★★★★ |
 | 第 11 章 | AI 应用层：豆包网关、RAG、向量检索 | ★★★ |
 | 第 12 章 | 测试体系：TDD 红态、Testcontainers、并发测试 | ★★★ |
 | 第 13 章 | 工程化：Enforcer、JaCoCo、SBOM | ★★★ |
@@ -89,7 +76,6 @@
 
 你在中软国际实训的路线是：Rocky Linux → JDK25 → Redis → SpringBoot4 + JMeter → 华为云。
 这个项目把路线上的所有东西都用上了，还额外加了：微服务（Spring Cloud Alibaba）、消息队列（RocketMQ）、向量数据库（pgvector）、AI 大模型对接（豆包/火山方舟）。**答辩时这就是你的差异化亮点**。
-
 
 ---
 
@@ -136,7 +122,7 @@
 - **API（应用程序接口）**：服务器对外提供的一个"服务窗口"。比如 `GET /api/v1/products` 就是"查商品列表"这个 API。
 - **RESTful**：一种 API 设计风格，用"名词 + 方法"表达操作，如 `POST /api/v1/orders` = 创建订单。
 
-**你的项目**：13 个服务各自提供一堆 API，网关统一暴露。你项目里所有对外接口统一返回一个"信封"——`ApiResponse`（第 7 章详解），格式：
+**你的项目**：14 个服务各自提供一堆 API，网关统一暴露。你项目里所有对外接口统一返回一个"信封"——`ApiResponse`（第 7 章详解），格式：
 
 ```json
 {
@@ -202,7 +188,7 @@
 - 优点：独立演进、故障隔离、按需扩容。
 - 缺点：网络通信变多、运维变复杂、分布式问题（一致性、事务、追踪）变难——你的项目花大量精力解决这些"缺点"，这正是 164 个技术点里一大半在做的事。
 
-**你的项目**：13 个服务，通过 Spring Cloud 全家桶治理：
+**你的项目**：14 个服务，通过 Spring Cloud 全家桶治理：
 - **Nacos**：服务注册中心（相当于"电话本"）。服务启动时在 Nacos 登记"我叫 ygh-user-service，住在 8082 端口"；别的服务要调用它时，问 Nacos "ygh-user-service 在哪"。
 - **Gateway 网关**：所有请求的"大门"。先过安全检查，再按路径转发给对应服务。
 - **OpenFeign / RestClient**：服务间互相调用的"电话"。
@@ -278,10 +264,9 @@ CREATE INDEX idx_search_embedding_hnsw
 7. 向量检索和关键词检索的区别？
 8. 存密码为什么不能用明文？为什么要加盐？
 
-
 ---
 
-# 第 2 章 项目全景：技术栈、13 个服务、11 个业务域
+# 第 2 章 项目全景：技术栈、14 个服务、11 个业务域
 
 > 本章目标：站在高处看整个项目——用了哪些技术、拆了哪些服务、每个服务管什么。读完这一章，你就有了"地图"，后面每一章都是地图上的一个区域。
 
@@ -323,28 +308,28 @@ CREATE INDEX idx_search_embedding_hnsw
 
 ---
 
-## 2.2 13 个微服务全家福
+## 2.2 14 个微服务全家福
 
-**按角色分三组**：平台层（2 个）、公共层（7 个 jar 库）、应用层（11 个服务）。服务数 = 13（网关 + auth + 11 个业务服务）。
+**按角色分三组**：平台层（2 个）、公共层（7 个 jar 库）、应用层（11 个服务）。服务数 = 14（网关 + auth + 12 个业务服务）。
 
 | # | 服务名（模块名） | 端口 | 一句话职责 | 状态 |
 |---|----------------|------|-----------|------|
 | 1 | ygh-gateway（网关） | 8080 | 所有请求的大门：路由、验 JWT、限流 | ✅ main 已实现 |
-| 2 | ygh-auth-service（认证） | — | 登录、注册、令牌签发、密码安全 | ✅ main 已实现 |
+| 2 | ygh-auth-service（认证） | 8081 | 登录、注册、令牌签发、密码安全 | ✅ main 已实现 |
 | 3 | ygh-user-service（用户） | 8082 | 用户资料、地址（加密存储）、部门组织 | ✅ main 已实现 |
 | 4 | ygh-system-service（系统） | 8083 | 角色权限、字典、Feature Flag、AI 供应商配置 | ✅ main 已实现 |
-| 5 | ygh-knowledge-service（知识库） | — | 文档上传/解析/分块/审核/索引分发 | ✅ main 已实现 |
-| 6 | ygh-notification-service（通知） | — | 通知模板、发送、死信、审计 | ✅ main 已实现 |
-| 7 | ygh-product-service（商品） | — | SPU/SKU、分类品牌、溯源、缓存、搜索分发 | ✅ main 已实现 |
-| 8 | ygh-inventory-service（库存） | — | 库存调整/预占/确认/释放、防超卖 | 🟡 main 为空，测试锁定 |
-| 9 | ygh-order-service（订单） | — | 购物车、下单（服务端快照）、订单过期关闭 | 🟡 main 为空，测试锁定 |
-| 10 | ygh-wallet-service（钱包） | — | 充值/支付/退款、防透支 | 🟡 main 为空，测试锁定 |
-| 11 | ygh-training-service（培训） | — | 任务分配、学习进度、测验 | 🟡 main 为空，测试锁定 |
-| 12 | ygh-admin-service（管理后台） | — | 仪表盘聚合、审计日志查询 | 🟡 main 为空，测试锁定 |
-| 13 | ygh-ai-service（AI） | — | 大模型网关、RAG 检索、AI 评估 | 🟡 main 为空，测试锁定 |
-| 14 | ygh-search-service（搜索） | — | 混合检索（ES + pgvector）、索引生命周期 | ✅ main 已落地（7dc1247） |
+| 5 | ygh-knowledge-service（知识库） | 8088 | 文档上传/解析/分块/审核/索引分发 | ✅ main 已实现 |
+| 6 | ygh-notification-service（通知） | 8092 | 通知模板、发送、死信、审计 | ✅ main 已实现 |
+| 7 | ygh-product-service（商品） | 8084 | SPU/SKU、分类品牌、溯源、缓存、搜索分发 | ✅ main 已实现 |
+| 8 | ygh-inventory-service（库存） | 8085 | 库存调整/预占/确认/释放、防超卖 | ✅ main 已落地（bc9ff3b） |
+| 9 | ygh-order-service（订单） | 8086 | 购物车、下单（服务端快照）、订单过期关闭 | ✅ main 已落地（bc9ff3b） |
+| 10 | ygh-wallet-service（钱包） | 8087 | 充值/支付/退款、防透支 | ✅ main 已落地（bc9ff3b） |
+| 11 | ygh-training-service（培训） | 8091 | 任务分配、学习进度、测验 | ✅ main 已落地（bc9ff3b） |
+| 12 | ygh-admin-service（管理后台） | 8093 | 仪表盘聚合、审计日志查询 | ✅ main 已落地（bc9ff3b） |
+| 13 | ygh-ai-service（AI） | 8090 | 大模型网关、RAG 检索、AI 评估 | ✅ main 已落地（bc9ff3b） |
+| 14 | ygh-search-service（搜索） | 8089 | 混合检索（ES + pgvector）、索引生命周期 | ✅ main 已落地（7dc1247） |
 
-> 表格里其实列了 14 行，因为"13 个服务"是 AGENTS.md 的说法（不含 auth 或含 auth 的口径），实际 ygh-applications 下 11 个 + ygh-platform 下 2 个（gateway + auth）= 13 个可运行服务。上面第 8~13 行是“测试锁定”状态（搜索服务已落地），见 2.4 节。
+> 共 14 个可运行微服务：ygh-applications 下 12 个业务服务 + ygh-platform 下 auth、gateway 2 个平台服务。第 8~13 行（inventory/order/wallet/training/admin/ai）早期是 TDD 红态（main 为空、行为由测试锁定），在提交 c6d419a~bc9ff3b 中 main 全部落地，见 2.4 节。
 
 **服务间怎么互相找**：所有服务启动时向 Nacos 注册（命名空间 `ygh-dev`、分组 `YGH_GROUP`）。网关路由用 `lb://服务名`（lb = load balance，负载均衡）：
 
@@ -387,20 +372,22 @@ CREATE INDEX idx_search_embedding_hnsw
 
 ---
 
-## 2.4 "TDD 红态"是什么意思（必须理解，不然会误会项目）
+## 2.4 从"TDD 红态"到"全部落地"：项目是怎么长全的（必须理解）
 
-**你项目里 6 个服务的 `src/main/java` 是空的**（inventory/wallet/order/training/admin/ai），但 `src/test` 有完整的集成测试，`src/main/resources/db/migration` 有完整的建表 SQL。
+**TDD = Test-Driven Development（测试驱动开发）**：先写测试定义行为，再写实现让测试变绿。你的项目早期有 6 个业务服务（inventory / wallet / order / training / admin / ai）停在"红态"：行为已被测试 + 迁移脚本锁死，main 实现为空。本文档 08-09 版如实标注了这一状态。
 
-这是 **TDD（测试驱动开发）的红态**：
-1. 先写测试（定义"系统应该有什么行为"）→ 此时测试跑不过（红）
-2. 再写实现让测试通过（绿）
+**08-09 之后（本次核对发现的重大变化）**：项目新增提交 c6d419a（本地改动备份）→ e12491b（换行规范）→ bc9ff3b（结构补全），**14 个服务的 main 全部落地**：
+- ygh-ai-service：0 → 29 个 main 文件（AiApplication + ChatController（含 SSE 流式 /stream）+ ChatService + AiConfiguration 网关链），10 个测试，7 个迁移脚本；
+- inventory / order / wallet / training / admin：main + 测试全部落地；
+- 全局：Java 文件 396 → 712（564 main + 147 test + 1 个 tools 启动器）、迁移脚本 42 → 46、pom 52 → 59、提交 58 → 61；
+- 同时新增 spec/（16 个 OpenAPI 契约 + Bruno 接口调试）、ygh-web/（Vue3 商城 + 管理端）、ygh-tests/（7 个测试子模块）。
 
-你的项目大部分服务已走完这两步（绿态）；**inventory / wallet / order / training / admin / ai 六个服务仍停在红态**：行为已经被测试和 SQL 锁死，实现还没落地。
-
-> ⚠️ 这是项目现状，不是 bug。答辩时诚实说明："AI 服务 main 尚未落地，行为由测试锁定；搜索服务 main 已落地（提交 7dc1247，见技术清单 157-164）"——技术清单里也是这么标注的（第 12、13、17 节开头都有诚实标注）。**不装成已实现，反而是加分项**。
+**为什么"红态"有价值**：
+- 测试 = 契约：谁来实现，照着测试写就行，行为不会跑偏。
+- 迁移脚本 = 表结构已定：实现时不用再设计数据库。
+- 答辩时："你项目里 AI 服务怎么设计的？" → "测试先行锁定行为，实现按契约落地（git 历史里能看到红转绿的完整过程）。"
 
 ---
-
 ## 2.5 整体架构图（文字版）
 
 ```
@@ -424,7 +411,7 @@ CREATE INDEX idx_search_embedding_hnsw
    └─────────────────────────┘     └──────────────┘
         │            │        │          │             │
         ▼            ▼        ▼          ▼             ▼
-   ┌───────── MySQL（每服务独立库，42 个迁移脚本建表）────┐
+   ┌───────── MySQL（每服务独立库，46 个迁移脚本建表）────┐
    └──────────────────────────────────────────────────┘
         │            │        │          │             │
         ▼            ▼        ▼          ▼             ▼
@@ -449,6 +436,7 @@ CREATE INDEX idx_search_embedding_hnsw
 | RocketMQ | 本机 `/usr/local/rocketmq/`（NameServer:9876, Broker:10911） |
 | pgvector | Docker 容器 `ygh-pgvector`（`pgvector:0.8.5-pg17`） |
 | 代理 | 127.0.0.1:10808（不常开） |
+| 前端 | `ygh-web/`（Vue3 + Vite + pnpm monorepo：商城 ygh-web-mall + 管理端 ygh-web-admin） |
 
 ---
 
@@ -456,10 +444,9 @@ CREATE INDEX idx_search_embedding_hnsw
 
 1. 项目用了哪 4 种"存储"？各自干什么？（答案：MySQL 真相、Redis 快车道、ES 全文、pgvector 向量）
 2. 网关的 `lb://ygh-product-service` 是什么意思？
-3. 哪些服务是"TDD 红态"？诚实说明项目现状为什么是加分项？
+3. 哪 6 个服务经历过"TDD 红态"？现在状态如何？（提示：inventory/wallet/order/training/admin/ai，已全部落地）
 4. Spring Boot 4 和 3 在 Jackson 上的区别？
 5. `Money` 和 `ExternalId` 解决什么问题？
-
 
 ---
 
@@ -469,7 +456,7 @@ CREATE INDEX idx_search_embedding_hnsw
 
 ---
 
-## 3.1 根目录总览（先记住这 6 个模块）
+## 3.1 根目录总览（先记住这 9 个模块）
 
 ```
 yuegang-zhihui-ai/                        ← 根目录（也是根 Maven 工程）
@@ -482,18 +469,21 @@ yuegang-zhihui-ai/                        ← 根目录（也是根 Maven 工程
 ├── ygh-common/            ← ② 公共基础库（7 个子模块）
 ├── ygh-platform/          ← ③ 平台服务（网关 + 认证）
 ├── ygh-applications/      ← ④ 业务应用（11 个服务）
-├── ygh-tests/             ← ⑤ 集成测试（占位）
-├── ygh-deploy/            ← ⑥ 部署配置（占位）
+├── ygh-tests/             ← ⑤ 专项测试（7 个子模块）
+├── ygh-deploy/            ← ⑥ 部署配置
+├── spec/                  ← ⑦ 接口契约（OpenAPI×16 + Bruno）
+├── ygh-web/                ← ⑧ 前端（Vue3 monorepo：商城 + 管理端）
+├── tools/                  ← ⑨ 本地启动工具（LocalServiceLauncher）
 └── target/                ← Maven 构建产物（可忽略）
 ```
 
-**记忆口诀**："一个根，两份文档（AGENTS + docs），六个子工程（dependencies/common/platform/applications/tests/deploy）"。
+**记忆口诀**："一个根，两份文档（AGENTS + docs），六个子工程 + 三块周边（spec 契约 / ygh-web 前端 / tools 工具）"。
 
 ---
 
 ## 3.2 ygh-dependencies：版本号的"总闸"
 
-**问题**：52 个 pom.xml，如果每个都自己写版本号，升级框架时要改 52 个文件，还容易冲突。
+**问题**：59 个 pom.xml，如果每个都自己写版本号，升级框架时要改 59 个文件，还容易冲突。
 
 **方案**：BOM（Bill of Materials，物料清单）。在 `ygh-dependencies/pom.xml` 里用 `<dependencyManagement>` 统一声明所有第三方库的版本，其他模块引用时**只写坐标不写版本**。
 
@@ -670,11 +660,12 @@ ygh-applications/
 
 ---
 
-## 3.6 各服务的迁移脚本一览（42 个 SQL = 数据库的"成长日记"）
+## 3.6 各服务的迁移脚本一览（46 个 SQL = 数据库的"成长日记"）
 
 Flyway 用版本号管理数据库结构：`V1__xxx.sql`、`V2__xxx.sql`……按顺序执行，已执行的记录在 `flyway_schema_history` 表里，**保证每台机器的数据库结构完全一样**。
 
 ```
+ygh-auth-service:        V1 认证表 / V2 审计IP哈希 / V3 账号管理审计 / V4 密码重置
 ygh-user-service:        V1 用户表 / V2 联系人加密
 ygh-system-service:      V1 RBAC / V2 配置 / V3 AI供应商 / V4 联网开关
 ygh-knowledge-service:   V1 文档 / V2 状态历史 / V3 元数据 / V4 outbox / V5 处理任务 / V6 本地化分类
@@ -718,8 +709,11 @@ CREATE TABLE user_profile
 
 | 路径 | 内容 | 说明 |
 |------|------|------|
-| `ygh-tests/` | 占位模块（App.java + AppTest.java） | 预留做跨服务集成测试 |
-| `ygh-deploy/` | 占位模块 | 预留部署脚本/配置 |
+| `ygh-tests/` | 7 个专项测试子模块 | API 兼容 / 兼容性 / 契约 / 端到端 / 集成 / 性能 / 安全测试 |
+| `ygh-deploy/` | 部署配置 | Dockerfile、环境模板、部署文档 |
+| `spec/` | OpenAPI 契约×16 + Bruno 调试脚本 | 经真实实例导出并由自动化测试验证的接口契约 |
+| `ygh-web/` | Vue3 + Vite + pnpm monorepo | 商城前端（ygh-web-mall）+ 管理端（ygh-web-admin） |
+| `tools/` | LocalServiceLauncher | 本地一键启动 14 个服务 + 3 个迁移专用入口 |
 | `docs/技术清单.md` | 164 个技术点 | **本书的"考试大纲"**，建议通读一遍原文 |
 | `AGENTS.md` | AI 协作指南 | 构建命令、技术栈、常见坑、提交规范 |
 | `.github/workflows/` | CI 工作流（若有） | 自动构建/测试 |
@@ -733,27 +727,26 @@ CREATE TABLE user_profile
 3. **看调用关系**：光标停在方法上 → Ctrl+Alt+B（找实现）/ Ctrl+Alt+←（跳回上一步）。
 4. **看 git 历史**：右键文件 → Git → Show History，看这个文件怎么一步步长出来的（你喜欢的"故事线"读法）。
 5. **整个项目的文件统计**：
-   - 396 个 Java 文件（321 main + 75 test）
-   - 42 个迁移 SQL
-   - 52 个 pom.xml
-   - 58 次 git 提交（从"项目骨架"到"商品服务 DTO"一步步长出来）
+   - 712 个 Java 文件（564 main + 147 test + 1 个 tools 启动器）
+   - 46 个迁移 SQL
+   - 59 个 pom.xml
+   - 61 次 git 提交（从"项目骨架"到"商品服务 DTO"一步步长出来）
 
 ---
 
 ## 3.9 本章自测
 
-1. 六个根模块分别叫什么？各自干什么？
+1. 根目录下除 pom.xml 外还有哪些工程/目录？各自干什么？
 2. ygh-common 的 7 个子模块各管哪类通用能力？
 3. auth-service 的 domain 层和 infrastructure 层各放什么？为什么这么分？
 4. 一个业务服务为什么拆 api 和 service 两个模块？
 5. 每张业务表都有的三个"标配字段"是什么？（答案：version / created_at / updated_at）
 
-
 ---
 
 # 第 4 章 Maven 多模块工程：pom.xml 全解读
 
-> 本章目标：看懂 Maven 是什么、52 个 pom.xml 的关系、根 pom 里每段配置在干什么。读完你能回答"为什么要用 Maven"和"构建流程是怎么跑的"。
+> 本章目标：看懂 Maven 是什么、59 个 pom.xml 的关系、根 pom 里每段配置在干什么。读完你能回答"为什么要用 Maven"和"构建流程是怎么跑的"。
 
 ---
 
@@ -780,7 +773,7 @@ version: 1.0.0-SNAPSHOT
 
 ---
 
-## 4.2 52 个 pom.xml 的"家族关系"
+## 4.2 59 个 pom.xml 的"家族关系"
 
 ```
 yuegang-zhihui-ai/pom.xml          ← 老祖宗（聚合 6 个子工程 + 定义全家规范）
@@ -850,7 +843,7 @@ yuegang-zhihui-ai/pom.xml          ← 老祖宗（聚合 6 个子工程 + 定�
 </properties>
 ```
 
-`${revision}` 是"CI 友好版本号"：配合 flatten-maven-plugin，发布时只需改这一处。所有模块的版本都继承它——所以 52 个 pom 里你几乎看不到重复写版本号。
+`${revision}` 是"CI 友好版本号"：配合 flatten-maven-plugin，发布时只需改这一处。所有模块的版本都继承它——所以 59 个 pom 里你几乎看不到重复写版本号。
 
 ### 4.3.3 构建插件区（质量门禁，第 13 章细讲）
 
@@ -942,12 +935,11 @@ cd /home/zzy/IdeaProjects/yuegang-zhihui-ai
 4. `-pl xxx -am` 是什么意思？
 5. 为什么子模块的依赖不用写 version？
 
-
 ---
 
 # 第 5 章 启动与网关：程序怎么跑起来、请求怎么转发
 
-> 本章目标：理解 Spring Boot 应用是怎么启动的、13 个服务怎么一个个拉起来、网关在整条链路上扮演什么角色。读完你能回答"项目怎么跑起来"。
+> 本章目标：理解 Spring Boot 应用是怎么启动的、14 个服务怎么一个个拉起来、网关在整条链路上扮演什么角色。读完你能回答"项目怎么跑起来"。
 
 ---
 
@@ -986,11 +978,11 @@ public class GatewayApplication {
 4. 连接 Redis / 连接 RocketMQ / 连接 Nacos 并**注册服务**（告诉全世界"我上线了"）
 5. 开始监听端口（如网关 8080）
 
-> 用户服务还有个 `UserMigrationApplication.java`——独立的迁移入口，专门只跑 Flyway 迁移用（生产环境推荐先迁移、再启应用，避免启动瞬间多实例同时迁移）。
+> 迁移专用入口：`UserMigrationApplication` / `SystemMigrationApplication` / `AuthMigrationApplication`——只跑 Flyway 迁移，不启动业务（生产环境推荐先迁移、再启应用，避免启动瞬间多实例同时迁移）。
 
 ---
 
-## 5.2 13 个服务的启动顺序（依赖关系）
+## 5.2 14 个服务的启动顺序（依赖关系）
 
 ```
 1. 基础设施（先于一切）：
@@ -1006,6 +998,7 @@ public class GatewayApplication {
    ygh-product-service → ygh-inventory-service / ygh-order-service / ygh-wallet-service
    ygh-knowledge-service → ygh-search-service → ygh-ai-service
    ygh-training-service → ygh-admin-service
+   ygh-ai-service →（依赖 search 检索 + system 供应商配置 + product/inventory/order 工具）
 ```
 
 **关键点**：服务间调用不写死 IP，都是问 Nacos "某某服务在哪"。所以哪个先起、哪个后起，系统自己能适应——只要 Nacos 活着。这就是服务注册发现的威力。
@@ -1128,7 +1121,7 @@ spring:
 
 ```
 前置（Docker/本机）：
-  ✅ MySQL 8.4     （建好 11 个业务库 + 应用/迁移账号）
+  ✅ MySQL 8.4     （建好 12 个业务库 + 应用/迁移账号）
   ✅ Redis         （本机 /usr/local/redis/，密码 123456）
   ✅ RocketMQ      （namesrv + broker 已配 brokerIP1=127.0.0.1）
   ✅ Nacos         （命名空间 ygh-dev）
@@ -1165,7 +1158,6 @@ spring:
 5. "应用账号与迁移账号分离"解决了什么问题？
 6. 服务之间不写死 IP，靠什么互相找到？
 
-
 ---
 
 # 第 6 章 一条请求的完整旅程（全书核心，抽丝剥茧）
@@ -1176,7 +1168,7 @@ spring:
 
 ## 6.1 场景设定
 
-> ⚠️ **路径说明**：本章的请求路径（如 `/api/v1/auth/login`）是基于网关路由表的示意写法，用于讲清调用链；认证服务的 Controller 层尚未落地（TDD 红态），最终路径以各服务实现为准。
+> ⚠️ **路径说明**：本章的请求路径（如 `/api/v1/auth/login`）是基于网关路由表的示意写法，用于讲清调用链；认证服务的 Controller 层已落地（main 已实现），具体路径以各服务实现为准。
 
 假设你是电商用户，打开网页，做三件事：
 1. **登录**（拿 JWT 令牌）
@@ -1438,7 +1430,6 @@ Tag: WALLET_PAYMENT_SUCCEEDED
 6. 幂等键（requestId）解决了什么问题？哪些服务用了它？
 7. 库存防超卖、钱包防透支分别靠什么机制？
 8. traceId 有什么用？在哪里生成、怎么传递？
-
 
 ---
 
@@ -1770,19 +1761,19 @@ business_mutation userId=1001 method=POST path=/api/v1/orders status=201 traceId
 8. 内部服务签名为什么要有时间窗口？
 9. 为什么只有 GET 才重试？写操作不重试？
 
-
 ---
 
-# 第 8 章 数据层：Flyway 迁移、MyBatis-Plus、42 个 SQL（技术清单 33-37, 74-79）
+# 第 8 章 数据层：Flyway 迁移、MyBatis-Plus、46 个 SQL（技术清单 33-37, 74-79）
 
 > 本章目标：讲清楚项目的数据库是怎么设计的、怎么保证"每台机器数据库结构一致"、怎么防并发写错数据。读完你就能看懂任何一张表的字段含义。
 
 ---
 
-## 8.1 数据库全景：11 个库、42 个脚本、一张表两个账号
+## 8.1 数据库全景：12 个库、46 个脚本、一张表两个账号
 
 | 服务 | 数据库 | 迁移脚本数 |
 |------|--------|-----------|
+| ygh-auth-service | ygh_auth | 4 |
 | ygh-user-service | ygh_user | 2 |
 | ygh-system-service | ygh_system | 4 |
 | ygh-knowledge-service | ygh_knowledge | 6 |
@@ -1998,7 +1989,6 @@ public final class UserIdGenerator {
 6. 为什么金额用 BigDecimal 而不是 double？为什么 JSON 里用字符串？
 7. 幂等是什么意思？怎么实现？
 
-
 ---
 
 # 第 9 章 消息可靠性：Outbox、幂等消费、RocketMQ（技术清单 24-32）
@@ -2206,10 +2196,9 @@ IN_PROGRESS → 别人正在处理（租约未过期），跳过
 5. 指数退避和死信阈值是多少？死信后怎么补救？
 6. `@ConditionalOnProperty(name = "ygh.mq.enabled")` 有什么用？
 
-
 ---
 
-# 第 10 章 十一个业务服务逐个讲（技术清单 80-106, 140-152）
+# 第 10 章 十二个业务服务逐个讲（技术清单 80-106, 140-152）
 
 > 本章目标：把每个业务服务"干什么、核心类、亮点技术"讲清楚。这是你项目业务层面的全部家底，答辩时"每个服务都能讲 2 分钟"就是从这里来的。
 
@@ -2362,13 +2351,14 @@ Tika 解析成纯文本（AutoDetectParser + BodyContentHandler(5MB)）
 
 ---
 
-## 10.6 五个"TDD 红态"业务服务（技术点 146-152）
+## 10.6 五个"红转绿"业务服务：TDD 落地实录（技术点 146-152）
 
-> ⚠️ 提醒：以下 5 个服务 `src/main/java` 为空，**行为由集成测试锁定**（测试直接 `new` 服务类跑真实 MySQL）。这 5 个服务是"已经设计好、验证过、待落地实现"。
+> ✅ 现状提醒（2026-08-11 核对更新）：以下 5 个服务早期是 TDD 红态（main 为空，行为由集成测试锁定），提交 c6d419a~bc9ff3b 后 **main 已全部落地**（每个服务都有 Application 主类 + Controller + Service）。测试依然是行为的"契约"——先有测试、后有实现，是标准的 TDD 红转绿流程。下面"测试"小节保留原样（它们仍是曝光设计意图的关键），每个小节尾部补了"落地状态"。
 
 ### 10.6.1 ygh-inventory-service 库存（技术点 146）
 
 **测试**：`InventoryServicesIntegrationTest`（Testcontainers 真 MySQL）。
+**落地状态**：`InventoryApplication` + 5 个 Controller（Inventory / Maintenance / Return / Administration / Reference），13 个 main 文件 + 4 个测试。
 
 ```java
 // 真实测试代码节选：并发防超卖
@@ -2388,6 +2378,7 @@ assertThatThrownBy(...).isInstanceOfSatisfying(BusinessException.class,
 ### 10.6.2 ygh-wallet-service 钱包（技术点 147）
 
 **测试**：`WalletServicesIntegrationTest`。
+**落地状态**：`WalletApplication` + 4 个 Controller（Wallet / Query / Administration / InternalQuery），12 个 main 文件 + 4 个测试。
 
 - 充值 / 支付 / 退款，全部按 request_id 幂等（重复支付只扣一次钱）。
 - **货币校验**：CNY 账户拒绝 USD 支付。
@@ -2397,6 +2388,7 @@ assertThatThrownBy(...).isInstanceOfSatisfying(BusinessException.class,
 ### 10.6.3 ygh-order-service 订单（技术点 148-150）
 
 **测试**：`CheckoutServiceTest` + `OrderJobsTest`。
+**落地状态**：`OrderApplication` + 5 个 Controller（Cart / Order / Fulfillment / Query / Reconciliation），22 个 main 文件 + 5 个测试。
 
 - **下单信任快照**（技术点 148，答辩重点）：下单时**不信任客户端传的价格/名称**，从 product-service 重建服务端快照——客户端改价格下单也没用。
 - 商品非 PUBLISHED 或库存不足 → 拒绝下单。
@@ -2406,6 +2398,7 @@ assertThatThrownBy(...).isInstanceOfSatisfying(BusinessException.class,
 ### 10.6.4 ygh-training-service 培训（技术点 151）
 
 **测试**：`TrainingConfigurationAndSecurityTest`。
+**落地状态**：`TrainingApplication` + 10 个 Controller（目录/任务/进度/测验/学习记录等），25 个 main 文件 + 2 个测试。
 
 - 任务分配 / 学习进度（`last_position` 阅读位置续读）/ 测验 / 学习记录 / 学习路径 / 内容服务。
 - `OrganizationTargetClient`：组织目标展开（部门 → 成员）。
@@ -2414,6 +2407,7 @@ assertThatThrownBy(...).isInstanceOfSatisfying(BusinessException.class,
 ### 10.6.5 ygh-admin-service 管理后台（技术点 152）
 
 **测试**：`AdminServicesTest`。
+**落地状态**：`AdminApplication` + AdminController + AuditController，7 个 main 文件 + 2 个测试。
 
 - `AdminDashboardService`：多服务**健康聚合**（UP / UNKNOWN / DOWN 三态，无跨库查询——避免聚合查询把数据库拖垮）。
 - `AuditQueryService`：查 **Loki**（日志系统）`query_range` 审计日志：时间窗 ≤31 天、userId 正则校验、**Loki 故障容错返回空**（监控系统挂了不影响主业务）。
@@ -2446,8 +2440,7 @@ ygh-admin-service ──调用──▶ 各服务（健康检查）+ Loki（日�
 4. 商品缓存的 `__MISS__` 解决什么问题？
 5. 库存防超卖的本质是什么？（条件更新）
 6. 下单为什么要在服务端重建价格快照？
-7. 哪 5 个服务是 TDD 红态？它们的行为靠什么锁定？
-
+7. 5 个"红转绿"服务的落地状态是什么？TDD 在其中的作用？（提示：测试 = 契约，实现 = 按契约落地）
 
 ---
 
@@ -2455,7 +2448,7 @@ ygh-admin-service ──调用──▶ 各服务（健康检查）+ Loki（日�
 
 > 本章目标：讲清楚 AI 服务（ygh-ai-service）和搜索服务（ygh-search-service）是怎么设计的。这两个服务是项目的"AI 招牌"，答辩时讲好它们，整个项目的高度就不一样了。
 
-> ⚠️ 诚实说明：ygh-ai-service 的 `src/main/java` 为空（TDD 红态），以下 AI 部分行为由**测试类 + Flyway 迁移脚本**锁定，是“已验证的设计”，不是已落地的实现；**ygh-search-service 的 main 已由提交 7dc1247 落地**（24 个 main 文件 + SearchApplication + 4 个控制器），落地细节见 11.5.9 与技术清单 157-164。答辩时照实区分。
+> ✅ 诚实说明（2026-08-11 核对更新）：ygh-ai-service 的 main **已落地**（提交 c6d419a~bc9ff3b）：`AiApplication` + `ChatController`（含 SSE 流式 `/stream`）+ `ChatService`（检索→增强→生成→引用全链路）+ `AiConfiguration`（豆包网关/检索网关/工具网关装配），29 个 main 文件 + 10 个测试 + 7 个迁移脚本。本章 11.2~11.4 描述的设计点现在都有真实实现对应。搜索服务 main 由提交 7dc1247 落地，细节见 11.5.9 与技术清单 157-164。答辩时把"红转绿"过程当工程故事讲。
 
 ---
 
@@ -2696,7 +2689,6 @@ ai_rag_trace 落库（query_digest / 证据 JSON / 耗时 / token）
 6. RAG trace 存了什么？三个用途？
 7. 商品索引和知识库索引怎么隔离？
 
-
 ---
 
 # 第 12 章 测试体系：TDD、Testcontainers、并发测试（技术清单 107-110, 146-152）
@@ -2813,15 +2805,16 @@ verify(jdbc, never()).update(contains("INSERT INTO search_embedding"))
 2. 写最小实现 → 绿（测试通过）
 3. 重构（保持绿）
 
-你的项目现状：
-- 6 个服务停在"红"状态：测试 + 迁移脚本已就位，main 待写
-- 7 个服务（auth/user/system/knowledge/notification/product/search + 网关）已"绿"
+你的项目现状（2026-08-11 核对更新）：
+- 早期：6 个服务停在"红"状态（测试 + 迁移脚本已就位，main 待写）；7 个服务已"绿"（含搜索服务 7dc1247 落地）
+- 现在：14 个服务的 main 全部落地（提交 c6d419a~bc9ff3b），红转绿完成
+- "红态思维"仍然有效：测试 = 契约，谁改实现，照测试跑就能验证行为没跑偏
 ```
 
 **为什么"红态"也有价值**：
 - 测试 = 契约：谁来实现，照着测试写就行，行为不会跑偏。
 - 迁移脚本 = 表结构已定：实现时不用再设计数据库。
-- 面试时："你项目里 AI 服务怎么设计的？" → "行为被测试锁定，我随时可以落地实现。"
+- 面试时："你项目里 AI 服务怎么设计的？" → "测试先行锁定行为，实现按契约落地，git 历史里能看到完整的红转绿过程。"
 
 ---
 
@@ -2849,8 +2842,7 @@ cd /home/zzy/IdeaProjects/yuegang-zhihui-ai
 2. 集成测试直接 `new 服务类` 而不是启动 Spring，好处是什么？
 3. `MutableTestClock` 解决什么问题？
 4. 防超卖测试怎么验证"不超卖"？
-5. TDD 的"红态"是什么意思？项目哪些服务处于红态？
-
+5. TDD 的"红态"是什么意思？项目哪些服务经历过红态？（提示：inventory/wallet/order/training/admin/ai，现已全部落地）
 
 ---
 
@@ -2975,7 +2967,7 @@ feat(common-mybatis): 实现 Flyway 仅向前迁移策略
 fix(gateway): 修复 GatewaySecurityErrorWriter 未注册为 Bean
 ```
 
-你的 git 历史（58 次提交）就是这么写的——这也是一个工程素养展示点："我的提交历史是规范的类型化提交，能看出项目怎么一步步长出来的。"
+你的 git 历史（61 次提交）就是这么写的——这也是一个工程素养展示点："我的提交历史是规范的类型化提交，能看出项目怎么一步步长出来的。"
 
 ---
 
@@ -2986,7 +2978,6 @@ fix(gateway): 修复 GatewaySecurityErrorWriter 未注册为 Bean
 3. SBOM 是什么？解决什么问题？
 4. surefire 和 failsafe 的分工？
 5. `haltOnFailure=true` 和"强制 jacoco.exec 存在"分别防什么？
-
 
 ---
 
@@ -3119,11 +3110,11 @@ fix(gateway): 修复 GatewaySecurityErrorWriter 未注册为 Bean
 ### Q1：项目这么大，从哪里开始读代码？
 **按 git log 的顺序读**（你的偏好）：`git log --oneline` 从最早提交开始，每个提交看它加了什么。最早的提交是"项目骨架"（根 pom、BOM、公共模块），然后一步步长成现在这样。技术清单也是这么整理出来的。
 
-### Q2：AI 服务的 main 是空的，项目是不是没做完？
-不是没做完，是 **TDD 红态**：行为已被测试和迁移脚本锁定，只是实现没落地。搜索服务此前也是红态，其 main 已由提交 7dc1247 落地——这正是 TDD 工作流的证明（测试就是需求文档，照测试实现即可）。这在企业里也是正常状态（测试先行）。答辩时如实说，反而显示你懂 TDD。
+### Q2：AI 服务的 main 之前是空的，项目是不是没做完？（已更新）
+早期确实是 TDD 红态：行为被测试和迁移脚本锁定，main 待落地。这个状态在 08-09 文档版如实记录。**本次核对（2026-08-11）确认：包括 ai 在内的 6 个红态服务的 main 已全部落地**（提交序列 c6d419a → e12491b → bc9ff3b），现在 14 个服务全部有 main 实现。答辩时讲"测试先行、红转绿"的完整过程（测试 = 契约，实现 = 按契约落地），是最真实的工程故事。
 
-### Q3：13 个服务要怎么同时启动？
-开发环境可以只启动你关心的服务 + 必需的基础设施（Nacos/MySQL/Redis）。全量启动需要把 13 个服务的环境变量都配好，工作量大。**先跑网关 + 用户服务 + 认证服务**感受链路即可。
+### Q3：14 个服务要怎么同时启动？
+开发环境可以只启动你关心的服务 + 必需的基础设施（Nacos/MySQL/Redis）。全量启动需要把 14 个服务的环境变量都配好，工作量大。**先跑网关 + 用户服务 + 认证服务**感受链路即可。
 
 ### Q4：为什么密码最少 15 位？
 Argon2id 再强也怕弱密码。"123456"这种一秒就算出来。15 位是 NIST 标准推荐（长密码比复杂密码更实用，人也好记）。
@@ -3205,10 +3196,10 @@ JWT 本身无状态（验签即可），但"踢人/封号"需要状态。项目�
 
 ## 14.5 给未来的自己：项目扩展方向（面试加分题）
 
-1. **落地 AI 服务的 main**：按测试把 ygh-ai-service 实现出来（测试就是需求文档）；搜索服务已落地，可参考提交 7dc1247 的实现模式。
+1. **AI 服务深化**：ai-service 已落地（ChatController 含 SSE 流式、ChatService、网关链），可继续补充评估数据集与拒答样本，把 AiEvaluationService 的评测闭环跑通。
 2. **分布式链路追踪**：接入 Micrometer Tracing + Zipkin/Jaeger（现在是手动 traceId）。
-3. **K8s 部署**：ygh-deploy 目前是占位模块，可以补 Helm Chart。
-4. **前端**：项目是纯后端，补一个管理后台前端（Vue3）让系统可演示。
+3. **K8s 迁移**：ygh-deploy 已有 observability（Prometheus/Loki/Alertmanager/Promtail 配置）、nacos 配置、constrained-dev 受限环境编排（compose）、enterprise-server compose——当前是 Docker Compose 形态，可进一步补 Helm Chart 上 K8s。
+4. **前端联调**：ygh-web 已存在（Vue3 + Vite + pnpm monorepo：ygh-web-mall 商城 + ygh-web-admin 管理端），可继续完善页面并与真实接口联调。
 5. **压测**：用 JMeter（实训学过）对网关做压测，验证 Sentinel 限流效果，输出报告。
 
 ---
@@ -3221,4 +3212,5 @@ JWT 本身无状态（验签即可），但"踢人/封号"需要状态。项目�
 2. **它是可靠的**——消息零丢失（Outbox）、零重复（幂等）、防超卖、防透支。
 3. **它是有 AI 的**——RAG 检索增强生成、证据可溯源、质量可评估。
 
-> 文档生成说明：本文档基于 `docs/技术清单.md`（164 技术点）与项目真实源码（396 个 Java 文件、42 个迁移脚本、58 次提交）整理，所有代码引用均为项目原码，零编造。生成日期：2026-08-08。
+> 文档生成说明：本文档基于 `docs/技术清单.md`（164 技术点）与项目真实源码（712 个 Java 文件、46 个迁移脚本、61 次提交）整理，所有代码引用均为项目原码，零编造。生成日期：2026-08-11。
+
