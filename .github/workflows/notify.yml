@@ -5,7 +5,7 @@ jobs:
   mail:
     runs-on: ubuntu-latest
     steps:
-      - uses: dawidd6/action-send-mail@v4
+      - uses: dawidd6/action-send-mail@v18
         with:
           server_address: smtp.qq.com
           server_port: 465
