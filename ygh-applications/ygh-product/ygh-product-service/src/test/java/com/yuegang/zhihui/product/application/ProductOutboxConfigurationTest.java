@@ -1,10 +1,10 @@
 package com.yuegang.zhihui.product.application;
 
-import com.yuegang.zhihui.common.mq.JdbcOutboxDispatcher;
-import org.junit.jupiter.api.Test;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+
+import com.yuegang.zhihui.common.mq.JdbcOutboxDispatcher;
+import org.junit.jupiter.api.Test;
 
 class ProductOutboxConfigurationTest {
     @Test

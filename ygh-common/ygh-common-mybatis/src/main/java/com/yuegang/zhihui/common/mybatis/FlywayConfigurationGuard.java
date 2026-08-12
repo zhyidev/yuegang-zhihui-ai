@@ -7,6 +7,8 @@ import org.flywaydb.core.api.configuration.Configuration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.flywaydb.core.api.Location;
+import org.flywaydb.core.api.configuration.Configuration;
 
 /* 在任何迁移运行前，立即验证最终的 Flyway 配置*/
 public class FlywayConfigurationGuard { // 防止不合规的 Flyway 配置被应用

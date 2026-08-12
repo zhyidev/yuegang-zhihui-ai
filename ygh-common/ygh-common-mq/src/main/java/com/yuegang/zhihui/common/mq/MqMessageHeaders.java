@@ -1,12 +1,11 @@
 package com.yuegang.zhihui.common.mq;
 
 import com.yuegang.zhihui.common.core.DomainEvent;
-
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.temporal.ChronoField;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 /**
  * 从标准的领域事件模型中派生出稳定的消息队列（传输层） header 消息

@@ -3,6 +3,10 @@ package com.yuegang.zhihui.common.security;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 
+/**
+ * Enforces resource ownership with an explicit permission for cross-owner access.
+ * A role name such as ADMIN never bypasses ownership by itself.
+ */
 public final class ResourceAccessGuard {
     public void requireOwnerOrPermission( // 检查是否拥有者是否拥有权限 no usages
                                           CurrentUserPrincipal principal, // 当前操作的用户主体

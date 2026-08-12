@@ -18,7 +18,7 @@ import java.util.Set;
  * @since 1.0.0
  */
 @Configuration(proxyBeanMethods = false)
-public class GatewayEdgeConfiguration {
+class GatewayEdgeConfiguration {
 
     /**
      * 将逗号分隔的上传路径字符串解析为不可变集合。

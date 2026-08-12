@@ -140,7 +140,7 @@ public class GlobalExceptionHandler { // 类定义
 
     @ExceptionHandler({NoResourceFoundException.class, NoHandlerFoundException.class}) // 处理 404
     public ResponseEntity<ApiResponse<Void>> handleResourceNotFound( // 定义
-                                                                     Exception exception, // 参数                                         
+                                                                     Exception exception, // 参数
                                                                      HttpServletRequest request // 请求参数
     ) {
         var errorResource = (ErrorResponse) exception; // 强转为 ErrorResponse
@@ -154,7 +154,7 @@ public class GlobalExceptionHandler { // 类定义
     }
 
     @ExceptionHandler({ServletRequestBindingException.class, MethodArgumentTypeMismatchException.class})
-    // 处理参数缺失或类型不对 
+    // 处理参数缺失或类型不对
     public ResponseEntity<ApiResponse<List<FieldValidationError>>> handleRequestBindingFailure( // 定义
                                                                                                 Exception exception, // 参数
                                                                                                 HttpServletRequest request // 请求参数

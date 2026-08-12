@@ -1,4 +1,4 @@
-package com.yuegang.zhihui.ai.api;
+package com.yuegang.zhihui.ai.api;public record EvaluationCaseView(String id,String category,String question,String expectedEvidence,String forbiddenAnswer,boolean expectedRefusal,boolean enabled){}
 
 /**
  * AI 自动评估测试用例的展示模型

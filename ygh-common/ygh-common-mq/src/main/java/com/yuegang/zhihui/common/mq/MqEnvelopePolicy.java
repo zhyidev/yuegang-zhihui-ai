@@ -9,6 +9,7 @@ import java.util.Objects;
  * 防御性边界校验
  */
 public final class MqEnvelopePolicy {
+
     private MqEnvelopePolicy() {
     } // 默认构造
 
@@ -31,6 +32,5 @@ public final class MqEnvelopePolicy {
             throw new IllegalArgumentException(name + "is not safe for MQ transport"); // 抛出安全异常
 
         }
-
     }
 }

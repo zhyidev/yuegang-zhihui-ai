@@ -1,7 +1,9 @@
 package com.yuegang.zhihui.common.mq;
 
-public final class MessageInfrastructureException extends RuntimeException { // 基础设施（如果数据库挂了）引发的不可控异常
-    public MessageInfrastructureException(String message, Throwable cause) { // 带原因的构造
+/** Storage or transport infrastructure failure that must always be retried by the broker. */
+public final class MessageInfrastructureException extends RuntimeException {
+
+    public MessageInfrastructureException(String message, Throwable cause) {
         super(message, cause);
     }
 

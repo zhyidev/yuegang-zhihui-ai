@@ -24,11 +24,6 @@ public final class IndexLifecycleService {
         this.alias = alias;
     }
 
-    private static void valid(String value) {
-        if (value == null || !value.matches("[a-z0-9][a-z0-9._-]{1,63}"))
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
-    }
-
     public IndexVersionView status() {
         return jdbc.query("SELECT alias_name,active_version,previous_version,switched_at," +
                 "(SELECT COUNT(*) FROM search_embedding e WHERE e.index_version=v.active_version) " +
@@ -76,5 +71,10 @@ public final class IndexLifecycleService {
         elastic.delete().uri("/" + current.previousVersion()).retrieve().toBodilessEntity();
         jdbc.update("DELETE FROM search_embedding WHERE index_version=?", current.previousVersion());
         jdbc.update("UPDATE search_index_version SET previous_version=NULL WHERE alias_name=?", alias);
+    }
+
+    private static void valid(String value) {
+        if (value == null || !value.matches("[a-z0-9][a-z0-9._-]{1,63}"))
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
     }
 }

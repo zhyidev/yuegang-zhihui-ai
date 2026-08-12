@@ -2,6 +2,7 @@ package com.yuegang.zhihui.common.mybatis;
 
 import java.util.Objects;
 
+/** Fail-fast migration policy error that never includes database credentials. */
 public final class MigrationPolicyException extends RuntimeException {
     private final MigrationViolationCode code; // 违规代码
 

@@ -1,15 +1,11 @@
 package com.yuegang.zhihui.user.infrastructure;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.SecureRandom;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.Objects;
+import java.security.*;
+import java.util.*;
+import javax.crypto.Cipher;
+import javax.crypto.spec.*;
 
 /**
  * AES-256-GCM 字段加密。IV（初始化向量）是随机生成的，并作为每个加密值的前缀。

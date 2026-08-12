@@ -56,7 +56,9 @@ public class YghFlywayMigrationStrategy implements FlywayMigrationStrategy { // 
         try {
             return Long.parseLong(version);
         } catch (NumberFormatException exception) {
-            throw new MigrationPolicyException(MigrationViolationCode.INVALID_NAME, "Invalid migration version: " + version);
+            throw new MigrationPolicyException(
+                    MigrationViolationCode.INVALID_NAME,
+                    "applied migration uses unsupported version format");
         }
     }
 

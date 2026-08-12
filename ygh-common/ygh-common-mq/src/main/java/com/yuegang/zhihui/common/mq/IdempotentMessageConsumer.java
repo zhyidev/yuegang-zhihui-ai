@@ -38,111 +38,104 @@ public class IdempotentMessageConsumer {
         if (maxAttempts < 1 || maxAttempts > 100) { // 限制充实次数范围
             throw new IllegalArgumentException("maxAttempts must be between 1 and 100 "); // 错误抛异常
         }
-        Objects.requireNonNull(claimLease, "claimLease must not be null"); // 租约不能为空
-        if (claimLease.compareTo(Duration.ofMillis(1)) < 0  // 租约必须在1到15分钟
-                || claimLease.compareTo(Duration.ofMillis(15)) > 0) { // 范围校验
-            throw new IllegalArgumentException("claimLease must be between 1 and 15 minutes"); // 错误抛异常
+        if (maxAttempts < 1 || maxAttempts > 100) {
+            throw new IllegalArgumentException("maxAttempts must be between 1 and 100");
         }
-        this.consumerGroup = consumerGroup; // 赋值组名
-        this.maxAttempts = maxAttempts; // 赋值次数
-        this.claimLease = claimLease; // 赋值处理权时长
-        this.store = Objects.requireNonNull(store, "store must not be null"); // 注入存储器
-        this.clock = Objects.requireNonNull(clock, "clock must not be null"); // 注入时钟
-        this.ownerGenerator = new SecureMessageClaimOwnerGenerator(); // 初始化安全随机 ID 生成器
+        Objects.requireNonNull(claimLease, "claimLease must not be null");
+        if (claimLease.compareTo(Duration.ofSeconds(1)) < 0
+                || claimLease.compareTo(Duration.ofMinutes(15)) > 0) {
+            throw new IllegalArgumentException("claimLease must be between 1 second and 15 minutes");
+        }
+        this.consumerGroup = consumerGroup;
+        this.maxAttempts = maxAttempts;
+        this.claimLease = claimLease;
+        this.store = Objects.requireNonNull(store, "store must not be null");
+        this.clock = Objects.requireNonNull(clock, "clock must not be null");
+        this.ownerGenerator = new SecureMessageClaimOwnerGenerator();
     }
 
-    private static String failureCode(Exception failure) { // 辅助方法：冲异常中提取稳定的错误标识符
-        return failure instanceof MessageHandlingException messageFailure // 判断是否为自定义的业务消息异常
-                ? messageFailure.failureCode() // 提取错误代码
-                : UNEXPECTED_FAILURE; // 否则返回预设“未知异常”
-
-    }
-
-    /*  核心入口方法：执行幂等校验并处理业务 */
-    public <T> MessageConsumptionResult consume( // 泛类方法
-                                                 DomainEvent<T> event, // 领域事件
-                                                 int deliverAttempt, // 当前时第几次投递
-
-                                                 MessageHandler<T> handler // 消息处理器
+    public <T> MessageConsumptionResult consume(
+            DomainEvent<T> event,
+            int deliveryAttempt,
+            MessageHandler<T> handler
     ) {
-        Objects.requireNonNull(event, "event must not be null"); // 事件不能为空
-        Objects.requireNonNull(handler, "handler must not be null"); // 处理器不能为空
-        if (deliverAttempt < 1) { // 投递次数必须大于等于1
-            throw new IllegalArgumentException("deliveryAttempt must be least 1");
+        Objects.requireNonNull(event, "event must not be null");
+        Objects.requireNonNull(handler, "handler must not be null");
+        if (deliveryAttempt < 1) {
+            throw new IllegalArgumentException("deliveryAttempt must be at least 1");
         }
-        MqEnvelopePolicy.validate(event); // 1. 根据系统策略验证消息头合法性
-        try { // 开启事务逻辑
-            MessageClaimResult claimResult = store.claim( // 2. 尝试冲数据库“认领”这条信息
-                    consumerGroup, // 按组隔离
-                    event.eventId(), // 按消息唯一 ID
-                    ownerGenerator.generate(), // 生成一个随机持有者 ID
-                    claimLease); // 设置租约时长
-            return switch (claimResult.status()) { // 3. 根据认领结果决定后续动作
-                case DUPLICATE -> MessageConsumptionResult.DUPLICATE; // 如果已经消费过，返回重复（ACK
-                case IN_PROGRESS -> MessageConsumptionResult.RETRY; // 如果别人正在处理且租约未到期，返回充实
-                case CLAIMED -> processClaim( // 如果成功认领，执行真正的业务处理
-                        event, deliverAttempt, handler, // 传入参数
-                        validateClaim(claimResult, event.eventId())); // 提取校验后的租约凭证
 
-            };
-        } catch (MessageInfrastructureException infrastructureFailure) { // 如果时数据库挂了等技术故障
-            return MessageConsumptionResult.RETRY; // 告知消息中间件稍后尝试
-
-        }
-    }
-
-    /**
-     * 执行已认领消息的处理逻辑
-     */
-    private <T> MessageConsumptionResult processClaim( // 私有处理方法
-                                                       DomainEvent<T> event, // 事件
-                                                       int deliveryAttempt, // 次数
-                                                       MessageHandler<T> handler, // 业务逻辑
-                                                       MessageProcessingClaim claim // 租约凭证
-    ) { // 逻辑开始
+        MqEnvelopePolicy.validate(event);
         try {
-            boolean completed = store.executeAndMarkSucceeded( // 4. 在同一个数据库中执行业务并标记未“已成功”
-                    claim, () -> handler.handle(event)); // 调用传入的业务处理 Lambda
-            return completed // 根据业务提交结果返回状态
-                    ? MessageConsumptionResult.ACKNOWLEDGED // 成功：响应 ACK
-                    : MessageConsumptionResult.RETRY; // 失败：响应 RETRY
-        } catch (InterruptedException exception) {
-            Thread.currentThread().interrupt(); // 恢复中断状态
-            return MessageConsumptionResult.RETRY; // 发生异常时，响应 RETRY
-        } catch (MessageInfrastructureException infrastructureFailure) { // 如果时数据库挂了等技术故障
-            return MessageConsumptionResult.RETRY; // 告知消息中间件稍后尝试
-        } catch (Exception unexpectedFailure) { // 其他未知异常
-            boolean terminal = unexpectedFailure instanceof NonRetryableMessageException // 判断是否未不可重试异常(如合同校验失败）
-                    || deliveryAttempt >= maxAttempts; // 或者是否打到系统设定的最大重试次数
-            if (!terminal) { // 如果还可以抢救（允许重试）
-                store.releaseForRetry(claim); // 5。 从数据库删除认领状态，使其它节点或下次投递可以重新认领
-                return MessageConsumptionResult.RETRY; // 返回 RETRY
+            MessageClaimResult claimResult = store.claim(
+                    consumerGroup,
+                    event.eventId(),
+                    ownerGenerator.generate(),
+                    claimLease);
+            return switch (claimResult.status()) {
+                case DUPLICATE -> MessageConsumptionResult.DUPLICATE;
+                case IN_PROGRESS -> MessageConsumptionResult.RETRY;
+                case CLAIMED -> processClaim(
+                        event, deliveryAttempt, handler,
+                        validatedClaim(claimResult, event.eventId()));
+            };
+        } catch (MessageInfrastructureException infrastructureFailure) {
+            return MessageConsumptionResult.RETRY;
+        }
+    }
+
+    private <T> MessageConsumptionResult processClaim(
+            DomainEvent<T> event,
+            int deliveryAttempt,
+            MessageHandler<T> handler,
+            MessageProcessingClaim claim
+    ) {
+        try {
+            boolean completed = store.executeAndMarkSucceeded(
+                    claim, () -> handler.handle(event));
+            return completed
+                    ? MessageConsumptionResult.ACKNOWLEDGED
+                    : MessageConsumptionResult.RETRY;
+        } catch (InterruptedException interrupted) {
+            Thread.currentThread().interrupt();
+            return MessageConsumptionResult.RETRY;
+        } catch (MessageInfrastructureException infrastructureFailure) {
+            return MessageConsumptionResult.RETRY;
+        } catch (Exception failure) {
+            boolean terminal = failure instanceof NonRetryableMessageException
+                    || deliveryAttempt >= maxAttempts;
+            if (!terminal) {
+                store.releaseForRetry(claim);
+                return MessageConsumptionResult.RETRY;
             }
-            var record = new DeadLetterRecord( // 如果已经没救（测地失败
-                    event.eventId(), // ID
-                    event.eventType(), // 类型
-                    event.eventVersion(), // 版本
-                    consumerGroup, // 组
-                    event.businessKey(), // 业务键
-                    event.traceId(), // 链路
-                    deliveryAttempt, // 次数
-                    failureCode(unexpectedFailure), // 提取错误码
-                    clock.instant()); // 失败时间
-            return store.markDeadLettered(claim, record) // 6. 在数据库标记未死信并存储
-                    ? MessageConsumptionResult.DEAD_LETTERED // 成功标记为死信
-                    : MessageConsumptionResult.RETRY; // 标记失败重试
-
+            var record = new DeadLetterRecord(
+                    event.eventId(),
+                    event.eventType(),
+                    event.eventVersion(),
+                    consumerGroup,
+                    event.businessKey(),
+                    event.traceId(),
+                    deliveryAttempt,
+                    failureCode(failure),
+                    clock.instant());
+            return store.markDeadLettered(claim, record)
+                    ? MessageConsumptionResult.DEAD_LETTERED
+                    : MessageConsumptionResult.RETRY;
         }
     }
 
-    private MessageProcessingClaim validateClaim(MessageClaimResult result, String eventId) { //内部校验认领对象合法性
-        MessageProcessingClaim claim = result.claim().orElseThrow( // 必须存在凭证对象
-                () -> new IllegalArgumentException("CLAIMED result has no claim") // 否则抛出异常状态
-        );
-        if (!consumerGroup.equals(claim.consumerGroup()) || !eventId.equals(claim.eventId())) { // 校验组名和事件 ID 是否匹配
-            throw new IllegalArgumentException("store returned a claim for anther message"); // 不匹配抛异常
+    private MessageProcessingClaim validatedClaim(MessageClaimResult result, String eventId) {
+        MessageProcessingClaim claim = result.claim().orElseThrow(
+                () -> new IllegalStateException("CLAIMED result has no claim"));
+        if (!consumerGroup.equals(claim.consumerGroup()) || !eventId.equals(claim.eventId())) {
+            throw new IllegalStateException("store returned a claim for another message");
         }
-        return claim; // 返回校验后的凭证对象
+        return claim;
     }
 
+    private static String failureCode(Exception failure) {
+        return failure instanceof MessageHandlingException messageFailure
+                ? messageFailure.failureCode()
+                : UNEXPECTED_FAILURE;
+    }
 }

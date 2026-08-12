@@ -13,10 +13,10 @@ import java.util.HexFormat;
 import java.util.Objects;
 
 
-public final class InternalServiceSignature { // 定义签名类 
-    private final SecretKeySpec key;    // 秘钥字段声明 
-    private final Clock clock;          // 时钟字段声明 
-    private final Duration skew;        // 偏差字段声明 
+public final class InternalServiceSignature { // 定义签名类
+    private final SecretKeySpec key;    // 秘钥字段声明
+    private final Clock clock;          // 时钟字段声明
+    private final Duration skew;        // 偏差字段声明
 
     public InternalServiceSignature(byte[] s, Clock c, Duration d) {
         if (s == null || s.length < 32) throw new IllegalArgumentException("service secret too short"); // 长度校验
@@ -47,7 +47,7 @@ public final class InternalServiceSignature { // 定义签名类
         return String.join("\n", m.service(), m.method(), m.path(), Long.toString(m.timestamp().toEpochMilli())).getBytes(StandardCharsets.UTF_8);//转换字节
     }
 
-    private byte[] mac(byte[] b) { // HMAC运算 
+    private byte[] mac(byte[] b) { // HMAC运算
         try {
             Mac m = Mac.getInstance("HmacSHA256");
             m.init(key);
@@ -62,7 +62,7 @@ public final class InternalServiceSignature { // 定义签名类
     }
 
     public record Metadata(String service, String method, String path, Instant timestamp) { // 数据对象定义 3 usages
-        public Metadata { // 数据校验 
+        public Metadata { // 数据校验
             if (service == null || !service.matches("[a-z0-9-]{2,63}"))
                 throw new IllegalArgumentException("unsafe service"); // 校验服务
             if (method == null || !method.matches("[A-Z]{3,10}"))
