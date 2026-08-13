@@ -30,11 +30,11 @@ public final class HttpSystemAuthorityProvider implements AuthorityProvider { //
         Instant now = clock.instant(); // 获取当前时间戳
         var m = new InternalServiceSignature.Metadata("ygh-auth-service", "GET", path, now); // 构建签名数据
         ApiResponse<AuthoritySnapshot> response = client.get().uri(path) // 发起 GET 请求
-                .header("X-YGH-Service", "ygh-auth-service") // 设置服务名头
-                .header("X-YGH-Timestamp", Long.toString(now.toEpochMilli())) // 设置时间戳头
-                .header("X-YGH-Service-Signature", signature.sign(m)) // 接收响应并转换
-                .retrieve().body(new ParameterizedTypeReference<>() {
-                }); // 接收响应并转换
+            .header("X-YGH-Service", "ygh-auth-service") // 设置服务名头
+            .header("X-YGH-Timestamp", Long.toString(now.toEpochMilli())) // 设置时间戳头
+            .header("X-YGH-Service-Signature", signature.sign(m)) // 接收响应并转换
+            .retrieve().body(new ParameterizedTypeReference<>() {
+            }); // 接收响应并转换
         if (response == null || response.data() == null)
             throw new IllegalStateException("system authority response unavailable"); // 响应为空抛出异常
         return new Authorities(response.data().roles(), response.data().permissions()); // 返回领域对象

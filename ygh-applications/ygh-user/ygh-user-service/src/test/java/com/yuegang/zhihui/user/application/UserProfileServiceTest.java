@@ -27,8 +27,8 @@ class UserProfileServiceTest {
         var updated = service.update("42", request("Alice Chen", "https://cdn.example/avatar.png", 0));
         assertThat(updated.version()).isEqualTo(1);
         assertThatThrownBy(() -> service.update("42", request("Stale", null, 0)))
-                .isInstanceOfSatisfying(BusinessException.class,
-                        e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.BUSINESS_CONFLICT));
+            .isInstanceOfSatisfying(BusinessException.class,
+                e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.BUSINESS_CONFLICT));
     }
 
     @Test
@@ -36,9 +36,9 @@ class UserProfileServiceTest {
         var service = new UserProfileService(new MemoryRepository());
         assertThat(service.get("42")).extracting(UserProfileView::displayName).isEqualTo("新用户");
         assertThatThrownBy(() -> service.update("42", new UpdateUserProfileRequest("Alice", null, "zh-CN", "Mars/Base", 0)))
-                .isInstanceOfSatisfying(BusinessException.class, e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
+            .isInstanceOfSatisfying(BusinessException.class, e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.VALIDATION_ERROR));
         assertThatThrownBy(() -> service.update("42", request("Alice", "file:///secret", 0)))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
     }
 
     private static final class MemoryRepository implements UserProfileRepository {

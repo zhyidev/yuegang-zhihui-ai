@@ -1,3 +1,30 @@
 package com.yuegang.zhihui.auth.api;
-import com.yuegang.zhihui.auth.api.dto.*;import com.yuegang.zhihui.auth.application.*;import com.yuegang.zhihui.common.core.ApiResponse;import com.yuegang.zhihui.common.web.TraceIdResolver;import jakarta.servlet.http.HttpServletRequest;import jakarta.validation.Valid;import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;import org.springframework.web.bind.annotation.*;
-@RestController@ConditionalOnProperty(prefix="ygh.security.jwt",name="enabled",havingValue="true")@RequestMapping("/api/v1/auth/password")public final class PasswordController{private final PasswordChangeService passwords;private final AccessTokenVerificationService tokens;public PasswordController(PasswordChangeService passwords,AccessTokenVerificationService tokens){this.passwords=passwords;this.tokens=tokens;}@PutMapping ApiResponse<OperationResponse>change(@RequestHeader("Authorization")String authorization,@Valid@RequestBody ChangePasswordRequest body,HttpServletRequest request){return ApiResponse.success(passwords.change(tokens.verifyAuthorization(authorization),body),TraceIdResolver.resolve(request));}}
+
+import com.yuegang.zhihui.auth.api.dto.ChangePasswordRequest;
+import com.yuegang.zhihui.auth.api.dto.OperationResponse;
+import com.yuegang.zhihui.auth.application.AccessTokenVerificationService;
+import com.yuegang.zhihui.auth.application.PasswordChangeService;
+import com.yuegang.zhihui.common.core.ApiResponse;
+import com.yuegang.zhihui.common.web.TraceIdResolver;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@ConditionalOnProperty(prefix = "ygh.security.jwt", name = "enabled", havingValue = "true")
+@RequestMapping("/api/v1/auth/password")
+public final class PasswordController {
+    private final PasswordChangeService passwords;
+    private final AccessTokenVerificationService tokens;
+
+    public PasswordController(PasswordChangeService passwords, AccessTokenVerificationService tokens) {
+        this.passwords = passwords;
+        this.tokens = tokens;
+    }
+
+    @PutMapping
+    ApiResponse<OperationResponse> change(@RequestHeader("Authorization") String authorization, @Valid @RequestBody ChangePasswordRequest body, HttpServletRequest request) {
+        return ApiResponse.success(passwords.change(tokens.verifyAuthorization(authorization), body), TraceIdResolver.resolve(request));
+    }
+}

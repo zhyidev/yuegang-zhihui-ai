@@ -3,9 +3,10 @@ package com.yuegang.zhihui.search.application;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.search.infrastructure.ElasticsearchRestClientFactory;
-import java.util.Map;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.client.RestClient;
+
+import java.util.Map;
 
 public final class SearchDeletionService {
     private final JdbcTemplate jdbc;
@@ -37,11 +38,11 @@ public final class SearchDeletionService {
         jdbc.update("DELETE FROM search_embedding WHERE document_id=?", document);
         if ("product-active".equals(target) && document.startsWith("product:")) {
             elastic.delete().uri("/" + target + "/_doc/" + document.substring("product:".length())
-                    + "?refresh=true").retrieve().toBodilessEntity();
+                + "?refresh=true").retrieve().toBodilessEntity();
             return;
         }
         elastic.post().uri("/" + target + "/_delete_by_query?conflicts=proceed&refresh=true")
-                .body(Map.of("query", Map.of("term", Map.of("documentId", document))))
-                .retrieve().toBodilessEntity();
+            .body(Map.of("query", Map.of("term", Map.of("documentId", document))))
+            .retrieve().toBodilessEntity();
     }
 }

@@ -29,8 +29,8 @@ import java.util.UUID;
 
 public final class KnowledgeDocumentService {
     private static final Set<String> ALLOWED = Set.of("application/pdf",
-            "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "text/plain", "text/markdown");
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "text/plain", "text/markdown");
     private final JdbcTemplate jdbc;
     private final TransactionTemplate transactions;
     private final Path root;
@@ -108,13 +108,13 @@ public final class KnowledgeDocumentService {
             String sha = digest(target);
             transactions.executeWithoutResult(status -> {
                 jdbc.update("INSERT INTO knowledge_document(id,title,category,file_name,media_type,size_bytes,sha256,storage_key,status,uploaded_by) VALUES(?,?,?,?,?,?,?,?, 'PROCESSING',?)",
-                        document, title.trim(), category, original, detected, file.getSize(), sha,
-                        target.getFileName().toString(), user);
+                    document, title.trim(), category, original, detected, file.getSize(), sha,
+                    target.getFileName().toString(), user);
                 history(document, null, "UPLOADED", user, null);
                 history(document, "UPLOADED", "SECURITY_CHECKED", user, null);
                 history(document, "SECURITY_CHECKED", "PROCESSING", user, null);
                 jdbc.update("INSERT INTO knowledge_processing_job(id,document_id,task_type,status,progress) VALUES(?,?,'PARSE','PENDING',0)",
-                        job, document);
+                    job, document);
             });
             parser.process(job);
             return get(document);
@@ -131,34 +131,34 @@ public final class KnowledgeDocumentService {
         return transactions.execute(status -> {
             long id = id(document);
             String target = command.decision() == ReviewKnowledgeRequest.Decision.APPROVE
-                    ? "PUBLISHED" : "REJECTED";
+                ? "PUBLISHED" : "REJECTED";
             int changed = jdbc.update("UPDATE knowledge_document SET status=?,reviewed_by=?,review_comment=?,published_at=CASE WHEN ?='PUBLISHED' THEN NOW(6) ELSE NULL END,version=version+1 WHERE id=? AND status='PENDING_REVIEW' AND version=?",
-                    target, reviewer, command.comment(), target, id, command.version());
+                target, reviewer, command.comment(), target, id, command.version());
             if (changed != 1) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
             jdbc.update("INSERT INTO knowledge_review(id,document_id,reviewer_id,decision,comment) VALUES(?,?,?,?,?)",
-                    next(), id, reviewer, command.decision().name(), command.comment());
+                next(), id, reviewer, command.decision().name(), command.comment());
             history(id, "PENDING_REVIEW", target, reviewer, command.comment());
             if ("PUBLISHED".equals(target)) {
                 jdbc.update("INSERT INTO knowledge_index_job(id,document_id,index_version,job_type,status) VALUES(?,?,?,'UPSERT','PENDING')",
-                        next(), id, "knowledge-active");
+                    next(), id, "knowledge-active");
             }
             var data = jdbc.queryForMap("SELECT uploaded_by,title FROM knowledge_document WHERE id=?", id);
             String event = UUID.randomUUID().toString();
             jdbc.update("INSERT INTO knowledge_outbox(id,aggregate_id,event_type,payload_json) VALUES(?,?, 'KNOWLEDGE_REVIEWED',JSON_OBJECT('userId',?,'documentId',?,'title',?,'decision',?))",
-                    event, Long.toString(id), data.get("uploaded_by"), Long.toString(id), data.get("title"), target);
+                event, Long.toString(id), data.get("uploaded_by"), Long.toString(id), data.get("title"), target);
             return get(id);
         });
     }
 
     public KnowledgeDocumentView get(long id) {
         return jdbc.query("SELECT id,title,category,file_name,media_type,size_bytes,sha256,status,version,updated_at FROM knowledge_document WHERE id=?",
-                result -> {
-                    if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
-                    return new KnowledgeDocumentView(Long.toString(result.getLong(1)), result.getString(2),
-                            result.getString(3), result.getString(4), result.getString(5), result.getLong(6),
-                            result.getString(7), KnowledgeStatus.valueOf(result.getString(8)), result.getLong(9),
-                            result.getTimestamp(10).toLocalDateTime().atOffset(ZoneOffset.UTC));
-                }, id);
+            result -> {
+                if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND);
+                return new KnowledgeDocumentView(Long.toString(result.getLong(1)), result.getString(2),
+                    result.getString(3), result.getString(4), result.getString(5), result.getLong(6),
+                    result.getString(7), KnowledgeStatus.valueOf(result.getString(8)), result.getLong(9),
+                    result.getTimestamp(10).toLocalDateTime().atOffset(ZoneOffset.UTC));
+            }, id);
     }
 
     private boolean exists(long id) {
@@ -174,6 +174,6 @@ public final class KnowledgeDocumentService {
 
     private void history(long document, String from, String to, long user, String reason) {
         jdbc.update("INSERT INTO knowledge_status_history(id,document_id,from_status,to_status,operator_id,reason) VALUES(?,?,?,?,?,?)",
-                next(), document, from, to, user, reason);
+            next(), document, from, to, user, reason);
     }
 }

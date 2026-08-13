@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 class MigrationIsolationTest {
@@ -25,22 +26,23 @@ class MigrationIsolationTest {
 
     private static boolean isReactorRoot(Path path) {
         return Files.isRegularFile(path.resolve("pom.xml"))
-                && Files.isDirectory(path.resolve("ygh-applications"))
-                && Files.isDirectory(path.resolve("ygh-tests"));
+            && Files.isDirectory(path.resolve("ygh-applications"))
+            && Files.isDirectory(path.resolve("ygh-tests"));
     }
 
-    @Test void everyStatefulServiceOwnsVersionedFlywayMigrations() throws IOException {
+    @Test
+    void everyStatefulServiceOwnsVersionedFlywayMigrations() throws IOException {
         for (String domain : List.of("system", "user", "product", "inventory", "order", "wallet",
-                "knowledge", "search", "ai", "training", "notification")) {
+            "knowledge", "search", "ai", "training", "notification")) {
             Path base = domain.equals("user")
-                    ? ROOT.resolve("ygh-applications/ygh-user/ygh-user-service/src/main/resources/db/migration")
-                    : ROOT.resolve("ygh-applications/ygh-" + domain + "/ygh-" + domain + "-service/src/main/resources/db/migration");
+                ? ROOT.resolve("ygh-applications/ygh-user/ygh-user-service/src/main/resources/db/migration")
+                : ROOT.resolve("ygh-applications/ygh-" + domain + "/ygh-" + domain + "-service/src/main/resources/db/migration");
             assertTrue(Files.isDirectory(base), () -> "missing migration directory: " + base);
             try (var files = Files.list(base)) {
                 var names = files.filter(Files::isRegularFile).map(path -> path.getFileName().toString()).toList();
                 assertFalse(names.isEmpty(), () -> "no migrations in " + base);
                 assertTrue(names.stream().allMatch(name -> name.matches("V[0-9]+__[a-z0-9_]+\\.sql")),
-                        () -> "invalid Flyway migration name in " + base + ": " + names);
+                    () -> "invalid Flyway migration name in " + base + ": " + names);
             }
         }
     }

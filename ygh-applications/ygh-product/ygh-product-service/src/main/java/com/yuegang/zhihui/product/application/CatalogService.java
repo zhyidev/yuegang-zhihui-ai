@@ -29,6 +29,45 @@ public final class CatalogService { // 定义目录服务最终类
         json = j; // 初始化 JSON 解析器
     }
 
+    private static CategoryView mapCategory(ResultSet r) throws SQLException { // 映射分类结果集
+        Object p = r.getObject("parent_id"); // 尝试获取父分类 ID
+        return new CategoryView(Long.toString(r.getLong("id")), // ID 转字符串
+            p == null ? null : p.toString(), // 父 ID 处理
+            r.getString("code"), // 编码
+            r.getString("name"), // 名称
+            r.getInt("sort_order"), // 排序
+            r.getBoolean("enabled"), // 是否启用
+            r.getLong("version") // 乐观锁版本
+        );
+    }
+
+    private static BrandView mapBrand(ResultSet r) throws SQLException { // 映射品牌结果集
+        return new BrandView(Long.toString(r.getLong("id")), // ID
+            r.getString("code"), // 编码
+            r.getString("name"), // 名称
+            r.getString("lgo_url"), // Logo 地址
+            r.getBoolean("enabled"), // 是否启用
+            r.getLong("version") // 乐观锁版本
+        );
+    }
+
+    private static Long optional(String x) { // 处理可选的长整型 ID 字符串
+        return x == null || x.isBlank() ? null : positive(x); // 为空返回 null，否则校验正数
+    }
+
+    private static long positive(String x) {
+        try {
+            long v = Long.parseLong(x); // 解析数字
+            if (v == 0) throw new NumberFormatException(); // 非正数抛出异常
+            return v; // 返回长正整型
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 格式错误抛出校验异常
+        }
+    }
+
+    private static long next() { // 生成随机分布式 ID（模拟）
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE; // 使用 UUID 高位分保证为正
+    }
 
     public CategoryView createCategory(SaveCategoryRequest r) { // 创建产品分类
         long id = next(); // 生成新的分布式 ID
@@ -64,14 +103,14 @@ public final class CatalogService { // 定义目录服务最终类
 
     public List<TraceEventView> trace(String sku) { // 获取指定 SKU 的溯源链路
         return jdbc.query("SELECT * FROM product_trace_event WHERE sku_id=? ORDER BY occurred_at",
-                (r, n) -> new TraceEventView(
-                        Long.toString(r.getLong("id")), // 转换事件 ID 为字符串
-                        Long.toString(r.getLong("sku_id")), // 转换 SKU ID
-                        r.getString("event_type"), // 获取事件类型
-                        r.getString("location_name"), // 获取地点
-                        r.getTimestamp("occurred_at").toInstant().atOffset(ZoneOffset.UTC), // 转换时间为 UTC 偏移时间
-                        read(r.getString("details_json")) // 解析详细信息 JSON
-                ), positive(sku)); // 传入 SKU ID 参数
+            (r, n) -> new TraceEventView(
+                Long.toString(r.getLong("id")), // 转换事件 ID 为字符串
+                Long.toString(r.getLong("sku_id")), // 转换 SKU ID
+                r.getString("event_type"), // 获取事件类型
+                r.getString("location_name"), // 获取地点
+                r.getTimestamp("occurred_at").toInstant().atOffset(ZoneOffset.UTC), // 转换时间为 UTC 偏移时间
+                read(r.getString("details_json")) // 解析详细信息 JSON
+            ), positive(sku)); // 传入 SKU ID 参数
     }
 
     private CategoryView category(long id) { // 内部方法: 根据 ID 获取分类
@@ -86,28 +125,6 @@ public final class CatalogService { // 定义目录服务最终类
             if (!r.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND); // 没找到抛出异常
             return mapBrand(r); // 返回映射对象
         }, id);
-    }
-
-    private static CategoryView mapCategory(ResultSet r) throws SQLException { // 映射分类结果集
-        Object p = r.getObject("parent_id"); // 尝试获取父分类 ID
-        return new CategoryView(Long.toString(r.getLong("id")), // ID 转字符串
-                p == null ? null : p.toString(), // 父 ID 处理
-                r.getString("code"), // 编码
-                r.getString("name"), // 名称
-                r.getInt("sort_order"), // 排序
-                r.getBoolean("enabled"), // 是否启用
-                r.getLong("version") // 乐观锁版本
-        );
-    }
-
-    private static BrandView mapBrand(ResultSet r) throws SQLException { // 映射品牌结果集
-        return new BrandView(Long.toString(r.getLong("id")), // ID
-                r.getString("code"), // 编码
-                r.getString("name"), // 名称
-                r.getString("lgo_url"), // Logo 地址
-                r.getBoolean("enabled"), // 是否启用
-                r.getLong("version") // 乐观锁版本
-        );
     }
 
     private String write(Object x) {
@@ -125,23 +142,5 @@ public final class CatalogService { // 定义目录服务最终类
         } catch (Exception e) {
             return Map.of(); // 解析失败返回空 Map
         }
-    }
-
-    private static Long optional(String x) { // 处理可选的长整型 ID 字符串
-        return x == null || x.isBlank() ? null : positive(x); // 为空返回 null，否则校验正数
-    }
-
-    private static long positive(String x) {
-        try {
-            long v = Long.parseLong(x); // 解析数字
-            if (v == 0) throw new NumberFormatException(); // 非正数抛出异常
-            return v; // 返回长正整型
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 格式错误抛出校验异常
-        }
-    }
-
-    private static long next() { // 生成随机分布式 ID（模拟）
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE; // 使用 UUID 高位分保证为正
     }
 }

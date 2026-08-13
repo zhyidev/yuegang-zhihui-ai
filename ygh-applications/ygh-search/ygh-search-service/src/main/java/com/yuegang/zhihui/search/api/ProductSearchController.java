@@ -6,10 +6,11 @@ import com.yuegang.zhihui.search.application.ProductFullTextSearchService;
 import com.yuegang.zhihui.search.security.SearchInternalSecurity;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 @RestController
 public final class ProductSearchController {

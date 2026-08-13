@@ -1,16 +1,15 @@
 package com.yuegang.zhihui.common.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import jakarta.servlet.ServletException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 class RequestLoggingFilterTest {
 
@@ -26,7 +25,7 @@ class RequestLoggingFilterTest {
         filter.doFilter(request, response, (servletRequest, servletResponse) -> {
             ((MockHttpServletResponse) servletResponse).setStatus(201);
             ((MockHttpServletResponse) servletResponse)
-                    .addHeader("Set-Cookie", "SESSION=server-secret-cookie");
+                .addHeader("Set-Cookie", "SESSION=server-secret-cookie");
         });
 
         assertThat(events).hasSize(1);
@@ -40,9 +39,9 @@ class RequestLoggingFilterTest {
         assertThat(event.durationMs()).isNotNegative();
         assertThat(event.headers().keySet()).allMatch("User-Agent"::equals);
         assertThat(event.headers().values())
-                .allSatisfy(value -> assertThat(value)
-                        .doesNotContainIgnoringCase("token")
-                        .doesNotContainIgnoringCase("secret"));
+            .allSatisfy(value -> assertThat(value)
+                .doesNotContainIgnoringCase("token")
+                .doesNotContainIgnoringCase("secret"));
         assertNoSensitiveData(event);
     }
 
@@ -77,10 +76,10 @@ class RequestLoggingFilterTest {
         var downstreamBodies = new ArrayList<String>();
 
         filter.doFilter(request, response, (servletRequest, servletResponse) -> downstreamBodies.add(
-                new String(servletRequest.getInputStream().readAllBytes(), StandardCharsets.UTF_8)));
+            new String(servletRequest.getInputStream().readAllBytes(), StandardCharsets.UTF_8)));
 
         assertThat(downstreamBodies).containsExactly(
-                "{\"password\":\"PlainSecret-123\",\"address\":\"广东省广州市天河区完整地址88号\"}");
+            "{\"password\":\"PlainSecret-123\",\"address\":\"广东省广州市天河区完整地址88号\"}");
         assertThat(events).hasSize(1);
         assertNoSensitiveData(events.getFirst());
     }
@@ -94,12 +93,12 @@ class RequestLoggingFilterTest {
         var failure = new ServletException("database password and bearer token leaked");
 
         assertThatThrownBy(() -> filter.doFilter(
-                        request,
-                        response,
-                        (servletRequest, servletResponse) -> {
-                            throw failure;
-                        }))
-                .isSameAs(failure);
+            request,
+            response,
+            (servletRequest, servletResponse) -> {
+                throw failure;
+            }))
+            .isSameAs(failure);
 
         assertThat(events).hasSize(1);
         assertThat(events.getFirst().status()).isEqualTo(500);
@@ -116,8 +115,8 @@ class RequestLoggingFilterTest {
         var response = new MockHttpServletResponse();
 
         assertThatCode(() -> filter.doFilter(request, response, (servletRequest, servletResponse) ->
-                        ((MockHttpServletResponse) servletResponse).setStatus(204)))
-                .doesNotThrowAnyException();
+            ((MockHttpServletResponse) servletResponse).setStatus(204)))
+            .doesNotThrowAnyException();
 
         assertThat(response.getStatus()).isEqualTo(204);
     }
@@ -132,22 +131,22 @@ class RequestLoggingFilterTest {
         var originalFailure = new ServletException("original service failure");
 
         assertThatThrownBy(() -> filter.doFilter(
-                        request,
-                        response,
-                        (servletRequest, servletResponse) -> {
-                            throw originalFailure;
-                        }))
-                .isSameAs(originalFailure);
+            request,
+            response,
+            (servletRequest, servletResponse) -> {
+                throw originalFailure;
+            }))
+            .isSameAs(originalFailure);
     }
 
     @Test
     void rejectsUnsafeOrOversizedIncomingCorrelationIdsAndGeneratesSafeOnes() throws Exception {
         var unsafeValues = List.of(
-                "bad\r\nX-Forged: true",
-                "bad\u0000control",
-                "x".repeat(129),
-                "spaces are not allowed",
-                "slash/is/not/allowed");
+            "bad\r\nX-Forged: true",
+            "bad\u0000control",
+            "x".repeat(129),
+            "spaces are not allowed",
+            "slash/is/not/allowed");
 
         for (var unsafeValue : unsafeValues) {
             var events = new ArrayList<RequestLogEvent>();
@@ -228,8 +227,8 @@ class RequestLoggingFilterTest {
         request.setQueryString("token=query-secret&address=广东省广州市天河区完整地址88号");
         request.setContentType("application/json");
         request.setContent(
-                "{\"password\":\"PlainSecret-123\",\"address\":\"广东省广州市天河区完整地址88号\"}"
-                        .getBytes(StandardCharsets.UTF_8));
+            "{\"password\":\"PlainSecret-123\",\"address\":\"广东省广州市天河区完整地址88号\"}"
+                .getBytes(StandardCharsets.UTF_8));
         request.addHeader("Authorization", "Bearer authorization-secret-token");
         request.addHeader("Cookie", "SESSION=request-secret-cookie");
         request.addHeader("X-Password", "header-password");
@@ -242,20 +241,20 @@ class RequestLoggingFilterTest {
     private void assertNoSensitiveData(RequestLogEvent event) {
         var rendered = event.toString();
         assertThat(rendered)
-                .doesNotContainIgnoringCase("authorization")
-                .doesNotContainIgnoringCase("cookie")
-                .doesNotContainIgnoringCase("set-cookie")
-                .doesNotContainIgnoringCase("password")
-                .doesNotContainIgnoringCase("token")
-                .doesNotContainIgnoringCase("secret")
-                .doesNotContain("广东省广州市天河区完整地址88号")
-                .doesNotContain("PlainSecret-123");
+            .doesNotContainIgnoringCase("authorization")
+            .doesNotContainIgnoringCase("cookie")
+            .doesNotContainIgnoringCase("set-cookie")
+            .doesNotContainIgnoringCase("password")
+            .doesNotContainIgnoringCase("token")
+            .doesNotContainIgnoringCase("secret")
+            .doesNotContain("广东省广州市天河区完整地址88号")
+            .doesNotContain("PlainSecret-123");
     }
 
     private void assertSafeGeneratedIdentifier(String identifier, String unsafeValue) {
         assertThat(identifier)
-                .isNotEqualTo(unsafeValue)
-                .hasSizeLessThanOrEqualTo(128)
-                .matches("[A-Za-z0-9._-]+");
+            .isNotEqualTo(unsafeValue)
+            .hasSizeLessThanOrEqualTo(128)
+            .matches("[A-Za-z0-9._-]+");
     }
 }

@@ -38,17 +38,17 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
      * 全参构造函数，允许注入自定义的重读认领观察者。
      */
     JdbcMessageConsumptionStore(
-            JdbcTemplate jdbc,
-            PlatformTransactionManager transactionManager,
-            Clock clock,
-            DuplicateClaimObserver duplicateClaimObserver
+        JdbcTemplate jdbc,
+        PlatformTransactionManager transactionManager,
+        Clock clock,
+        DuplicateClaimObserver duplicateClaimObserver
     ) {
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc must not be null"); // 校验并注入 jdbc
         this.transaction = new TransactionTemplate(Objects.requireNonNull(
-                transactionManager, "transactionManager must not be null")); // 校验并根据事务管理器创建事务模板
+            transactionManager, "transactionManager must not be null")); // 校验并根据事务管理器创建事务模板
         this.clock = Objects.requireNonNull(clock, "clock must not be null"); // 校验并注入时钟
         this.duplicateClaimObserver = Objects.requireNonNull(
-                duplicateClaimObserver, "duplicateClaimObserver must not be null"); //校验并注入观察者
+            duplicateClaimObserver, "duplicateClaimObserver must not be null"); //校验并注入观察者
 
     }
 
@@ -127,13 +127,13 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
 
                 }
                 int changed = jdbc.update( // 4. 更新数据库状态未 SUCCEEDED，清除持有者和租约
-                        "UPDATE mq_consumption SET status = ?, ower = NULL, lease_util = NULL," + "updated_at = ? WHERE consumer_group = ? AND event_id = ?" + "AND status = ? AND owner = ?", // 使用乐观锁 + 条件更新
-                        SUCCEEDED,  //设置状态为成功
-                        Timestamp.from(clock.instant()), // 设置更新时间
-                        claim.consumerGroup(),// 配置消费者组
-                        claim.eventId(), // 匹配事件 ID
-                        PROCESSING, // 当前状态必须是处理中
-                        claim.owner()); // 当前持有者必须是自己
+                    "UPDATE mq_consumption SET status = ?, ower = NULL, lease_util = NULL," + "updated_at = ? WHERE consumer_group = ? AND event_id = ?" + "AND status = ? AND owner = ?", // 使用乐观锁 + 条件更新
+                    SUCCEEDED,  //设置状态为成功
+                    Timestamp.from(clock.instant()), // 设置更新时间
+                    claim.consumerGroup(),// 配置消费者组
+                    claim.eventId(), // 匹配事件 ID
+                    PROCESSING, // 当前状态必须是处理中
+                    claim.owner()); // 当前持有者必须是自己
                 if (changed != 1) { // 如果没有更新成功 理论上受事务保护不应发生
                     throw new IllegalArgumentException("claim is no longer valid, cannot mark success"); // 抛出异常
                 }
@@ -158,8 +158,8 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
         Objects.requireNonNull(claim, "claim must not be null"); // 检验删除操作
         try { // 执行删除操作
             return jdbc.update( // 直接删除 PROCESSING 记录，中间件重复投递时间可重复认领
-                    "DELETE FROM mq_consumption WHERE consumer_group = ? AND event_id = ?" + " AND status = ? AND owner = ?", // 使用乐观锁 + 条件删除
-                    claim.consumerGroup(), claim.eventId(), PROCESSING, claim.owner()) == 1; // 执行并返回是否成功
+                "DELETE FROM mq_consumption WHERE consumer_group = ? AND event_id = ?" + " AND status = ? AND owner = ?", // 使用乐观锁 + 条件删除
+                claim.consumerGroup(), claim.eventId(), PROCESSING, claim.owner()) == 1; // 执行并返回是否成功
         } catch (MessageInfrastructureException infrastructure) { // 异常处理
             throw infrastructure; // 向上抛出
         } catch (RuntimeException exception) { // 处理异常
@@ -183,29 +183,29 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
                     return false; // 失去所有权则返回 false
                 }
                 jdbc.update( // 1. 将详细的失败事务插入死信表
-                        "INSERT INTO mq_dead_letter (consumer_group,event_id,event_type," +
-                                "event_version,business_key,trace_id,deliver_attempt," +
-                                "failure_code,failed_at) VALUES (?,?,?,?,?,?,?,?,?)",
-                        record.customerGroup(),
-                        record.eventId(),
-                        record.eventType(),
-                        record.eventVersion(),
-                        record.businessKey(),
-                        record.traceId(),
-                        record.deliveryAttempt(),
-                        record.failureCode(),
-                        Timestamp.from(record.failedAt())
+                    "INSERT INTO mq_dead_letter (consumer_group,event_id,event_type," +
+                        "event_version,business_key,trace_id,deliver_attempt," +
+                        "failure_code,failed_at) VALUES (?,?,?,?,?,?,?,?,?)",
+                    record.customerGroup(),
+                    record.eventId(),
+                    record.eventType(),
+                    record.eventVersion(),
+                    record.businessKey(),
+                    record.traceId(),
+                    record.deliveryAttempt(),
+                    record.failureCode(),
+                    Timestamp.from(record.failedAt())
                 );// 填充插入参数
                 int changed = jdbc.update( // 2. 更新主表状态为 DEAD_LETTERED
-                        "UPDATE mq_consumption SET status = ?, owner = NULL, lease_until=NULL,"
-                                + "updated_at = ? WHERE consumer_group = ? AND event_id = ?"
-                                + "AND status = ? AND owner = ?",
-                        DEAD_LETTERED,
-                        Timestamp.from(clock.instant()),
-                        claim.consumerGroup(),
-                        claim.eventId(),
-                        PROCESSING,
-                        claim.owner()); //填充更新参数
+                    "UPDATE mq_consumption SET status = ?, owner = NULL, lease_until=NULL,"
+                        + "updated_at = ? WHERE consumer_group = ? AND event_id = ?"
+                        + "AND status = ? AND owner = ?",
+                    DEAD_LETTERED,
+                    Timestamp.from(clock.instant()),
+                    claim.consumerGroup(),
+                    claim.eventId(),
+                    PROCESSING,
+                    claim.owner()); //填充更新参数
                 if (changed != 1) { // 状态检查
                     throw new IllegalArgumentException("claim changed inside locked transaction");
                 }
@@ -223,21 +223,21 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
      * 内部实际认领数据库操作
      */
     private MessageClaimResult doClaim(
-            MessageProcessingClaim claim,
-            Instant now,
-            Instant leaseUntil
+        MessageProcessingClaim claim,
+        Instant now,
+        Instant leaseUntil
     ) {
         try { // 尝试插入数据库认领
             jdbc.update( // 如果是第一次插入: 插入PROCESSING 状态的行
-                    "INSERT INTO mq_consumption(consumer_group, event_id, status,owner," +
-                            "lease_until,created_at,update_at) VALUES ( ?,?,?,?,?,?,?)",
-                    claim.consumerGroup(),
-                    claim.eventId(),
-                    PROCESSING,
-                    claim.owner(),
-                    Timestamp.from(leaseUntil),
-                    Timestamp.from(now),
-                    Timestamp.from(now) // 填入成功：代表认领程度
+                "INSERT INTO mq_consumption(consumer_group, event_id, status,owner," +
+                    "lease_until,created_at,update_at) VALUES ( ?,?,?,?,?,?,?)",
+                claim.consumerGroup(),
+                claim.eventId(),
+                PROCESSING,
+                claim.owner(),
+                Timestamp.from(leaseUntil),
+                Timestamp.from(now),
+                Timestamp.from(now) // 填入成功：代表认领程度
             );
             return MessageClaimResult.claimed(claim); // 插入成功，代表认领成功
         } catch (DuplicateKeyException exception) { // 如果是重复插入：说明已经有人认领了
@@ -254,20 +254,20 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
 
             }
             int changed = jdbc.update( // 。场景，前一个认领者的租约已超时，当前节点可以强制抢占处理权
-                    "UPDATE mq_consumption SET owner = ?, lease_until = ?, update_at = ? " +
-                            "WHERE consumer_group = ? AND event_id = ? AND status = ?" +
-                            "AND lease_until <= ?", // 乐观锁，仅当前租约确实已到期时更新
-                    claim.owner(),
-                    Timestamp.from(leaseUntil),
-                    Timestamp.from(now),
-                    claim.consumerGroup(),
-                    claim.eventId(),
-                    PROCESSING,
-                    Timestamp.from(now)
+                "UPDATE mq_consumption SET owner = ?, lease_until = ?, update_at = ? " +
+                    "WHERE consumer_group = ? AND event_id = ? AND status = ?" +
+                    "AND lease_until <= ?", // 乐观锁，仅当前租约确实已到期时更新
+                claim.owner(),
+                Timestamp.from(leaseUntil),
+                Timestamp.from(now),
+                claim.consumerGroup(),
+                claim.eventId(),
+                PROCESSING,
+                Timestamp.from(now)
             ); // 填充参数
             return changed == 1  // 抢占是否成功
-                    ? MessageClaimResult.claimed(claim) // 成功抢占
-                    : MessageClaimResult.inProgress(); // 抢占失败（被别人抢走了）
+                ? MessageClaimResult.claimed(claim) // 成功抢占
+                : MessageClaimResult.inProgress(); // 抢占失败（被别人抢走了）
         }
     }
 
@@ -276,13 +276,13 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
      */
     private ConsumptionRow lockRow(String consumerGroup, String eventId) {
         return jdbc.query( // 查询加锁
-                "SELECT status,owner,lease_until FROM mq_consumption " + "WHERE consumer_group = ? AND event_id = ? FOR UPDATE", // FOR update 触发数据库行锁
+            "SELECT status,owner,lease_until FROM mq_consumption " + "WHERE consumer_group = ? AND event_id = ? FOR UPDATE", // FOR update 触发数据库行锁
 
-                resultSet -> resultSet.next() // 处理结果
-                        ? new ConsumptionRow(resultSet.getString("status"), // 获取状态
-                        resultSet.getString("owner"), // 获取持有者
-                        toInstant(resultSet.getTimestamp("lease_until"))) // 获取租约到期时间
-                        : null, consumerGroup, eventId);
+            resultSet -> resultSet.next() // 处理结果
+                ? new ConsumptionRow(resultSet.getString("status"), // 获取状态
+                resultSet.getString("owner"), // 获取持有者
+                toInstant(resultSet.getTimestamp("lease_until"))) // 获取租约到期时间
+                : null, consumerGroup, eventId);
     }
 
     /**
@@ -290,14 +290,14 @@ public class JdbcMessageConsumptionStore implements MessageConsumptionStore {
      */
     private ConsumptionRow findRow(String consumerGroup, String eventId) {
         return jdbc.query( // 普通查询
-                "SELECT status,owner,lease_until FROM mq_consumption " +
-                        "WHERE consumer_group = ? AND event_id = ?",
-                resultSet -> resultSet.next() // 处理结果类
-                        ? new ConsumptionRow(
-                        resultSet.getString("status"),
-                        resultSet.getString("owner"),
-                        toInstant(resultSet.getTimestamp("lease_until"))
-                ) : null, consumerGroup, eventId);
+            "SELECT status,owner,lease_until FROM mq_consumption " +
+                "WHERE consumer_group = ? AND event_id = ?",
+            resultSet -> resultSet.next() // 处理结果类
+                ? new ConsumptionRow(
+                resultSet.getString("status"),
+                resultSet.getString("owner"),
+                toInstant(resultSet.getTimestamp("lease_until"))
+            ) : null, consumerGroup, eventId);
     }
 
     /**

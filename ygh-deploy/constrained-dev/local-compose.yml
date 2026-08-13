@@ -3,29 +3,29 @@ name: ygh-local
 services:
   rocketmq-init:
     image: apache/rocketmq:5.3.1
-    profiles: ["mall-deps"]
+    profiles: [ "mall-deps" ]
     user: "0:0"
-    entrypoint: ["sh", "-c"]
-    command: ["chown -R 3000:3000 /home/rocketmq/store"]
+    entrypoint: [ "sh", "-c" ]
+    command: [ "chown -R 3000:3000 /home/rocketmq/store" ]
     volumes:
       - rocketmq-store:/home/rocketmq/store
-    networks: [ygh-local]
+    networks: [ ygh-local ]
     restart: "no"
 
   rocketmq-namesrv:
     image: apache/rocketmq:5.3.1
-    profiles: ["mall-deps"]
-    command: ["sh", "mqnamesrv"]
+    profiles: [ "mall-deps" ]
+    command: [ "sh", "mqnamesrv" ]
     environment:
       JAVA_OPT_EXT: -server -Xms128m -Xmx128m -Xmn64m
     ports:
       - "19876:9876"
-    networks: [ygh-local]
+    networks: [ ygh-local ]
     mem_limit: 256m
     cpus: 0.50
     stop_grace_period: 45s
     healthcheck:
-      test: ["CMD-SHELL", "grep -q 'The Name Server boot success' /home/rocketmq/logs/rocketmqlogs/namesrv.log"]
+      test: [ "CMD-SHELL", "grep -q 'The Name Server boot success' /home/rocketmq/logs/rocketmqlogs/namesrv.log" ]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -36,7 +36,7 @@ services:
 
   rocketmq-broker:
     image: apache/rocketmq:5.3.1
-    profiles: ["mall-deps"]
+    profiles: [ "mall-deps" ]
     depends_on:
       rocketmq-init:
         condition: service_completed_successfully
@@ -59,12 +59,12 @@ services:
     volumes:
       - ./rocketmq/broker.conf:/home/rocketmq/rocketmq-5.3.1/conf/broker.conf:ro
       - rocketmq-store:/home/rocketmq/store
-    networks: [ygh-local]
+    networks: [ ygh-local ]
     mem_limit: 768m
     cpus: 1.00
     stop_grace_period: 45s
     healthcheck:
-      test: ["CMD-SHELL", "grep -q 'boot success' /home/rocketmq/logs/rocketmqlogs/broker.log"]
+      test: [ "CMD-SHELL", "grep -q 'boot success' /home/rocketmq/logs/rocketmqlogs/broker.log" ]
       interval: 15s
       timeout: 5s
       retries: 20
@@ -75,7 +75,7 @@ services:
 
   seata:
     image: apache/seata-server:2.5.0
-    profiles: ["mall-deps"]
+    profiles: [ "mall-deps" ]
     environment:
       TZ: Asia/Shanghai
       STORE_MODE: file
@@ -89,12 +89,12 @@ services:
     ports:
       - "7091:7091"
       - "8091:8091"
-    networks: [ygh-local]
+    networks: [ ygh-local ]
     mem_limit: 512m
     cpus: 0.50
     stop_grace_period: 45s
     healthcheck:
-      test: ["CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8091'"]
+      test: [ "CMD-SHELL", "bash -c '</dev/tcp/127.0.0.1/8091'" ]
       interval: 15s
       timeout: 5s
       retries: 20
@@ -105,7 +105,7 @@ services:
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.19.17
-    profiles: ["ai-deps"]
+    profiles: [ "ai-deps" ]
     environment:
       discovery.type: single-node
       xpack.security.enabled: "true"
@@ -117,12 +117,12 @@ services:
       - "19200:9200"
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
-    networks: [ygh-local]
+    networks: [ ygh-local ]
     mem_limit: 1280m
     cpus: 1.00
     stop_grace_period: 60s
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -u elastic:$${ELASTIC_PASSWORD} http://127.0.0.1:9200/_cluster/health >/dev/null"]
+      test: [ "CMD-SHELL", "curl -fsS -u elastic:$${ELASTIC_PASSWORD} http://127.0.0.1:9200/_cluster/health >/dev/null" ]
       interval: 15s
       timeout: 5s
       retries: 30

@@ -1,18 +1,34 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.apache.ibatis.reflection.SystemMetaObject;
+import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-import org.apache.ibatis.reflection.SystemMetaObject;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class AuditMetaObjectHandlerTest {
 
     private static final Instant FIRST = Instant.parse("2026-07-11T11:00:00Z");
     private static final Instant SECOND = Instant.parse("2026-07-11T12:00:00Z");
+
+    private static AuditMetaObjectHandler handler(String auditor, Instant instant) {
+        return new AuditMetaObjectHandler(
+            () -> auditor,
+            Clock.fixed(instant, ZoneOffset.UTC));
+    }
+
+    private static TestEntity auditedAt(String auditor, Instant instant) {
+        var entity = new TestEntity();
+        entity.setCreatedBy(auditor);
+        entity.setCreatedAt(instant);
+        entity.setUpdatedBy(auditor);
+        entity.setUpdatedAt(instant);
+        return entity;
+    }
 
     @Test
     void insertFillsAllAuditFieldsWithOneActorAndOneInstant() {
@@ -54,9 +70,9 @@ class AuditMetaObjectHandlerTest {
         var entity = new TestEntity();
 
         assertThatThrownBy(() -> handler(" ", FIRST)
-                        .insertFill(SystemMetaObject.forObject(entity)))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("auditor");
+            .insertFill(SystemMetaObject.forObject(entity)))
+            .isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("auditor");
     }
 
     @Test
@@ -66,21 +82,6 @@ class AuditMetaObjectHandlerTest {
 
         handler.insertFill(SystemMetaObject.forObject(plain));
         handler.updateFill(SystemMetaObject.forObject(plain));
-    }
-
-    private static AuditMetaObjectHandler handler(String auditor, Instant instant) {
-        return new AuditMetaObjectHandler(
-                () -> auditor,
-                Clock.fixed(instant, ZoneOffset.UTC));
-    }
-
-    private static TestEntity auditedAt(String auditor, Instant instant) {
-        var entity = new TestEntity();
-        entity.setCreatedBy(auditor);
-        entity.setCreatedAt(instant);
-        entity.setUpdatedBy(auditor);
-        entity.setUpdatedAt(instant);
-        return entity;
     }
 
     private static final class TestEntity extends AuditableEntity {

@@ -39,7 +39,7 @@ public class GlobalExceptionHandler { // 类定义
         var status = statusFor(exception.errorCode()); // 将业务码转为 HTTP 状态码
         var message = externalMessage(exception); // 获取对外展示的消息
         var body = ApiResponse.<Void>failure( // 构建失败响应信封
-                exception.errorCode(), message, TraceIdResolver.resolve(request)); // 注入 Trace ID
+            exception.errorCode(), message, TraceIdResolver.resolve(request)); // 注入 Trace ID
         ResponseEntity.BodyBuilder response = ResponseEntity.status(status); // 开始构建响应
         if (exception.errorCode() == ErrorCode.RATE_LIMITED) { // 如果是限流错误
             response.header(HttpHeaders.RETRY_AFTER, "1"); // 提示 1 秒后重试
@@ -55,16 +55,16 @@ public class GlobalExceptionHandler { // 类定义
                                                                                                  HttpServletRequest request // 请求参数
     ) {
         List<FieldValidationError> fieldErrors = exception.getBindingResult().getFieldErrors().stream() // 处理错误流
-                .map(error -> FieldValidationError.sanitized( // 将错误清洗映射
-                        error.getField(), // 获取字段名
-                        resolveValidationMessage(error.getDefaultMessage())
-                        // 获取错误消息
-                )).toList(); // 收集为列表
+            .map(error -> FieldValidationError.sanitized( // 将错误清洗映射
+                error.getField(), // 获取字段名
+                resolveValidationMessage(error.getDefaultMessage())
+                // 获取错误消息
+            )).toList(); // 收集为列表
         var body = ApiResponse.failure( // 构建失败响应
-                ErrorCode.VALIDATION_ERROR, // 业务码，检验错误
-                ErrorCode.VALIDATION_ERROR.defaultMessage(), // 默认提示消息
-                fieldErrors, // 放入详细的字段错误
-                TraceIdResolver.resolve(request)); //注入追踪
+            ErrorCode.VALIDATION_ERROR, // 业务码，检验错误
+            ErrorCode.VALIDATION_ERROR.defaultMessage(), // 默认提示消息
+            fieldErrors, // 放入详细的字段错误
+            TraceIdResolver.resolve(request)); //注入追踪
         return ResponseEntity.badRequest().body(body); // 返回 400 响应
     }
 
@@ -74,11 +74,11 @@ public class GlobalExceptionHandler { // 类定义
                                                                                                  HttpServletRequest request // 参数
     ) {
         List<FieldValidationError> fieldErrors = exception.getParameterValidationResults().stream() // 处理结果数据流参数结果流
-                .flatMap(result -> result.getResolvableErrors().stream() // 打平错误信息
-                        .map(error -> FieldValidationError.sanitized( // 映射清洗
-                                resolveParameterName(result.getMethodParameter()), // 获取参数名
-                                resolveValidationMessage(error.getDefaultMessage()) // 解析信息
-                        ))).toList(); // 集合化
+            .flatMap(result -> result.getResolvableErrors().stream() // 打平错误信息
+                .map(error -> FieldValidationError.sanitized( // 映射清洗
+                    resolveParameterName(result.getMethodParameter()), // 获取参数名
+                    resolveValidationMessage(error.getDefaultMessage()) // 解析信息
+                ))).toList(); // 集合化
         return validationFailure(fieldErrors, request); // 统一调用校验失败构建器
     }
 
@@ -87,43 +87,43 @@ public class GlobalExceptionHandler { // 类定义
                                                                                              HttpServletRequest request // 请求参数
     ) {
         List<FieldValidationError> fieldErrors = exception.getConstraintViolations().stream() // 处理约束违反
-                .map(violation -> FieldValidationError.sanitized( // 映射清洗
-                        violation.getPropertyPath().toString(), // 获取字段名
-                        resolveValidationMessage(violation.getMessage()) // 解析信息
-                )).toList(); // 集合化
+            .map(violation -> FieldValidationError.sanitized( // 映射清洗
+                violation.getPropertyPath().toString(), // 获取字段名
+                resolveValidationMessage(violation.getMessage()) // 解析信息
+            )).toList(); // 集合化
         return validationFailure(fieldErrors, request); // 统一调用校验失败构建器
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class) // 处理 JSON 解释失败（如格式错误）
     public ResponseEntity<ApiResponse<List<FieldValidationError>>> handleHttpMessageNotReadable(
-            HttpMessageNotReadableException exception, // 参数
-            HttpServletRequest request // 请求参数
+        HttpMessageNotReadableException exception, // 参数
+        HttpServletRequest request // 请求参数
     ) {
         return validationFailure( // 返回格式化错误
-                List.of(FieldValidationError.sanitized("body", "请求体格式不合法"))
-                , request
+            List.of(FieldValidationError.sanitized("body", "请求体格式不合法"))
+            , request
         ); // 固定提示
 
     }
 
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class) // 处理请求方法不支持（如本该 POST 用了 GET）
     public ResponseEntity<ApiResponse<List<FieldValidationError>>> handleMethodNotSupported(
-            HttpRequestMethodNotSupportedException exception, // 参数
-            HttpServletRequest request // 请求参数
+        HttpRequestMethodNotSupportedException exception, // 参数
+        HttpServletRequest request // 请求参数
     ) {
         return protocolFailure( // 返回协议错误
-                exception.getStatusCode(), exception.getHeaders(), "method", "请求方法不受支持", request // 构建信息
+            exception.getStatusCode(), exception.getHeaders(), "method", "请求方法不受支持", request // 构建信息
         );
 
     }
 
     @ExceptionHandler(HttpMediaTypeNotAcceptableException.class) // 处理 Content-Type 格式不对
     public ResponseEntity<ApiResponse<List<FieldValidationError>>> handleMediaTypeNotSupported(
-            HttpMediaTypeNotAcceptableException exception, // 参数
-            HttpServletRequest request // 请求参数
+        HttpMediaTypeNotAcceptableException exception, // 参数
+        HttpServletRequest request // 请求参数
     ) {
         return protocolFailure( // 返回协议错误
-                exception.getStatusCode(), exception.getHeaders(), "contentType", "Content-Type 格式不支持", request // 构建信息
+            exception.getStatusCode(), exception.getHeaders(), "contentType", "Content-Type 格式不支持", request // 构建信息
         );
 
     }
@@ -134,7 +134,7 @@ public class GlobalExceptionHandler { // 类定义
                                                                                                  HttpServletRequest request // 请求参数
     ) {
         return protocolFailure( // 返回协议错误
-                exception.getStatusCode(), exception.getHeaders(), "accept", "无法生成可接受的响应类型", request // 构建信息
+            exception.getStatusCode(), exception.getHeaders(), "accept", "无法生成可接受的响应类型", request // 构建信息
         );
     }
 
@@ -145,12 +145,12 @@ public class GlobalExceptionHandler { // 类定义
     ) {
         var errorResource = (ErrorResponse) exception; // 强转为 ErrorResponse
         var body = ApiResponse.<Void>failure( // 构建失败响应
-                ErrorCode.RESOURCE_NOT_FOUND, // 业务码
-                ErrorCode.RESOURCE_NOT_FOUND.defaultMessage(), // 默认提示消息
-                TraceIdResolver.resolve(request) // 注入追踪 ID
+            ErrorCode.RESOURCE_NOT_FOUND, // 业务码
+            ErrorCode.RESOURCE_NOT_FOUND.defaultMessage(), // 默认提示消息
+            TraceIdResolver.resolve(request) // 注入追踪 ID
         );
         return ResponseEntity.status(errorResource.getStatusCode()) // 设置 HTTP 状态码
-                .headers(errorResource.getHeaders()).body(body); // 返回响应实体
+            .headers(errorResource.getHeaders()).body(body); // 返回响应实体
     }
 
     @ExceptionHandler({ServletRequestBindingException.class, MethodArgumentTypeMismatchException.class})
@@ -160,7 +160,7 @@ public class GlobalExceptionHandler { // 类定义
                                                                                                 HttpServletRequest request // 请求参数
     ) {
         return validationFailure( // 返回格式化错误
-                List.of(FieldValidationError.sanitized("request", "请求参数绑定失败")), request // 固定提示
+            List.of(FieldValidationError.sanitized("request", "请求参数绑定失败")), request // 固定提示
         );
     }
 
@@ -175,7 +175,7 @@ public class GlobalExceptionHandler { // 类定义
         // 仅在服务器内部日志打印，通过 TraceId 与外部报错关联
         LOGGER.error("Unexpected exception, traceId=" + traceId + ", type=" + exception.getClass().getName()); // 打印类名
         var body = ApiResponse.<Void>failure( // 返回前端 500 错误
-                ErrorCode.INTERNAL_ERROR, ErrorCode.INTERNAL_ERROR.defaultMessage(), null, traceId);
+            ErrorCode.INTERNAL_ERROR, ErrorCode.INTERNAL_ERROR.defaultMessage(), null, traceId);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
 
     }
@@ -201,7 +201,7 @@ public class GlobalExceptionHandler { // 类定义
             case RESOURCE_NOT_FOUND -> null;
             case BUSINESS_CONFLICT -> null;
             case UNAUTHENTICATED, PERMISSION_DENIED, RATE_LIMITED, DEPENDENCY_UNAVAILABLE, INTERNAL_ERROR ->
-                    exception.errorCode().defaultMessage(); // 安全码强制显示默认信息
+                exception.errorCode().defaultMessage(); // 安全码强制显示默认信息
         };
 
     }
@@ -214,8 +214,8 @@ public class GlobalExceptionHandler { // 类定义
     private String resolveParameterName(org.springframework.core.MethodParameter parameter) { // 参数名解析
         String parameterName = parameter.getParameterName(); // 获取参数名
         return parameterName == null || parameterName.isBlank() // 若无
-                ? "arg" + parameter.getParameterIndex() // 使用索引搜索
-                : parameterName; // 使用原名
+            ? "arg" + parameter.getParameterIndex() // 使用索引搜索
+            : parameterName; // 使用原名
 
     }
 
@@ -224,10 +224,10 @@ public class GlobalExceptionHandler { // 类定义
                                                                                        HttpServletRequest request // 请求
     ) {
         var body = ApiResponse.failure( // 构造对象
-                ErrorCode.VALIDATION_ERROR, // 错误码
-                ErrorCode.VALIDATION_ERROR.defaultMessage(), // 消息
-                fieldErrors, // 数据
-                TraceIdResolver.resolve(request) // ID
+            ErrorCode.VALIDATION_ERROR, // 错误码
+            ErrorCode.VALIDATION_ERROR.defaultMessage(), // 消息
+            fieldErrors, // 数据
+            TraceIdResolver.resolve(request) // ID
 
         );
         return ResponseEntity.badRequest().body(body); // 返回
@@ -241,9 +241,9 @@ public class GlobalExceptionHandler { // 类定义
                                                                                      HttpServletRequest request // 请求
     ) {
         var body = ApiResponse.failure(ErrorCode.VALIDATION_ERROR, // 码
-                ErrorCode.VALIDATION_ERROR.defaultMessage(), //消息
-                List.of(FieldValidationError.sanitized(field, message)), // 单个错误
-                TraceIdResolver.resolve(request)// ID
+            ErrorCode.VALIDATION_ERROR.defaultMessage(), //消息
+            List.of(FieldValidationError.sanitized(field, message)), // 单个错误
+            TraceIdResolver.resolve(request)// ID
         );
         return ResponseEntity.status(status).headers(headers).body(body); // 返回指定状态码
     }

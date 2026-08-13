@@ -20,9 +20,9 @@ public final class UserMigrationApplication { // 定义数据库迁移应用类�
 
     static void main(String[] args) {
         try (var ignored = new SpringApplicationBuilder(UserApplication.class) // 使用主应用的配置作为基础来构建
-                .web(WebApplicationType.NONE) // 设置应用类型为 NONE，即不启动嵌入式 Web 服务器（Tomcat 等）
-                .properties("spring.cloud.nacos.discovery.enabled=false") // 设置临时属性：禁
-                .run(args)) { // 运行应用，并利用 try-with-resources 确保运行结束后自动关闭上下文
+            .web(WebApplicationType.NONE) // 设置应用类型为 NONE，即不启动嵌入式 Web 服务器（Tomcat 等）
+            .properties("spring.cloud.nacos.discovery.enabled=false") // 设置临时属性：禁
+            .run(args)) { // 运行应用，并利用 try-with-resources 确保运行结束后自动关闭上下文
 
         }
     }

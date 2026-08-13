@@ -55,13 +55,13 @@ public class GatewaySecurityConfiguration {
      */
     @Bean
     ReactiveJwtDecoder gatewayJwtDecoder(
-            @Value("${ygh.security.jwt.issuer}") String issuer,
-            @Value("${ygh.security.jwt.jwk-set-uri}") String jwkSetUri,
-            @Value("${ygh.security.jwt.audience}") String audience) {
+        @Value("${ygh.security.jwt.issuer}") String issuer,
+        @Value("${ygh.security.jwt.jwk-set-uri}") String jwkSetUri,
+        @Value("${ygh.security.jwt.audience}") String audience) {
         // 使用 Nimbus 库从 JWK Set URI 构建解码器
         var decoder = NimbusReactiveJwtDecoder.withJwkSetUri(jwkSetUri)
-                .jwsAlgorithm(SignatureAlgorithm.RS256)   // RSA 256 签名算法
-                .build();
+            .jwsAlgorithm(SignatureAlgorithm.RS256)   // RSA 256 签名算法
+            .build();
         // 附加自定义验证器（issuer + audience）
         decoder.setJwtValidator(GatewayJwtValidators.create(issuer, audience));
         return decoder;
@@ -82,7 +82,7 @@ public class GatewaySecurityConfiguration {
      */
     @Bean
     Converter<Jwt, Mono<AbstractAuthenticationToken>> gatewayJwtAuthenticationConverter(
-            JwtPrincipalMapper principalMapper) {
+        JwtPrincipalMapper principalMapper) {
         return jwt -> {
             // 将 JWT Claims 映射为系统内部主体
             var principal = principalMapper.map(jwt);
@@ -91,13 +91,13 @@ public class GatewaySecurityConfiguration {
 
             // 角色 → ROLE_xxx
             principal.roles().stream()
-                    .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
-                    .forEach(authorities::add);
+                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                .forEach(authorities::add);
 
             // 权限点 → PERM_xxx
             principal.permissions().stream()
-                    .map(perm -> new SimpleGrantedAuthority("PERM_" + perm))
-                    .forEach(authorities::add);
+                .map(perm -> new SimpleGrantedAuthority("PERM_" + perm))
+                .forEach(authorities::add);
 
             return Mono.just(new JwtAuthenticationToken(jwt, authorities, principal.userId()));
         };
@@ -106,40 +106,40 @@ public class GatewaySecurityConfiguration {
     // 核心安全过滤链，配置谁能访问哪些接口
     @Bean
     SecurityWebFilterChain gatewaySecurityWebFilterChain(
-            ServerHttpSecurity http,
-            GatewaySecurityErrorWriter errorWriter,
-            Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter
+        ServerHttpSecurity http,
+        GatewaySecurityErrorWriter errorWriter,
+        Converter<Jwt, Mono<AbstractAuthenticationToken>> jwtAuthenticationConverter
     ) {
         return http.csrf(ServerHttpSecurity.CsrfSpec::disable) // 禁用 CSRF
-                .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // 禁用 Basic 认证
-                .formLogin(ServerHttpSecurity.FormLoginSpec::disable) // 禁用表单登录
-                .logout(ServerHttpSecurity.LogoutSpec::disable) // 禁用登出
-                // 设置为无状态服务，不存储对话
-                .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
-                .authorizeExchange(exchange -> exchange
-                        // 1. 放行健康检查、文档和 Swagger 路径
-                        .pathMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger/**", "/livez", "/readyz").permitAll()
-                        // 2. 放行认证相关的注册、登录、刷新令牌接口
-                        .pathMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "api/v1/auth/refresh", "api/v1/auth/password-rest/**").permitAll()
-                        // 3. 放行图形验证码
-                        .pathMatchers(HttpMethod.GET, "/api/v1/auth/captcha").permitAll()
-                        // 4. 放行只读性的公共业务接口（商品、类目、知识检索等）
-                        .pathMatchers(HttpMethod.GET, "/api/v1/product/**", "/api/v1/product-categories", "/api/v1/knowledge/dpcumets/**", "/apt/v1/knowledge/search").permitAll()
-                        // 5. 限制：仅限员工和管理员访问的业务
-                        .pathMatchers("/api/v1/organization/**", "/api/v1/training/**").hasAnyRole("EMPLOYEE", "ADMIN")
-                        // 6. 限制：仅限超级管理员访问的后台管理接口
-                        .pathMatchers("/api/v1/auth/admin/**", "/api/v1/admin/**", "/api/v1/system/**", "/api/v1/roles/**", "/api/v1/permissions/**").hasAnyRole("ADMIN")
-                        // 7. 兜底：其余所有 /api/v1/** 请求必须经过认证
-                        .pathMatchers("/api/v1/**").authenticated()
-                        .anyExchange().denyAll())
-                // 异常处理逻辑（返回统一的 401/403 JSON）
-                .exceptionHandling(errors -> errors
-                        .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
-                        .accessDeniedHandler((exchange, ignored) -> errorWriter.accessDenied(exchange)))
-                .oauth2ResourceServer(resourceServer -> resourceServer
-                        .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
-                .build();
+            .httpBasic(ServerHttpSecurity.HttpBasicSpec::disable) // 禁用 Basic 认证
+            .formLogin(ServerHttpSecurity.FormLoginSpec::disable) // 禁用表单登录
+            .logout(ServerHttpSecurity.LogoutSpec::disable) // 禁用登出
+            // 设置为无状态服务，不存储对话
+            .securityContextRepository(NoOpServerSecurityContextRepository.getInstance())
+            .authorizeExchange(exchange -> exchange
+                // 1. 放行健康检查、文档和 Swagger 路径
+                .pathMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger/**", "/livez", "/readyz").permitAll()
+                // 2. 放行认证相关的注册、登录、刷新令牌接口
+                .pathMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "api/v1/auth/refresh", "api/v1/auth/password-rest/**").permitAll()
+                // 3. 放行图形验证码
+                .pathMatchers(HttpMethod.GET, "/api/v1/auth/captcha").permitAll()
+                // 4. 放行只读性的公共业务接口（商品、类目、知识检索等）
+                .pathMatchers(HttpMethod.GET, "/api/v1/product/**", "/api/v1/product-categories", "/api/v1/knowledge/dpcumets/**", "/apt/v1/knowledge/search").permitAll()
+                // 5. 限制：仅限员工和管理员访问的业务
+                .pathMatchers("/api/v1/organization/**", "/api/v1/training/**").hasAnyRole("EMPLOYEE", "ADMIN")
+                // 6. 限制：仅限超级管理员访问的后台管理接口
+                .pathMatchers("/api/v1/auth/admin/**", "/api/v1/admin/**", "/api/v1/system/**", "/api/v1/roles/**", "/api/v1/permissions/**").hasAnyRole("ADMIN")
+                // 7. 兜底：其余所有 /api/v1/** 请求必须经过认证
+                .pathMatchers("/api/v1/**").authenticated()
+                .anyExchange().denyAll())
+            // 异常处理逻辑（返回统一的 401/403 JSON）
+            .exceptionHandling(errors -> errors
+                .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
+                .accessDeniedHandler((exchange, ignored) -> errorWriter.accessDenied(exchange)))
+            .oauth2ResourceServer(resourceServer -> resourceServer
+                .authenticationEntryPoint((exchange, ignored) -> errorWriter.unauthenticated(exchange))
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)))
+            .build();
 
     }
 

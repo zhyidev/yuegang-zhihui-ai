@@ -31,7 +31,7 @@ class TestDataFactoryTest {
     @Test
     void syntheticUserTypeRejectsProductionLikeIdentityData() {
         assertThatThrownBy(() -> new TestUserData(
-                "42", "real_user", "person@company.com", "真实姓名"))
-                .isInstanceOf(IllegalArgumentException.class);
+            "42", "real_user", "person@company.com", "真实姓名"))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

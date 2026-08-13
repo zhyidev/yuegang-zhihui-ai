@@ -4,6 +4,7 @@ import com.yuegang.zhihui.auth.domain.LoginAttempt;
 import com.yuegang.zhihui.auth.domain.LoginAttemptRepository;
 import com.yuegang.zhihui.auth.domain.LoginAttemptResult;
 import com.yuegang.zhihui.auth.domain.SensitiveValueHasher;
+
 import java.net.InetAddress;
 import java.time.Clock;
 import java.util.Objects;
@@ -20,21 +21,21 @@ public final class LoginAuditService {
     }
 
     public void record(
-            Long accountId,
-            String principal,
-            InetAddress clientIp,
-            LoginAttemptResult result,
-            String failureReason,
-            String traceId
+        Long accountId,
+        String principal,
+        InetAddress clientIp,
+        LoginAttemptResult result,
+        String failureReason,
+        String traceId
     ) {
         Objects.requireNonNull(clientIp, "clientIp must not be null");
         repository.save(new LoginAttempt(
-                accountId,
-                hasher.hashPrincipal(principal),
-                hasher.hashClientAddress(clientIp),
-                result,
-                failureReason,
-                clock.instant(),
-                traceId));
+            accountId,
+            hasher.hashPrincipal(principal),
+            hasher.hashClientAddress(clientIp),
+            result,
+            failureReason,
+            clock.instant(),
+            traceId));
     }
 }

@@ -54,15 +54,15 @@ public class YghMybatisAutoConfiguration {
                 throw new IllegalStateException("exactly one MybatisPlusInterceptor is required");
             }
             var paginationInterceptors = interceptors.getFirst().getInterceptors().stream()
-                    .filter(PaginationInnerInterceptor.class::isInstance)
-                    .map(PaginationInnerInterceptor.class::cast)
-                    .toList();
+                .filter(PaginationInnerInterceptor.class::isInstance)
+                .map(PaginationInnerInterceptor.class::cast)
+                .toList();
             // 校验分页设置是否符合 PageRequest.MAX_SIZE 规定的上限
             boolean boundedPagination = paginationInterceptors.size() == 1
-                    && paginationInterceptors.getFirst().getMaxLimit() != null
-                    && paginationInterceptors.getFirst().getMaxLimit() >= 1
-                    && paginationInterceptors.getFirst().getMaxLimit() <= PageRequest.MAX_PAGE_SIZE
-                    && !paginationInterceptors.getFirst().isOverflow();
+                && paginationInterceptors.getFirst().getMaxLimit() != null
+                && paginationInterceptors.getFirst().getMaxLimit() >= 1
+                && paginationInterceptors.getFirst().getMaxLimit() <= PageRequest.MAX_PAGE_SIZE
+                && !paginationInterceptors.getFirst().isOverflow();
             if (!boundedPagination) {
                 throw new IllegalStateException("MybatisPlusInterceptor must include pagination limited to" + PageRequest.MAX_PAGE_SIZE);
             }
@@ -93,9 +93,9 @@ public class YghMybatisAutoConfiguration {
     @Bean // 注册迁移历史记录器
     @Primary // 标记为首选策略，替换 Spring Boot 默认的迁移流程
     public FlywayMigrationStrategy yghFlywayMigrationStrategy(
-            FlywayMigrationPolicy migrationPolicy,
-            FlywayConfigurationGuard configurationGuard,
-            FlywayHistoryValidator historyValidator
+        FlywayMigrationPolicy migrationPolicy,
+        FlywayConfigurationGuard configurationGuard,
+        FlywayHistoryValidator historyValidator
     ) {
         return new YghFlywayMigrationStrategy(migrationPolicy, configurationGuard, historyValidator);
     }

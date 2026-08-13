@@ -1,11 +1,11 @@
 package com.yuegang.zhihui.auth.domain;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 import java.time.Duration;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class Argon2PasswordHasherTest {
 
@@ -40,9 +40,9 @@ class Argon2PasswordHasherTest {
     @Test
     void hostileResourceParametersAndOversizedFieldsFailBeforeArgon2Execution() {
         var hostile = new PasswordDigest(
-                "$argon2id$v=19$m=999999,t=99,p=99$AAAAAAAAAAAAAAAAAAAAAA$"
-                        + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-                "ARGON2ID", 1);
+            "$argon2id$v=19$m=999999,t=99,p=99$AAAAAAAAAAAAAAAAAAAAAA$"
+                + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+            "ARGON2ID", 1);
         var oversized = new PasswordDigest("$argon2id$v=19$m=8,t=1,p=1$" + "A".repeat(600), "ARGON2ID", 1);
 
         assertThat(hasher.matches("irrelevant password".toCharArray(), hostile)).isFalse();
@@ -53,11 +53,11 @@ class Argon2PasswordHasherTest {
     @Test
     void constructorRejectsParametersOutsideTheVerificationResourceEnvelope() {
         assertThatThrownBy(() -> new Argon2PasswordHasher(16, 32, 1, 32 * 1024 + 1, 2))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Argon2PasswordHasher(16, 32, 1, 19 * 1024, 5))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Argon2PasswordHasher(
-                16, 32, 3, 19 * 1024, 2, 2, Duration.ofSeconds(1)))
-                .isInstanceOf(IllegalArgumentException.class);
+            16, 32, 3, 19 * 1024, 2, 2, Duration.ofSeconds(1)))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 }

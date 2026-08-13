@@ -5,6 +5,8 @@ import com.yuegang.zhihui.auth.domain.CaptchaChallengeStore;
 import com.yuegang.zhihui.auth.domain.SensitiveValueHasher;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
+
+import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -16,7 +18,6 @@ import java.util.Base64;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.imageio.ImageIO;
 
 public final class CaptchaService {
     private static final char[] ALPHABET = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ".toCharArray();
@@ -32,7 +33,7 @@ public final class CaptchaService {
     }
 
     CaptchaService(CaptchaChallengeStore store, SensitiveValueHasher hasher, Clock clock,
-            Supplier<String> answers) {
+                   Supplier<String> answers) {
         this.store = Objects.requireNonNull(store, "store must not be null");
         this.hasher = Objects.requireNonNull(hasher, "hasher must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
@@ -45,13 +46,16 @@ public final class CaptchaService {
         store.save(id, hasher.hashCaptchaAnswer(answer), TTL);
         String base64 = Base64.getEncoder().encodeToString(renderPng(answer));
         return new CaptchaResponse(id, "image/png", base64,
-                clock.instant().plus(TTL).atOffset(ZoneOffset.UTC));
+            clock.instant().plus(TTL).atOffset(ZoneOffset.UTC));
     }
 
     public void verify(String challengeId, String answer) {
         String hash;
-        try { hash = hasher.hashCaptchaAnswer(answer); }
-        catch (IllegalArgumentException malformed) { throw new BusinessException(ErrorCode.VALIDATION_ERROR); }
+        try {
+            hash = hasher.hashCaptchaAnswer(answer);
+        } catch (IllegalArgumentException malformed) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+        }
         if (!store.consume(challengeId, hash)) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
     }
 
@@ -85,6 +89,8 @@ public final class CaptchaService {
             } catch (java.io.IOException impossible) {
                 throw new IllegalStateException("captcha image cannot be encoded", impossible);
             }
-        } finally { graphics.dispose(); }
+        } finally {
+            graphics.dispose();
+        }
     }
 }

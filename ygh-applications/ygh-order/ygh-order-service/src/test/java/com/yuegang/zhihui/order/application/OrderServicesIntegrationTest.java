@@ -25,21 +25,21 @@ import static org.mockito.Mockito.*;
 class OrderServicesIntegrationTest {
     private static CreateOrderRequest request(String requestId, String sku, long quantity, String price) {
         return new CreateOrderRequest(requestId,
-                List.of(new OrderItemCommand(sku, "SKU-" + sku, "商品" + sku, new BigDecimal(price), quantity)),
-                new AddressSnapshot("张三", "13800138000", "CN", "440000", "广东省", "广州市", "天河区", "测试地址", "510000"),
-                "测试订单");
+            List.of(new OrderItemCommand(sku, "SKU-" + sku, "商品" + sku, new BigDecimal(price), quantity)),
+            new AddressSnapshot("张三", "13800138000", "CN", "440000", "广东省", "广州市", "天河区", "测试地址", "510000"),
+            "测试订单");
     }
 
     private static void assertBusinessError(Runnable call, ErrorCode expected) {
         assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
+            error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 
     @Test
     void supportsCartSnapshotsStateMachineInventoryCompensationExpiryAndReconciliation() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
             Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential())
-                    .locations("classpath:db/migration").load().migrate();
+                .locations("classpath:db/migration").load().migrate();
             var dataSource = new DriverManagerDataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential());
             var orders = new OrderService(dataSource);
             var query = new OrderQueryService(dataSource);
@@ -107,7 +107,7 @@ class OrderServicesIntegrationTest {
 
             var reconciliationClient = mock(CommerceReconciliationClient.class);
             when(reconciliationClient.wallet(any())).thenReturn(new WalletReferenceView("ref", "42", false, false,
-                    BigDecimal.ZERO, BigDecimal.ZERO, "CNY"));
+                BigDecimal.ZERO, BigDecimal.ZERO, "CNY"));
             when(reconciliationClient.inventory(any())).thenReturn(new InventoryReferenceView("ref", 0, 0, 0, 0));
             var reconciliation = new CommerceReconciliationService(dataSource, reconciliationClient).run();
             assertThat(reconciliation.checkedOrders()).isEqualTo(4);
@@ -115,7 +115,7 @@ class OrderServicesIntegrationTest {
 
             doThrow(new IllegalStateException("reserve failed")).when(inventory).reserve(any());
             assertThatThrownBy(() -> facade.create(42, request("create-failed", "1005", 1, "1.00")))
-                    .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class);
             assertBusinessError(() -> orders.get(42, "0"), ErrorCode.VALIDATION_ERROR);
         }
     }

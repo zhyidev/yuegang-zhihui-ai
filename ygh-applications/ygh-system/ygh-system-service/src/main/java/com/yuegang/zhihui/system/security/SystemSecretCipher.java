@@ -35,8 +35,8 @@ public class SystemSecretCipher { // 定义最终类，系统密钥加密器
             cipher.updateAAD(AAD); // 注入关联数据进行完整性绑定
             byte[] encrypted = cipher.doFinal(plain); // 执行最终的机密计算
             return new EncryptedSecret( // 返回 Base64 编码后的结果
-                    Base64.getEncoder().encodeToString(encrypted),
-                    Base64.getEncoder().encodeToString(nonce));
+                Base64.getEncoder().encodeToString(encrypted),
+                Base64.getEncoder().encodeToString(nonce));
         } catch (GeneralSecurityException failure) {
             throw new IllegalArgumentException("cannot encrypt system secret", failure);
         } finally { // 关键安全步骤：清理内存中的敏感信息

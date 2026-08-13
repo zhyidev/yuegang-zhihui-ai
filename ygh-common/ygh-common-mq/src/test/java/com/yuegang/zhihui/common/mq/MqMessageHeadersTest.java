@@ -1,16 +1,30 @@
 package com.yuegang.zhihui.common.mq;
 
+import com.yuegang.zhihui.common.core.DomainEvent;
+import com.yuegang.zhihui.common.core.EventMetadata;
+import com.yuegang.zhihui.common.core.ImmutableEventPayload;
+import com.yuegang.zhihui.common.core.VersionedDomainEvent;
+import org.junit.jupiter.api.Test;
+
+import java.time.OffsetDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.yuegang.zhihui.common.core.EventMetadata;
-import com.yuegang.zhihui.common.core.DomainEvent;
-import com.yuegang.zhihui.common.core.ImmutableEventPayload;
-import com.yuegang.zhihui.common.core.VersionedDomainEvent;
-import java.time.OffsetDateTime;
-import org.junit.jupiter.api.Test;
-
 class MqMessageHeadersTest {
+
+    private static VersionedDomainEvent<TestPayload> event(String eventId) {
+        return VersionedDomainEvent.of(
+            new EventMetadata(
+                eventId,
+                "ORDER_CREATED",
+                1,
+                OffsetDateTime.parse("2026-07-11T12:00:00+08:00"),
+                "trace-1",
+                "order-service",
+                "order-1001"),
+            new TestPayload("order-1001"));
+    }
 
     @Test
     void mapsStableDomainEventEnvelopeWithoutPayloadOrSecrets() {
@@ -19,21 +33,21 @@ class MqMessageHeadersTest {
         var headers = MqMessageHeaders.from(event);
 
         assertThat(headers).containsOnlyKeys(
-                "eventId", "eventType", "eventVersion", "occurredAt",
-                "traceId", "producer", "businessKey", "contentType");
+            "eventId", "eventType", "eventVersion", "occurredAt",
+            "traceId", "producer", "businessKey", "contentType");
         assertThat(headers).containsEntry("eventId", "event-1")
-                .containsEntry("eventType", "ORDER_CREATED")
-                .containsEntry("eventVersion", "1")
-                .containsEntry("occurredAt", "2026-07-11T12:00:00+08:00")
-                .containsEntry("contentType", "application/json");
+            .containsEntry("eventType", "ORDER_CREATED")
+            .containsEntry("eventVersion", "1")
+            .containsEntry("occurredAt", "2026-07-11T12:00:00+08:00")
+            .containsEntry("contentType", "application/json");
         assertThatThrownBy(() -> headers.put("token", "secret"))
-                .isInstanceOf(UnsupportedOperationException.class);
+            .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
     void rejectsNullEnvelope() {
         assertThatThrownBy(() -> MqMessageHeaders.from(null))
-                .isInstanceOf(NullPointerException.class);
+            .isInstanceOf(NullPointerException.class);
     }
 
     @Test
@@ -86,20 +100,7 @@ class MqMessageHeadersTest {
         };
 
         assertThatThrownBy(() -> MqMessageHeaders.from(poison))
-                .isInstanceOf(IllegalArgumentException.class);
-    }
-
-    private static VersionedDomainEvent<TestPayload> event(String eventId) {
-        return VersionedDomainEvent.of(
-                new EventMetadata(
-                        eventId,
-                        "ORDER_CREATED",
-                        1,
-                        OffsetDateTime.parse("2026-07-11T12:00:00+08:00"),
-                        "trace-1",
-                        "order-service",
-                        "order-1001"),
-                new TestPayload("order-1001"));
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     private record TestPayload(String orderId) implements ImmutableEventPayload {

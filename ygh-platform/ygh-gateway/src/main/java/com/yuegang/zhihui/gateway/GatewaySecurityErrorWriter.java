@@ -145,13 +145,13 @@ final class GatewaySecurityErrorWriter {
 
         // 获取当前请求的 TraceId，用于问题排查
         String traceId = exchange.getAttributeOrDefault(
-                GatewaySecurityAttributes.TRACE_ID, "unavailable");
+            GatewaySecurityAttributes.TRACE_ID, "unavailable");
 
         // 构造标准失败响应体并序列化为 JSON 字节数组
         byte[] body;
         try {
             body = objectMapper.writeValueAsBytes(
-                    ApiResponse.failure(errorCode, null, traceId));
+                ApiResponse.failure(errorCode, null, traceId));
         } catch (Exception e) {
             // 序列化失败时返回空响应，避免异常扩散
             exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -165,6 +165,6 @@ final class GatewaySecurityErrorWriter {
 
         // 将 JSON 字节写入响应体
         return exchange.getResponse().writeWith(
-                Mono.just(exchange.getResponse().bufferFactory().wrap(body)));
+            Mono.just(exchange.getResponse().bufferFactory().wrap(body)));
     }
 }

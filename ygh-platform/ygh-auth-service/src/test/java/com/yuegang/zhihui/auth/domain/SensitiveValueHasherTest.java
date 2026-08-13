@@ -1,10 +1,11 @@
 package com.yuegang.zhihui.auth.domain;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
-import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 class SensitiveValueHasherTest {
 
@@ -25,7 +26,7 @@ class SensitiveValueHasherTest {
     @Test
     void rejectsWeakPepperAndUnsafePrincipal() {
         assertThatIllegalArgumentException()
-                .isThrownBy(() -> new SensitiveValueHasher("too-short".getBytes(StandardCharsets.US_ASCII)));
+            .isThrownBy(() -> new SensitiveValueHasher("too-short".getBytes(StandardCharsets.US_ASCII)));
         var hasher = new SensitiveValueHasher(PEPPER);
         assertThatIllegalArgumentException().isThrownBy(() -> hasher.hashPrincipal(" "));
         assertThatIllegalArgumentException().isThrownBy(() -> hasher.hashPrincipal("a\n@example.com"));

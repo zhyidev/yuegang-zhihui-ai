@@ -62,7 +62,7 @@ public final class JdbcAccountAdministrationRepository implements AccountAdminis
                         rows.next(); // 移动到第一行
                         // 组装状态变更记录，转换时间戳为 UTF OffsetDateTime
                         result = new StatusChange(accountId, userId, AccountStatus.valueOf(rows.getString(1)), rows.getLong(2),
-                                rows.getTimestamp(3).toLocalDateTime().atOffset(ZoneOffset.UTC));
+                            rows.getTimestamp(3).toLocalDateTime().atOffset(ZoneOffset.UTC));
                     }
                 }
 

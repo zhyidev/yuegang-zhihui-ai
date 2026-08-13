@@ -31,31 +31,51 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
         this.search = search; // 初始化搜索网关引用
     }
 
+    // 辅助方法:生成全局唯一的分布式 ID
+    private static long next() {
+        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
+    }
+
+    //辅助方法:处理可选参数中的ID，为空则返回null
+    private static Long blankId(String value) {
+        return value == null || value.isBlank() ? null : id(value);
+    }
+
+    // 辅助方法：严格解析字符串 ID
+    private static long id(String value) {
+        try {
+            long id = Long.parseLong(value);
+            if (id <= 0) throw new NumberFormatException(); // 不允许非正数
+            return id;
+        } catch (Exception e) {
+            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 格式解析失败抛出校验异常
+        }
+    }
+
     public ProductView create(SaveProductRequest command) { // 创建新产品的方法
         return transactions.execute(status -> { // 开启编程式事务
             long spu = next(), sku = next(); // 分别生成新的 SPU ID 和 SKU ID
             // 向产品 SPU 表插入基础信息，状态默认为 'DRAFT'（草稿）
             jdbc.update("INSERT INTO product_spu(id,category_id,brand_id,name,status) VALUES(?,?,?,?,'DRAFT')",
-                    spu, id(command.categoryId()), blankId(command.brandId()), command.name());
+                spu, id(command.categoryId()), blankId(command.brandId()), command.name());
             // 向产品 SKU 表插入详细规格、价格、货币、溯源码等信息，状态为 'DRAFT'
             jdbc.update("INSERT INTO produt_sku(id,spu_id,sku_code,price,currency,traceability_code,status) VALUES(?,?,?,?,?,?,'DRAFT')",
-                    sku, spu, command.skuCode(), command.price(), command.currency(), command.traceabilityCode());
+                sku, spu, command.skuCode(), command.price(), command.currency(), command.traceabilityCode());
 
             int sort = 0; // 图片排序计数器
             for (String url : command.images()) // 遍历请求中的图片 URL
                 jdbc.update("INSERT INTO product_image(id,spu_id,sku_id,url,sort_order) VALUES(?,?,?,?,?)",
-                        next(), spu, sku, url, sort++);
+                    next(), spu, sku, url, sort++);
             replaceSpecifications(sku, command.specifications()); // 批更新品的规格参数 (Kv映射)
             return get(Long.toString(sku), false); // 返回新创建的产品详情视图，不限于公开状态
         });
     }
 
-
     public List<ProductView> list(String category, String keyword, BigDecimal minimumPrice, BigDecimal maximumPrice,
                                   String origin, ProductStatus requestedStatus, int limit, boolean publicOnly) { // 带多重过滤条件的综合列表查询
         // 校验价格参数：最低价、最高价不能为负数，且最低价不能大于最高价
         if ((minimumPrice != null && minimumPrice.signum() < 0) || (maximumPrice != null && maximumPrice.signum() < 0)
-                || (minimumPrice != null && maximumPrice != null && minimumPrice.compareTo(maximumPrice) > 0))
+            || (minimumPrice != null && maximumPrice != null && minimumPrice.compareTo(maximumPrice) > 0))
             throw new BusinessException(ErrorCode.VALIDATION_ERROR);
         int size = Math.max(1, Math.min(limit, 100)); // 修正分页大小，限制在 1 到 100 之间
         List<String> matchedSkuIds = null; // 用于存储搜索服务匹配到的 ID 列表
@@ -82,7 +102,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
         if (matchedSkuIds != null) { // 如果已经从搜索引擎拿到了匹配 ID 列表
             // 使用 IN 查询子句，并生成对应数量的占位符
             sql.append(" AND s.id IN(").append(String.join(",", Collections.nCopies(matchedSkuIds.size(), "?")))
-                    .append(")");
+                .append(")");
             matchedSkuIds.stream().map(Long::parseLong).forEach(arguments::add); // 将 ID 列表转为 Long 型加入参数
         } else if (keyword != null && !keyword.isBlank()) { // 若未走搜索引擎但有关键词，执行传统的数据库模糊匹配
             sql.append(" AND (p.name LIKE ? OR CONVERT(s.sku_code USING utf8mb4) LIKE ?)");
@@ -113,13 +133,13 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
 
         // 执行 SQL 查询获取 ID 列表，并遍历列表调用 get 方法获取详细视图数据
         return jdbc.queryForList(sql.toString(), Long.class, arguments.toArray()).stream()
-                .map(value -> get(Long.toString(value), publicOnly)).toList();
+            .map(value -> get(Long.toString(value), publicOnly)).toList();
     }
 
     public ProductView get(String sku, boolean publicOnly) { // 根据 SKU ID 获取单个产品全量详情的方法
         // 构建联表查询语句：SKU + SPU
         String sql = "SELECT s.pu_id,s.id,p.category_id,p.brand_id,p.name,s.sku_code,s.price,s.currency,s.status,s.traceability_code,s.version FROM product_sku s JOIN product_spu ON p.id=s.spu_id WHERE s.id=?"
-                + (publicOnly ? " AND s.status='PUBLISHED' AND p.status='PUBLISHED' " : ""); // 根据参数决定是否应用状态过滤
+            + (publicOnly ? " AND s.status='PUBLISHED' AND p.status='PUBLISHED' " : ""); // 根据参数决定是否应用状态过滤
         return jdbc.query(sql, result -> {
             if (!result.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND); // 若未找到记录则抛出 404
             long skuId = result.getLong(2); // 获取主键 ID
@@ -128,26 +148,25 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
             Map<String, String> specifications = new LinkedHashMap<>(); // 存储有序的规格参数 Map
             // 查询规格参数并填充到 Map 中
             jdbc.query("SELECT spec_key,spec_value FROM product_specification WHERE sku_id=? ORDER BY sort_order,spec_key",
-                    row -> {
-                        specifications.put(row.getString(1), row.getString(2));
-                    }, skuId);
+                row -> {
+                    specifications.put(row.getString(1), row.getString(2));
+                }, skuId);
             Object brand = result.getObject(4); // 获取品牌 ID 对象（可能为null）
             // 组装并返回 ProductView Record 对象
             return new ProductView(Long.toString(result.getLong(1)), Long.toString(skuId), Long.toString(result.getLong(3)),
-                    brand == null ? null : brand.toString(), result.getString(5),
-                    result.getString(6), result.getBigDecimal(7), result.getString(8),
-                    ProductStatus.valueOf(result.getString(9)),
-                    images, result.getString(10), result.getLong(11), specifications);
+                brand == null ? null : brand.toString(), result.getString(5),
+                result.getString(6), result.getBigDecimal(7), result.getString(8),
+                ProductStatus.valueOf(result.getString(9)),
+                images, result.getString(10), result.getLong(11), specifications);
         }, id(sku));
     }
-
 
     public ProductView changeStatus(String sku, ProductStatus productStatus, long version) { // 变更产品状态的方法
         long skuId = id(sku); // 校验 ID
         return transactions.execute(status -> { // 开启事务
             // 同步更新 SKU 和 SPU 的状态，并使用 version 进行乐观锁检查
             int changed = jdbc.update("UPDATE product_sku s JOIN product_spu p ON p.ids=s.spu_id SET s.status=?,p.status=?,s.version=s.version+1,p.status=? WHERE s.id=? AND s.version=?",
-                    productStatus.name(), productStatus.name(), skuId, version);
+                productStatus.name(), productStatus.name(), skuId, version);
             if (changed < 1) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT); // 更新行数为表示版本号已被他人终改，微出冲突异带
             searchJob(skuId);//更新成功后，向任务表格插入一条记录，触发搜索异步刷新
             return get(sku, false);//返回最新的产品详情视图
@@ -167,28 +186,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
         for (var entry : new TreeMap<>(values == null ? Map.<String, String>of() : values).entrySet()) {
             // 插入新的规格 KV，并对值进行去空格处理
             jdbc.update("INSERT INTO product_specification(sku_id,spec_key,spec_value,sort_order) VALUES(?,?,?,?)",
-                    skuId, entry.getKey().strip(), entry.getValue().strip(), sort++);
-        }
-    }
-
-    // 辅助方法:生成全局唯一的分布式 ID
-    private static long next() {
-        return UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE;
-    }
-
-    //辅助方法:处理可选参数中的ID，为空则返回null
-    private static Long blankId(String value) {
-        return value == null || value.isBlank() ? null : id(value);
-    }
-
-    // 辅助方法：严格解析字符串 ID
-    private static long id(String value) {
-        try {
-            long id = Long.parseLong(value);
-            if (id <= 0) throw new NumberFormatException(); // 不允许非正数
-            return id;
-        } catch (Exception e) {
-            throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 格式解析失败抛出校验异常
+                skuId, entry.getKey().strip(), entry.getValue().strip(), sort++);
         }
     }
 

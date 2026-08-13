@@ -41,6 +41,11 @@ public final class NimbusAccessTokenIssuer implements AccessTokenIssuer { // 实
         }
     }
 
+    private static String requireText(String value, String name) { // 文本非空检查辅助
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(name + " must not be null");
+        return value;
+    }
+
     @Override
     public AccessToken issue(TokenPrincipal principal) { // 核心签发逻辑
         Objects.requireNonNull(principal, "principal must not be null");
@@ -48,25 +53,20 @@ public final class NimbusAccessTokenIssuer implements AccessTokenIssuer { // 实
         Instant expiresAt = issuedAt.plus(lifetime); // 计算过期时间
         String jwtId = UUID.randomUUID().toString(); // 生成唯一 JWT ID (jti)
         var claims = new JWTClaimsSet.Builder() // 构建 JWT 载荷
-                .issuer(issuer).audience(audience).subject(Long.toString(principal.userId())) // 设置颁发者、受众、主题（用户ID）
-                .jwtID(jwtId).issueTime(Date.from(issuedAt)) // 设置 JTI、签发时间
-                .notBeforeTime(Date.from(issuedAt)).expirationTime(Date.from(expiresAt)) // 设置生效时间、过期时间
-                .claim("account_id", Long.toString(principal.accountId())) // 附加账号ID
-                .claim("roles", principal.roles().stream().sorted().toList()) // 附加有序角色列表
-                .claim("permissions", principal.permissions().stream().sorted().toList()).build(); // 附加有序权限列表
+            .issuer(issuer).audience(audience).subject(Long.toString(principal.userId())) // 设置颁发者、受众、主题（用户ID）
+            .jwtID(jwtId).issueTime(Date.from(issuedAt)) // 设置 JTI、签发时间
+            .notBeforeTime(Date.from(issuedAt)).expirationTime(Date.from(expiresAt)) // 设置生效时间、过期时间
+            .claim("account_id", Long.toString(principal.accountId())) // 附加账号ID
+            .claim("roles", principal.roles().stream().sorted().toList()) // 附加有序角色列表
+            .claim("permissions", principal.permissions().stream().sorted().toList()).build(); // 附加有序权限列表
         var key = keyRing.activeSigningKey(); // 获取密钥环中当前激活的私钥
         var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.PS256) // 创建头部的 JWT，指定 RS256 算法
-                .keyID(key.getKeyID()).type(JOSEObjectType.JWT).build(), claims); // 关键 Key ID 和类型
+            .keyID(key.getKeyID()).type(JOSEObjectType.JWT).build(), claims); // 关键 Key ID 和类型
         try {
             jwt.sign(new RSASSASigner(key.toRSAPrivateKey())); // 使用私钥进行数字签名
             return new AccessToken(jwt.serialize(), jwtId, expiresAt); // 序列化并返回
         } catch (JOSEException signingFailure) { // 捕获签名失败
             throw new IllegalStateException("access token signing failed", signingFailure);
         }
-    }
-
-    private static String requireText(String value, String name) { // 文本非空检查辅助
-        if (value == null || value.isBlank()) throw new IllegalArgumentException(name + " must not be null");
-        return value;
     }
 }

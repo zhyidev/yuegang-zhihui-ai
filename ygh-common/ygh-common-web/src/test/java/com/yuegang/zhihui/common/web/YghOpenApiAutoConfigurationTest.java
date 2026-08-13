@@ -1,24 +1,25 @@
 package com.yuegang.zhihui.common.web;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.Schema;
 import io.swagger.v3.oas.models.security.SecurityScheme;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springdoc.core.customizers.OpenApiCustomizer;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
 @SuppressWarnings({"rawtypes", "unchecked"})
 class YghOpenApiAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner = new ApplicationContextRunner()
-            .withConfiguration(AutoConfigurations.of(YghOpenApiAutoConfiguration.class));
+        .withConfiguration(AutoConfigurations.of(YghOpenApiAutoConfiguration.class));
 
     @Test
     void autoConfigurationProvidesOneReusableOpenApiCustomizer() {
@@ -48,12 +49,12 @@ class YghOpenApiAutoConfigurationTest {
         var resourceName = "META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports";
 
         try (var input = YghOpenApiAutoConfigurationTest.class
-                .getClassLoader()
-                .getResourceAsStream(resourceName)) {
+            .getClassLoader()
+            .getResourceAsStream(resourceName)) {
             assertThat(input).as(resourceName).isNotNull();
             var registrations = new String(input.readAllBytes(), StandardCharsets.UTF_8);
             assertThat(registrations)
-                    .contains("com.yuegang.zhihui.common.web.YghOpenApiAutoConfiguration");
+                .contains("com.yuegang.zhihui.common.web.YghOpenApiAutoConfiguration");
         }
     }
 
@@ -69,19 +70,19 @@ class YghOpenApiAutoConfigurationTest {
         var schemas = openApi.getComponents().getSchemas();
         assertThat(schemas).containsKeys("ApiResponse", "FieldValidationError", "ValidationErrorResponse");
         assertThat(schemas.get("ApiResponse").getProperties())
-                .containsKeys("code", "message", "data", "traceId", "timestamp");
+            .containsKeys("code", "message", "data", "traceId", "timestamp");
         assertThat(schemas.get("ApiResponse").getRequired())
-                .containsExactlyInAnyOrder("code", "message", "data", "traceId", "timestamp");
+            .containsExactlyInAnyOrder("code", "message", "data", "traceId", "timestamp");
         assertThat(schemas.get("FieldValidationError").getProperties())
-                .containsKeys("field", "message", "rejectedValue");
+            .containsKeys("field", "message", "rejectedValue");
         assertThat(schemas.get("FieldValidationError").getRequired())
-                .containsExactlyInAnyOrder("field", "message", "rejectedValue");
+            .containsExactlyInAnyOrder("field", "message", "rejectedValue");
 
         Schema<?> validationResponse = schemas.get("ValidationErrorResponse");
         assertThat(validationResponse.getProperties())
-                .containsKeys("code", "message", "data", "traceId", "timestamp");
+            .containsKeys("code", "message", "data", "traceId", "timestamp");
         assertThat(validationResponse.getRequired())
-                .containsExactlyInAnyOrder("code", "message", "data", "traceId", "timestamp");
+            .containsExactlyInAnyOrder("code", "message", "data", "traceId", "timestamp");
         assertThat(validationResponse.getProperties().get("data")).isInstanceOf(ArraySchema.class);
         var validationItems = ((ArraySchema) validationResponse.getProperties().get("data")).getItems();
         assertThat(validationItems.get$ref()).isEqualTo("#/components/schemas/FieldValidationError");
@@ -90,14 +91,14 @@ class YghOpenApiAutoConfigurationTest {
     private void assertReusableErrorResponses(OpenAPI openApi) {
         var responses = openApi.getComponents().getResponses();
         var names = List.of(
-                "ValidationError",
-                "Unauthorized",
-                "Forbidden",
-                "NotFound",
-                "Conflict",
-                "RateLimited",
-                "DependencyUnavailable",
-                "InternalError");
+            "ValidationError",
+            "Unauthorized",
+            "Forbidden",
+            "NotFound",
+            "Conflict",
+            "RateLimited",
+            "DependencyUnavailable",
+            "InternalError");
         assertThat(responses).containsKeys(names.toArray(String[]::new));
 
         names.forEach(name -> {
@@ -107,8 +108,8 @@ class YghOpenApiAutoConfigurationTest {
             var schema = response.getContent().get("application/json").getSchema();
             assertThat(schema).isNotNull();
             var expectedSchema = "ValidationError".equals(name)
-                    ? "#/components/schemas/ValidationErrorResponse"
-                    : "#/components/schemas/ApiResponse";
+                ? "#/components/schemas/ValidationErrorResponse"
+                : "#/components/schemas/ApiResponse";
             assertThat(schema.get$ref()).isEqualTo(expectedSchema);
         });
 

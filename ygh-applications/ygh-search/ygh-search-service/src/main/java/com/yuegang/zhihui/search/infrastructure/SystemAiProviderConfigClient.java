@@ -28,11 +28,11 @@ public final class SystemAiProviderConfigClient {
         var metadata = new InternalServiceSignature.Metadata(SERVICE, "GET", PATH, now);
         try {
             ApiResponse<InternalAiProviderConfig> response = system.get().uri(PATH)
-                    .header("X-YGH-Service", SERVICE)
-                    .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
-                    .header("X-YGH-Service-Signature", signatures.sign(metadata))
-                    .retrieve().body(new ParameterizedTypeReference<>() {
-                    });
+                .header("X-YGH-Service", SERVICE)
+                .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
+                .header("X-YGH-Service-Signature", signatures.sign(metadata))
+                .retrieve().body(new ParameterizedTypeReference<>() {
+                });
             if (response == null || response.data() == null) throw new IllegalStateException("empty provider config");
             lastKnown = response.data();
             return response.data();

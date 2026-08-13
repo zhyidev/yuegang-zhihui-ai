@@ -3,11 +3,12 @@ package com.yuegang.zhihui.ai.infrastructure;
 import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.system.api.InternalAiProviderConfig;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.web.client.RestClient;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.web.client.RestClient;
 
 public final class SystemAiProviderConfigClient {
     private static final String PATH = "/internal/v1/system/ai-provider-config";
@@ -28,10 +29,11 @@ public final class SystemAiProviderConfigClient {
         var metadata = new InternalServiceSignature.Metadata(SERVICE, "GET", PATH, now);
         try {
             ApiResponse<InternalAiProviderConfig> response = system.get().uri(PATH)
-                    .header("X-YGH-Service", SERVICE)
-                    .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
-                    .header("X-YGH-Service-Signature", signatures.sign(metadata))
-                    .retrieve().body(new ParameterizedTypeReference<>() {});
+                .header("X-YGH-Service", SERVICE)
+                .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli()))
+                .header("X-YGH-Service-Signature", signatures.sign(metadata))
+                .retrieve().body(new ParameterizedTypeReference<>() {
+                });
             if (response == null || response.data() == null) throw new IllegalStateException("empty provider config");
             lastKnown = response.data();
             return response.data();

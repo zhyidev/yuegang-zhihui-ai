@@ -1,6 +1,5 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import java.util.Objects;
 import org.flywaydb.core.Flyway;
 
 import java.util.Objects;
@@ -15,9 +14,9 @@ public final class FlywayHistoryValidator {
         var result = flyway.validateWithResult(); // 应用 Flyway 原生校验
         if (!result.validationSuccessful) { // 如果校验不容过（如果本地脚本被改动导致 Checksum 变化
             throw new MigrationPolicyException(
-                    MigrationViolationCode.HISTORY_VALIDATION_FAILED,
-                    "Flyway history validation failed with"
-                            + result.invalidMigrations.size() + "invalid migration(s)"
+                MigrationViolationCode.HISTORY_VALIDATION_FAILED,
+                "Flyway history validation failed with"
+                    + result.invalidMigrations.size() + "invalid migration(s)"
             ); // 抛出异常并提示无效数据
 
         }

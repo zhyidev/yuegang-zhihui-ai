@@ -7,8 +7,6 @@ import org.flywaydb.core.api.configuration.Configuration;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.flywaydb.core.api.Location;
-import org.flywaydb.core.api.configuration.Configuration;
 
 /* 在任何迁移运行前，立即验证最终的 Flyway 配置*/
 public class FlywayConfigurationGuard { // 防止不合规的 Flyway 配置被应用
@@ -28,28 +26,28 @@ public class FlywayConfigurationGuard { // 防止不合规的 Flyway 配置被�
             throw new IllegalArgumentException("approvedLocations must not be empty");
         }
         this.approvedLocations = approvedLocations.stream() // 规范化路径描述符
-                .map(Location::new)
-                .map(Location::getDescriptor)
-                .collect(Collectors.toUnmodifiableSet());
+            .map(Location::new)
+            .map(Location::getDescriptor)
+            .collect(Collectors.toUnmodifiableSet());
     }
 
     public void validateOrThrow(Configuration configuration) { // 核心校验方法
         Objects.requireNonNull(configuration, "configuration must not be null");
         Set<String> configurationLocation = Set.of(configuration.getLocations()).stream() // 获取当前实际配置路径
-                .map(Location::getDescriptor)
-                .collect(Collectors.toUnmodifiableSet());
+            .map(Location::getDescriptor)
+            .collect(Collectors.toUnmodifiableSet());
         // 强制安全性校验项
         boolean safe = configuration.isValidateMigrationNaming() // 必须开启命名校验
-                && configuration.isValidateOnMigrate() // 必须在迁移时校验
-                && configuration.isCleanDisabled() // 生产环境必须禁用清理功能
-                && !configuration.isOutOfOrder() // 严禁乱序执行迁移（必须按版本号）
-                && !configuration.isBaselineOnMigrate() // 禁止迁移时自动打基线（防止隐藏结构偏差）
-                && configuration.getIgnoreMigrationPatterns().length == 0 // 禁止忽略任何迁移
-                && configuration.equals(approvedLocations); // 路径必须匹配核准列表
+            && configuration.isValidateOnMigrate() // 必须在迁移时校验
+            && configuration.isCleanDisabled() // 生产环境必须禁用清理功能
+            && !configuration.isOutOfOrder() // 严禁乱序执行迁移（必须按版本号）
+            && !configuration.isBaselineOnMigrate() // 禁止迁移时自动打基线（防止隐藏结构偏差）
+            && configuration.getIgnoreMigrationPatterns().length == 0 // 禁止忽略任何迁移
+            && configuration.equals(approvedLocations); // 路径必须匹配核准列表
         if (!safe) {
             throw new MigrationPolicyException( // 违反策略，抛出异常
-                    MigrationViolationCode.UNSAFE_CONFIGURATION,
-                    "final Flyway configuration violates the enterprise migration policy "
+                MigrationViolationCode.UNSAFE_CONFIGURATION,
+                "final Flyway configuration violates the enterprise migration policy "
             );
         }
     }
@@ -73,7 +71,7 @@ public class FlywayConfigurationGuard { // 防止不合规的 Flyway 配置被�
         }
 
         throw new MigrationPolicyException(
-                MigrationViolationCode.UNSAFE_CONFIGURATION,
-                "final Flyway configuration violates the enterprise migration policy ");
+            MigrationViolationCode.UNSAFE_CONFIGURATION,
+            "final Flyway configuration violates the enterprise migration policy ");
     }
 }

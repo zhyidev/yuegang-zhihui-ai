@@ -1,1 +1,9 @@
-package com.yuegang.zhihui.training.api;import jakarta.validation.constraints.*;public record ReadingPositionRequest(@NotBlank String assignmentId,@NotBlank String chapterId,@NotBlank@Size(max=256)String position,@NotBlank@Size(max=128)String nonce){}
+package com.yuegang.zhihui.training.api;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record ReadingPositionRequest(@NotBlank String assignmentId, @NotBlank String chapterId,
+                                     @NotBlank @Size(max = 256) String position,
+                                     @NotBlank @Size(max = 128) String nonce) {
+}

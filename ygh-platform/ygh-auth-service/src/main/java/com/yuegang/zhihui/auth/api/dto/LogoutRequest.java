@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record LogoutRequest(
-        @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) @NotBlank @Size(max = 4096) String refreshToken) {
-    @Override public String toString() { return "LogoutRequest[refreshToken=[REDACTED]]"; }
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY) @NotBlank @Size(max = 4096) String refreshToken) {
+    @Override
+    public String toString() {
+        return "LogoutRequest[refreshToken=[REDACTED]]";
+    }
 }

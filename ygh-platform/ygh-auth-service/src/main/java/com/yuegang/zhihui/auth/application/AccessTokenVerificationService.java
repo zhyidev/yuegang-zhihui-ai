@@ -8,6 +8,7 @@ import com.nimbusds.jwt.SignedJWT;
 import com.yuegang.zhihui.auth.infrastructure.RsaSigningKeyRing;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
+
 import java.text.ParseException;
 import java.time.Clock;
 import java.time.Instant;
@@ -20,11 +21,23 @@ public final class AccessTokenVerificationService {
     private final Clock clock;
 
     public AccessTokenVerificationService(RsaSigningKeyRing keyRing, String issuer, String audience, Clock clock) {
-        try { this.keys = JWKSet.parse(keyRing.publicJwkSet()); }
-        catch (ParseException malformed) { throw new IllegalStateException("public JWK set is invalid", malformed); }
+        try {
+            this.keys = JWKSet.parse(keyRing.publicJwkSet());
+        } catch (ParseException malformed) {
+            throw new IllegalStateException("public JWK set is invalid", malformed);
+        }
         this.issuer = requireText(issuer, "issuer");
         this.audience = requireText(audience, "audience");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
+    }
+
+    private static String requireText(String value, String name) {
+        if (value == null || value.isBlank()) throw new IllegalArgumentException(name + " must not be blank");
+        return value;
+    }
+
+    private static BusinessException unauthenticated() {
+        return new BusinessException(ErrorCode.UNAUTHENTICATED);
     }
 
     public AuthenticatedAccessToken verifyAuthorization(String authorization) {
@@ -39,8 +52,8 @@ public final class AccessTokenVerificationService {
             var claims = jwt.getJWTClaimsSet();
             Instant now = clock.instant();
             if (!issuer.equals(claims.getIssuer()) || !claims.getAudience().contains(audience)
-                    || claims.getExpirationTime() == null || !claims.getExpirationTime().toInstant().isAfter(now)
-                    || claims.getNotBeforeTime() != null && claims.getNotBeforeTime().toInstant().isAfter(now.plusSeconds(30))) {
+                || claims.getExpirationTime() == null || !claims.getExpirationTime().toInstant().isAfter(now)
+                || claims.getNotBeforeTime() != null && claims.getNotBeforeTime().toInstant().isAfter(now.plusSeconds(30))) {
                 throw unauthenticated();
             }
             long accountId = Long.parseLong(claims.getStringClaim("account_id"));
@@ -51,10 +64,4 @@ public final class AccessTokenVerificationService {
             throw unauthenticated();
         }
     }
-
-    private static String requireText(String value, String name) {
-        if (value == null || value.isBlank()) throw new IllegalArgumentException(name + " must not be blank");
-        return value;
-    }
-    private static BusinessException unauthenticated() { return new BusinessException(ErrorCode.UNAUTHENTICATED); }
 }

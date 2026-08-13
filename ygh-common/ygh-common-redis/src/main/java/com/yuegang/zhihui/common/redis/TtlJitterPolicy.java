@@ -51,7 +51,7 @@ public class TtlJitterPolicy {
     public long requireBaseTtl(Duration baseTtl) { // 基准时间校验
         Objects.requireNonNull(baseTtl, "baseTtl must not be null"); // 不能为空
         if (baseTtl.compareTo(Duration.ofMillis(1)) < 0 // 必须大于 1ms
-                || baseTtl.compareTo(MAX_BASE_TTL) > 0 // 必须小于等于最大基础 TTL
+            || baseTtl.compareTo(MAX_BASE_TTL) > 0 // 必须小于等于最大基础 TTL
         ) {
             throw new IllegalArgumentException("baseTtl must be between 1ms and " + MAX_BASE_TTL.toDays() + " days");
         }

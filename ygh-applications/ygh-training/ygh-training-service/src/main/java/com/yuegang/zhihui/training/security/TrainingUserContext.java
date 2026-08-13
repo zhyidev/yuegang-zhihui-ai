@@ -11,6 +11,6 @@ public record TrainingUserContext(long userId, Set<String> roles, Set<String> pe
 
     public boolean courseManager() {
         return roles.contains("ADMIN") || permissions.contains("training:course:write")
-                || permissions.contains("training:course:publish");
+            || permissions.contains("training:course:publish");
     }
 }

@@ -30,7 +30,7 @@ public class InternalRequestSignature {
         this.clock = Objects.requireNonNull(clock, "clock must not be null"); // 初始化时钟，确保其不为空
         this.maximumSkew = Objects.requireNonNull(maximumSkew, "maximumSkew must not be null"); // 初始化时间偏差阈值
         if (maximumSkew.compareTo(Duration.ofSeconds(1)) < 0 // 如果偏差设置小于 1 秒
-                || maximumSkew.compareTo(Duration.ofMinutes(5)) > 0) { // 或者偏差设置大于 5 分钟
+            || maximumSkew.compareTo(Duration.ofMinutes(5)) > 0) { // 或者偏差设置大于 5 分钟
             throw new IllegalArgumentException("maximumSkew must be between 1 second and 5 minutes"); // 抛出异常：限制有效偏差范围
         }
 
@@ -63,9 +63,9 @@ public class InternalRequestSignature {
     private byte[] canonical(Metadata metadata) { // 定义规化方法，将元数据各字段拼接成标准格式的字节流 2 usages
         Objects.requireNonNull(metadata, "metadata must not be null"); // 校验元数据对象不能为空
         return String.join("\n", metadata.clientIp(), metadata.traceId(), metadata.requestId(), // 使用换行符连接 IP，追踪ID，请求ID
-                        metadata.method(), metadata.path(), // 以及 HTTP 方法，路径和时间戳毫秒值
-                        Long.toString(metadata.timestamp().toEpochMilli())) // 注意图片此处没有显示继续写，而是被截断了，但逻辑是拼接时间戳字符串
-                .getBytes(StandardCharsets.UTF_8); // 转换为 UTF-8 编码的字节数组
+                metadata.method(), metadata.path(), // 以及 HTTP 方法，路径和时间戳毫秒值
+                Long.toString(metadata.timestamp().toEpochMilli())) // 注意图片此处没有显示继续写，而是被截断了，但逻辑是拼接时间戳字符串
+            .getBytes(StandardCharsets.UTF_8); // 转换为 UTF-8 编码的字节数组
     }
 
     private byte[] hmac(byte[] value) { // 定义核心 HMAC 计算逻辑 2 usages
@@ -93,14 +93,14 @@ public class InternalRequestSignature {
                 throw new IllegalArgumentException("clientIp is unsafe"); // 抛出异常：客户端 IP 不安全
             }
             if (traceId == null || !SAFE_ID.matcher(traceId).matches() // 如果追踪 ID 或向上
-                    || requestId == null || !SAFE_ID.matcher(requestId).matches()) { // 获取追踪 ID
+                || requestId == null || !SAFE_ID.matcher(requestId).matches()) { // 获取追踪 ID
                 throw new IllegalArgumentException("correlation identifier is unsafe"); // 抛出异常：关联标识符不安全
             }
             if (method == null || !SAFE_METHOD.matcher(method).matches()) { // 如果请求方法为空格或格式错误
                 throw new IllegalArgumentException("method is unsafe"); // 抛出异常：请求方法不安全
             }
             if (path == null || path.isBlank() || path.length() > 2048 //如果路径为空，太长
-                    || path.charAt(0) != '/' || path.codePoints().anyMatch(Character::isISOControl)) { //或不以斜杠开头，含控制符
+                || path.charAt(0) != '/' || path.codePoints().anyMatch(Character::isISOControl)) { //或不以斜杠开头，含控制符
                 throw new IllegalArgumentException("path is unsafe"); //抛出异常，请求路径不安全
 
             }

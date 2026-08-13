@@ -1,17 +1,22 @@
 package com.yuegang.zhihui.common.redis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
-import org.junit.jupiter.api.Test;
-import tools.jackson.databind.json.JsonMapper;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class RedisDistributedLockTest {
 
     private static final String KEY = "ygh:test:inventory:reserve-lock:sku-1";
+
+    private static LockOwnerTokenGenerator sequenceOwners() {
+        return () -> "owner-00000000000000000000000001";
+    }
 
     @Test
     void acquiresWithUniqueOwnerAndOnlyOwnerCanRelease() {
@@ -46,29 +51,25 @@ class RedisDistributedLockTest {
         var locks = new RedisDistributedLock(new FakeCommands(), new RedisKeyBuilder(), sequenceOwners());
 
         assertThatThrownBy(() -> locks.tryAcquire("lock:sku-1", Duration.ofSeconds(1)))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> locks.tryAcquire(KEY, Duration.ofMillis(999)))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> locks.tryAcquire(KEY, Duration.ofMinutes(6)))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new RedisLockHandle(KEY, "short", Duration.ofSeconds(1)))
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void ownerCapabilityIsRedactedFromLogsAndJson() {
         var handle = new RedisLockHandle(
-                KEY, "owner-00000000000000000000000001", Duration.ofSeconds(10));
+            KEY, "owner-00000000000000000000000001", Duration.ofSeconds(10));
 
         assertThat(handle.toString()).contains("[REDACTED]").doesNotContain(handle.owner());
         assertThat(JsonMapper.builder().build().writeValueAsString(handle))
-                .doesNotContain(handle.owner())
-                .contains("\"key\"")
-                .contains("\"lease\"");
-    }
-
-    private static LockOwnerTokenGenerator sequenceOwners() {
-        return () -> "owner-00000000000000000000000001";
+            .doesNotContain(handle.owner())
+            .contains("\"key\"")
+            .contains("\"lease\"");
     }
 
     private static final class FakeCommands implements RedisLockCommands {

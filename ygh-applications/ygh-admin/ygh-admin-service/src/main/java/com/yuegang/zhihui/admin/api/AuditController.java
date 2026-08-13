@@ -5,17 +5,25 @@ import com.yuegang.zhihui.admin.security.AdminUserVerifier;
 import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.web.TraceIdResolver;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
 import java.time.OffsetDateTime;
 import java.util.List;
-import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/admin/audit-logs")
 public final class AuditController {
     private final AuditQueryService service;
     private final AdminUserVerifier users;
-    public AuditController(AuditQueryService service, AdminUserVerifier users) { this.service = service; this.users = users; }
+
+    public AuditController(AuditQueryService service, AdminUserVerifier users) {
+        this.service = service;
+        this.users = users;
+    }
 
     @GetMapping
     ApiResponse<List<AuditLogView>> query(@RequestParam(required = false) String userId,

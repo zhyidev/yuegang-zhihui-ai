@@ -3,7 +3,7 @@ name: ygh-vm
 services:
   mysql:
     image: mysql:8.4.10
-    profiles: ["core"]
+    profiles: [ "core" ]
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
@@ -16,11 +16,11 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
       - ./mysql/conf.d/ygh-low-memory.cnf:/etc/mysql/conf.d/ygh-low-memory.cnf:ro,Z
-    networks: [ygh-core]
+    networks: [ ygh-core ]
     mem_limit: 640m
     cpus: 0.60
     healthcheck:
-      test: ["CMD-SHELL", "MYSQL_PWD=$${MYSQL_ROOT_PASSWORD} mysqladmin ping -h 127.0.0.1 -uroot --silent"]
+      test: [ "CMD-SHELL", "MYSQL_PWD=$${MYSQL_ROOT_PASSWORD} mysqladmin ping -h 127.0.0.1 -uroot --silent" ]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -31,7 +31,7 @@ services:
 
   redis:
     image: redis:8.4.4
-    profiles: ["core"]
+    profiles: [ "core" ]
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
@@ -44,11 +44,11 @@ services:
       - "192.168.154.10:6379:6379"
     volumes:
       - redis-data:/data
-    networks: [ygh-core]
+    networks: [ ygh-core ]
     mem_limit: 128m
     cpus: 0.20
     healthcheck:
-      test: ["CMD-SHELL", "REDISCLI_AUTH=$${REDIS_PASSWORD} redis-cli ping | grep -q PONG"]
+      test: [ "CMD-SHELL", "REDISCLI_AUTH=$${REDIS_PASSWORD} redis-cli ping | grep -q PONG" ]
       interval: 10s
       timeout: 3s
       retries: 10
@@ -58,7 +58,7 @@ services:
 
   nacos:
     image: nacos/nacos-server:v3.1.1
-    profiles: ["core"]
+    profiles: [ "core" ]
     restart: unless-stopped
     depends_on:
       mysql:
@@ -89,12 +89,12 @@ services:
       - "192.168.154.10:8080:8080"
       - "192.168.154.10:8848:8848"
       - "192.168.154.10:9848:9848"
-    networks: [ygh-core]
+    networks: [ ygh-core ]
     # JVM 堆固定为 384 MiB；为元空间、直接内存和线程栈预留安全余量。
     mem_limit: 768m
     cpus: 0.70
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8848/nacos/v3/admin/core/state/readiness >/dev/null"]
+      test: [ "CMD-SHELL", "curl -fsS http://127.0.0.1:8848/nacos/v3/admin/core/state/readiness >/dev/null" ]
       interval: 15s
       timeout: 5s
       retries: 30
@@ -105,7 +105,7 @@ services:
 
   pgvector:
     image: pgvector/pgvector:0.8.5-pg17-bookworm
-    profiles: ["ai-data"]
+    profiles: [ "ai-data" ]
     restart: unless-stopped
     environment:
       TZ: Asia/Shanghai
@@ -125,11 +125,11 @@ services:
     volumes:
       - pgvector-data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro,Z
-    networks: [ygh-core]
+    networks: [ ygh-core ]
     mem_limit: 384m
     cpus: 0.35
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ygh_vector -d ygh_vector"]
+      test: [ "CMD-SHELL", "pg_isready -U ygh_vector -d ygh_vector" ]
       interval: 10s
       timeout: 5s
       retries: 15

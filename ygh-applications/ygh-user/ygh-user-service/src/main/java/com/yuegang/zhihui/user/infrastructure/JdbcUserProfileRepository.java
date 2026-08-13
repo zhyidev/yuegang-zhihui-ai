@@ -42,10 +42,10 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
     @Override
     public Optional<UserProfileView> findByUserId(long userId) { // 按 ID 查询资料
         try (
-                var c = dataSource.getConnection();
-                var s = c.prepareStatement(
-                        "SELECT user_id,display_name,avatar_url,phone_ciphertext,email_ciphertext, contace_pii_key_version," +
-                                "locale,timezone,version FROM user_profile WHERE user_id=?")
+            var c = dataSource.getConnection();
+            var s = c.prepareStatement(
+                "SELECT user_id,display_name,avatar_url,phone_ciphertext,email_ciphertext, contace_pii_key_version," +
+                    "locale,timezone,version FROM user_profile WHERE user_id=?")
         ) {
             s.setLong(1, userId); // 设置查询参数
             try (var rows = s.executeQuery()) {
@@ -68,10 +68,10 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
                         return Optional.empty();
                     } // 校验：新记录版本必须为 0
                     try (var s = c.prepareStatement("""
-                            INSERT IGNORE INTO
-                            user_profile(user_id,display_name,avatar_url,phone_ciphertext,email_ciphertext,
-                            contact_pii_key_version,locale,timezone,profile_completed,version) VALUES(?,?,?,?,?,?,?,?,?,TRUE, 0)
-                            """)) {
+                        INSERT IGNORE INTO
+                        user_profile(user_id,display_name,avatar_url,phone_ciphertext,email_ciphertext,
+                        contact_pii_key_version,locale,timezone,profile_completed,version) VALUES(?,?,?,?,?,?,?,?,?,TRUE, 0)
+                        """)) {
                         bindInsert(s, userId, request);
                         s.executeUpdate(); // 执行数据插入操作
                     }
@@ -81,11 +81,11 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
                         return Optional.empty();
                     } // 乐观锁版本校验
                     try (var s = c.prepareStatement("""
-                            UPDATE user_profile SET
-                            display_nname=?,avatar_url=?,phone_ciphertext=?,email_ciphertext=?,
-                            contace_pii_key_version=?,local=?,timezone=?,profile_completed=TRUE,version=version+1
-                            WHERE user_id=? AND version=?
-                            """)) { // 执行更新
+                        UPDATE user_profile SET
+                        display_nname=?,avatar_url=?,phone_ciphertext=?,email_ciphertext=?,
+                        contace_pii_key_version=?,local=?,timezone=?,profile_completed=TRUE,version=version+1
+                        WHERE user_id=? AND version=?
+                        """)) { // 执行更新
                         s.setString(1, request.displayName().trim());
                         s.setString(2, blankToNull(request.avatarUrl()));
                         setEncrypted(s, 3, userId, "profilePhone", request.phone()); // 加密存储手机
@@ -132,14 +132,14 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
         byte[] email = rows.getBytes("email_ciphertext");
         int keyVersion = rows.getInt("contact_pii_key_version");
         return Optional.of(new UserProfileView(Long.toString(userId), rows.getString("display_name"),
-                rows.getString("avatar_url"), decrypt(userId, "profilePhone", keyVersion, phone), // 解密手机
-                decrypt(userId, "profileEmail", keyVersion, email),
-                rows.getString("locale"), // 解密邮箱
-                rows.getString("timezone"), rows.getLong("version")));
+            rows.getString("avatar_url"), decrypt(userId, "profilePhone", keyVersion, phone), // 解密手机
+            decrypt(userId, "profileEmail", keyVersion, email),
+            rows.getString("locale"), // 解密邮箱
+            rows.getString("timezone"), rows.getLong("version")));
     }
 
     private void setEncrypted(PreparedStatement statement, int index, long userId, String field, String value) throws
-            SQLException { // 内部方法:执行加密锁定
+        SQLException { // 内部方法:执行加密锁定
         String normalized = blankToNull(value);
         if (normalized == null) {
             statement.setNull(index, Types.VARBINARY);
@@ -149,7 +149,7 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
     }
 
     private void setKeyVersion(PreparedStatement statement, int index, String phone, String email) throws
-            SQLException { // 内部方法: 处理密钥
+        SQLException { // 内部方法: 处理密钥
         if (blankToNull(phone) == null && blankToNull(email) == null)
             statement.setNull(index, Types.SMALLINT);
         else statement.setInt(index, cipher.keyVersion()); // 只有存在加密字段时才记录密钥版本

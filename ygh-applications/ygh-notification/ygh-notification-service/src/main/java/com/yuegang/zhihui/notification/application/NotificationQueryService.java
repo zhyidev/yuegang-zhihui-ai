@@ -18,7 +18,7 @@ public final class NotificationQueryService { // 定义通知查询服务
 
         // 执行聚合查询，统计未读且时间为空的记录
         Long n = jdbc.queryForObject("SELECT COUNT(*) FROM notification_message WHERE user_id=? AND read_at IS NULL",
-                Long.class, user);
+            Long.class, user);
         return n == null ? 0 : n; // 返回数量
     }
 

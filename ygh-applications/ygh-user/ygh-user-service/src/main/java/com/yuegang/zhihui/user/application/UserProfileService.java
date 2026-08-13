@@ -35,7 +35,7 @@ public class UserProfileService { // 定义用户资料服务类
             try {
                 URI uri = URI.create(request.avatarUrl());
                 if (!("http".equalsIgnoreCase(uri.getScheme()) || "https".equalsIgnoreCase(uri.getScheme()))
-                        || uri.getHost() == null) {
+                    || uri.getHost() == null) {
                     throw new IllegalArgumentException("Invalid avatar url: " + request.avatarUrl()); // 校验必要现有主机名
                 }
             } catch (RuntimeException invalid2) {
@@ -67,8 +67,8 @@ public class UserProfileService { // 定义用户资料服务类
     public UserProfileView get(String userId) {
         long id = parse(userId);
         return repository.findByUserId(id)
-                .orElseGet(() -> repository.save(id, defaultRequest())
-                        .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT)));
+            .orElseGet(() -> repository.save(id, defaultRequest())
+                .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT)));
     }
 
     // AI-generated: method implementation
@@ -76,6 +76,6 @@ public class UserProfileService { // 定义用户资料服务类
         validate(request);
         long id = parse(userId);
         return repository.save(id, request)
-                .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT));
+            .orElseThrow(() -> new BusinessException(ErrorCode.BUSINESS_CONFLICT));
     }
 }

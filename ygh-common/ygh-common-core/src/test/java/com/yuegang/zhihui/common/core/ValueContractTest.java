@@ -23,11 +23,11 @@ public class ValueContractTest { // 定义对象契约测试类
         // 标记为测试方法
     void externalIdRejectMissingOrSurroundedWhitespace() { // 测试外部 ID 是否拒绝空格输入
         assertThatThrownBy(() -> ExternalId.of(null)) // 拒绝 null
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ExternalId.of(" ")) // 拒绝纯空格
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ExternalId.of("user-1")) // 拒绝前后空格的字符串
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
 
     }
 
@@ -47,9 +47,9 @@ public class ValueContractTest { // 定义对象契约测试类
         // 标记为测试方法
     void moneyNeverRoundsOrChangesScaleImplicitly() { // 测试金额对象绝不今昔隐式舍入或改变精度
         assertThatThrownBy(() -> Money.cny(new BigDecimal("99.8"))) // 拒绝小数位不足两位的输入
-                .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("scale");
+            .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("scale");
         assertThatThrownBy(() -> Money.cny(null)) // 拒绝空值
-                .isInstanceOf(IllegalArgumentException.class);
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

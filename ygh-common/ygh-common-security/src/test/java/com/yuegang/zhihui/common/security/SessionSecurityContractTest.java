@@ -15,14 +15,14 @@ class SessionSecurityContractTest { //会话安全契约（SessionSecurtiy/Sessi
 
         revocations.revokeToken("token-1", Instant.parse("2026-07-17T09:00:00z"));// 撤销指定 Token ID
         revocations.revokeUserSessionsIssuedBefore( // 撤销 user-1 在08:00:00 前签发的所有会话
-                "user-1", //用户ID
-                Instant.parse("2026-07-17T08:00:00z") // 撤销时间点
+            "user-1", //用户ID
+            Instant.parse("2026-07-17T08:00:00z") // 撤销时间点
         ); // 撤销调用结果
 
         assertThat(revocations.isTokenRevoked("token-1")).isTrue(); // 验证 token-1 已被标记为撤销
         assertThat(revocations.isUserSessionRevoked( // 验证 user-1 在07:59:59 （遭遇截止时间）签发会话已被取消
-                "user-1", // 用户ID
-                Instant.parse("2026-07-17T07:59:59z") // 会话签发时间
+            "user-1", // 用户ID
+            Instant.parse("2026-07-17T07:59:59z") // 会话签发时间
         )).isTrue(); // 验证返回 true
         assertThat(accountStatusProvider.isEnable("disabled-user")).isFalse();// 验证被禁用的用户返回 false
 

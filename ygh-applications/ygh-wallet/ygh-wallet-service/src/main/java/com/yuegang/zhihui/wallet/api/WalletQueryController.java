@@ -1,1 +1,28 @@
-package com.yuegang.zhihui.wallet.api;import com.yuegang.zhihui.common.core.ApiResponse;import com.yuegang.zhihui.common.web.TraceIdResolver;import com.yuegang.zhihui.wallet.application.WalletQueryService;import com.yuegang.zhihui.wallet.security.WalletUserResolver;import jakarta.servlet.http.HttpServletRequest;import java.util.List;import org.springframework.web.bind.annotation.*;@RestController public final class WalletQueryController{private final WalletQueryService service;private final WalletUserResolver users;public WalletQueryController(WalletQueryService s,WalletUserResolver u){service=s;users=u;}@GetMapping("/api/v1/wallet/transactions")ApiResponse<List<WalletTransactionView>>list(@RequestParam(defaultValue="20")int limit,HttpServletRequest r){return ApiResponse.success(service.list(users.resolve(r),limit),TraceIdResolver.resolve(r));}}
+package com.yuegang.zhihui.wallet.api;
+
+import com.yuegang.zhihui.common.core.ApiResponse;
+import com.yuegang.zhihui.common.web.TraceIdResolver;
+import com.yuegang.zhihui.wallet.application.WalletQueryService;
+import com.yuegang.zhihui.wallet.security.WalletUserResolver;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
+
+@RestController
+public final class WalletQueryController {
+    private final WalletQueryService service;
+    private final WalletUserResolver users;
+
+    public WalletQueryController(WalletQueryService s, WalletUserResolver u) {
+        service = s;
+        users = u;
+    }
+
+    @GetMapping("/api/v1/wallet/transactions")
+    ApiResponse<List<WalletTransactionView>> list(@RequestParam(defaultValue = "20") int limit, HttpServletRequest r) {
+        return ApiResponse.success(service.list(users.resolve(r), limit), TraceIdResolver.resolve(r));
+    }
+}

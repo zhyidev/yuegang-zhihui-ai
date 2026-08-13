@@ -17,7 +17,7 @@ public final class DoubaoEmbeddingGateway implements EmbeddingGateway {
 
     public DoubaoEmbeddingGateway(String baseUrl, String apiKey, String modelName) {
         model = apiKey == null || apiKey.isBlank() ? null : OpenAiEmbeddingModel.builder().baseUrl(baseUrl).apiKey(apiKey).modelName(modelName)
-                .timeout(Duration.ofSeconds(60)).maxRetries(1).logRequests(false).logResponses(false).build();
+            .timeout(Duration.ofSeconds(60)).maxRetries(1).logRequests(false).logResponses(false).build();
     }
 
     private static List<Double> developmentVector(String text) {

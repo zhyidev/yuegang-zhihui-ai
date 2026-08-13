@@ -69,16 +69,6 @@ public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现
 
     }
 
-    @Override
-    public EventMetadata metadata() { // 实现接口方法
-        return metadata; // 返回内部元数据
-    }
-
-    @Override
-    public T payload() { // 实现接口方法
-        return payload; // 返回内部负载
-    }
-
     private static Map<String, Object> immutableMap(Map<String, Object> source) {
         LinkedHashMap<String, Object> copy = new LinkedHashMap<>(source.size());
         source.forEach((key, value) -> copy.put(key, immutableNestedValue(value)));
@@ -105,5 +95,15 @@ public final class VersionedDomainEvent<T> implements DomainEvent<T> { // 实现
             throw new IllegalArgumentException("arrays are not supported in map event payloads");
         }
         return value;
+    }
+
+    @Override
+    public EventMetadata metadata() { // 实现接口方法
+        return metadata; // 返回内部元数据
+    }
+
+    @Override
+    public T payload() { // 实现接口方法
+        return payload; // 返回内部负载
     }
 }

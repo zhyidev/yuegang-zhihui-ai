@@ -16,15 +16,15 @@ import java.util.Optional;
  */
 public final class JdbcAccountSecurityRepository implements AccountSecurityRepository { // 实现账号安全接口
     private static final String FIND_SQL = """
-            SELECT id, status, failed_login_count, locked_until, version
-            FROM auth_account WHERE id = ?
-            """; // 查询账号关键安全属性的SQL
+        SELECT id, status, failed_login_count, locked_until, version
+        FROM auth_account WHERE id = ?
+        """; // 查询账号关键安全属性的SQL
 
     private static final String UPDATE_SQL = """
-            UPDATE auth_account
-            SET failed_login_count = ?, locked_until = ?, version = version + 1
-            WHERE id = ? AND version = ?
-            """; // 乐观锁更新安全状态的SQL
+        UPDATE auth_account
+        SET failed_login_count = ?, locked_until = ?, version = version + 1
+        WHERE id = ? AND version = ?
+        """; // 乐观锁更新安全状态的SQL
 
     private final DataSource dataSource; // 声明数据源
 
@@ -43,11 +43,11 @@ public final class JdbcAccountSecurityRepository implements AccountSecurityRepos
                 }
                 Timestamp lockedUntil = rows.getTimestamp("locked_until"); // 获取锁定时间
                 var state = new AccountAccessState( // 构建访问状态领域对象
-                        AccountStatus.valueOf(rows.getString("status")), // 状态枚举
-                        rows.getInt("failed_login_count"), // 失败计数
-                        Optional.ofNullable(lockedUntil).map(Timestamp::toInstant)); // 锁定时间 (转为 Instant)
+                    AccountStatus.valueOf(rows.getString("status")), // 状态枚举
+                    rows.getInt("failed_login_count"), // 失败计数
+                    Optional.ofNullable(lockedUntil).map(Timestamp::toInstant)); // 锁定时间 (转为 Instant)
                 return Optional.of(new AccountSecuritySnapshot( // 返回快照
-                        rows.getLong("id"), state, rows.getLong("version"))); // 包含版本号
+                    rows.getLong("id"), state, rows.getLong("version"))); // 包含版本号
             }
         } catch (SQLException exception) { // 捕获异常
             throw new AccountSecurityPersistenceException("failed to read account security state", exception); // 抛出异常

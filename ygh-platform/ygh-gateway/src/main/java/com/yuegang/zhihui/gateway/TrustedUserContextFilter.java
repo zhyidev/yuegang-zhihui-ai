@@ -77,13 +77,13 @@ final class TrustedUserContextFilter implements GlobalFilter, Ordered {
             throw new IllegalArgumentException(fieldName + " exceeds authority count limit"); // 超限报错
         }
         String encoded = authorities.stream() // 开启流处理
-                .peek(value -> { // 检查每一个元素的安全性
-                    if (!SAFE_AUTHORITY.matcher(value).matches()) {
-                        throw new IllegalArgumentException(fieldName + " contains an unsafe authority"); // 元素非法报错
-                    }
-                })
-                .sorted() // 字母序排序，确保生成规范化 (Canonical) 的字符串以供签名
-                .collect(Collectors.joining(",")); // 使用逗号连接
+            .peek(value -> { // 检查每一个元素的安全性
+                if (!SAFE_AUTHORITY.matcher(value).matches()) {
+                    throw new IllegalArgumentException(fieldName + " contains an unsafe authority"); // 元素非法报错
+                }
+            })
+            .sorted() // 字母序排序，确保生成规范化 (Canonical) 的字符串以供签名
+            .collect(Collectors.joining(",")); // 使用逗号连接
         if (encoded.length() > MAX_AUTHORITY_HEADER_LENGTH) { // 检查总长度是否超限
             throw new IllegalArgumentException(fieldName + " exceeds header length limit"); // 超长报错
         }
@@ -105,11 +105,11 @@ final class TrustedUserContextFilter implements GlobalFilter, Ordered {
         // 关键点：对用户ID、角色、权限、请求ID、路径进行统一哈希签名，下游服务会重新校验此签名
         // 将用户上下文与链路信息一起签名，供下游服务校验请求是否经过可信网关。
         String signature = principal == null ? null : signatures.sign(new InternalUserContextSignature.Metadata(
-                userId, split(roles), split(permissions),
-                exchange.getRequest().getHeaders().getFirst(GatewayHeaders.TRACE_ID),
-                exchange.getRequest().getHeaders().getFirst(GatewayHeaders.REQUEST_ID),
-                exchange.getRequest().getMethod().name(),
-                exchange.getRequest().getPath().pathWithinApplication().value(), timestamp));
+            userId, split(roles), split(permissions),
+            exchange.getRequest().getHeaders().getFirst(GatewayHeaders.TRACE_ID),
+            exchange.getRequest().getHeaders().getFirst(GatewayHeaders.REQUEST_ID),
+            exchange.getRequest().getMethod().name(),
+            exchange.getRequest().getPath().pathWithinApplication().value(), timestamp));
 
         // 先移除旧的用户上下文头，再在存在认证主体时注入新的可信头。
         var request = exchange.getRequest().mutate().headers(headers -> {

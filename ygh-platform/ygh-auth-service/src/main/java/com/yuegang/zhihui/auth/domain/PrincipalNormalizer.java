@@ -15,7 +15,7 @@ public final class PrincipalNormalizer { // 登录凭证（如用户名、邮箱
         String normalized = principal.strip().toLowerCase(Locale.ROOT);
         // 校验安全性：不能为空，长度不能过大、不能包含控制字符
         if (normalized.isBlank() || normalized.codePointCount(0, normalized.length()) > 190
-                || normalized.codePoints().anyMatch(Character::isISOControl)) {
+            || normalized.codePoints().anyMatch(Character::isISOControl)) {
             throw new IllegalArgumentException("principal is unsafe");
         }
         return normalized;

@@ -23,9 +23,9 @@ public enum CurrencyCode implements StableCodeEnum { // 实现稳定代码接口
     @JsonCreator // 用于 Jackson 反序列化
     public static CurrencyCode fromCode(String code) { // 根据字符串代码匹配表示
         return Arrays.stream(values()) // 遍历所有枚举值
-                .filter(value -> value.code.equals(code)) // 匹配代码一致的项
-                .findFirst() // 获取第一个结果
-                .orElseThrow(() -> new IllegalArgumentException("unsupported currency code: " + code)); // 未匹配则抛出参数异常
+            .filter(value -> value.code.equals(code)) // 匹配代码一致的项
+            .findFirst() // 获取第一个结果
+            .orElseThrow(() -> new IllegalArgumentException("unsupported currency code: " + code)); // 未匹配则抛出参数异常
     }
 
     @Override

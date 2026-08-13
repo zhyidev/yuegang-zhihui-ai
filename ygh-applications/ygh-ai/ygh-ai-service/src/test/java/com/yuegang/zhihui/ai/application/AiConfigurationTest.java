@@ -21,16 +21,16 @@ class AiConfigurationTest {
         ObjectMapper json = new ObjectMapper();
         SimpleMeterRegistry metrics = new SimpleMeterRegistry();
         String secret = Base64.getEncoder().encodeToString(
-                "01234567890123456789012345678901".getBytes());
+            "01234567890123456789012345678901".getBytes());
 
         AiGovernanceService governance = configuration.aiGovernanceService(dataSource);
         AiSafetyPolicy policy = configuration.aiSafetyPolicy(dataSource);
         var providerConfigs = configuration.systemAiProviderConfigClient("http://localhost", secret);
         ModelGateway model = configuration.modelGateway(providerConfigs, governance, metrics);
         RetrievalGateway retrieval = configuration.retrievalGateway(
-                "http://localhost", secret, policy, metrics);
+            "http://localhost", secret, policy, metrics);
         CommerceToolGateway tools = configuration.commerceToolGateway(
-                "http://product", "http://inventory", "http://order", secret, json);
+            "http://product", "http://inventory", "http://order", secret, json);
         ChatService chat = configuration.chatService(retrieval, model, tools, dataSource, json);
 
         assertThat(configuration.aiEvaluationService(dataSource, chat)).isNotNull();

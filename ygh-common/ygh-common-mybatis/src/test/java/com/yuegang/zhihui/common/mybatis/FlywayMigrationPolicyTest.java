@@ -1,12 +1,13 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class FlywayMigrationPolicyTest {
 
@@ -39,9 +40,9 @@ class FlywayMigrationPolicyTest {
     })
     void rejectsInvalidNames(String path) {
         assertThatThrownBy(() -> policy.parse(path))
-                .isInstanceOf(MigrationPolicyException.class)
-                .extracting(error -> ((MigrationPolicyException) error).code())
-                .isEqualTo(MigrationViolationCode.INVALID_NAME);
+            .isInstanceOf(MigrationPolicyException.class)
+            .extracting(error -> ((MigrationPolicyException) error).code())
+            .isEqualTo(MigrationViolationCode.INVALID_NAME);
     }
 
     @Test
@@ -54,40 +55,40 @@ class FlywayMigrationPolicyTest {
     void rejectsMissingPath() {
         assertThatThrownBy(() -> policy.parse(null)).isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> policy.parse(" "))
-                .isInstanceOf(MigrationPolicyException.class);
+            .isInstanceOf(MigrationPolicyException.class);
     }
 
     @Test
     void reportsDuplicatePathAndVersionDeterministically() {
         var report = policy.validate(List.of(
-                "db/migration/V2__second.sql",
-                "db/migration/V1__first.sql",
-                "db/migration/V1__duplicate_version.sql",
-                "db/migration/V2__second.sql"));
+            "db/migration/V2__second.sql",
+            "db/migration/V1__first.sql",
+            "db/migration/V1__duplicate_version.sql",
+            "db/migration/V2__second.sql"));
 
         assertThat(report.valid()).isFalse();
         assertThat(report.violations())
-                .extracting(MigrationViolation::code)
-                .containsExactly(
-                        MigrationViolationCode.DUPLICATE_VERSION,
-                        MigrationViolationCode.DUPLICATE_RESOURCE);
+            .extracting(MigrationViolation::code)
+            .containsExactly(
+                MigrationViolationCode.DUPLICATE_VERSION,
+                MigrationViolationCode.DUPLICATE_RESOURCE);
     }
 
     @Test
     void comparesVersionsNumericallyAndRejectsHistoryInsertion() {
         assertThat(policy.validateNewMigrations(List.of(
-                "db/migration/V10__tenth.sql"), 9L).valid()).isTrue();
+            "db/migration/V10__tenth.sql"), 9L).valid()).isTrue();
 
         var report = policy.validateNewMigrations(List.of(
-                "db/migration/V2__old.sql",
-                "db/migration/V3__current.sql",
-                "db/migration/V4__next.sql"), 3L);
+            "db/migration/V2__old.sql",
+            "db/migration/V3__current.sql",
+            "db/migration/V4__next.sql"), 3L);
 
         assertThat(report.violations())
-                .extracting(MigrationViolation::code)
-                .containsExactly(
-                        MigrationViolationCode.OUT_OF_ORDER_VERSION,
-                        MigrationViolationCode.OUT_OF_ORDER_VERSION);
+            .extracting(MigrationViolation::code)
+            .containsExactly(
+                MigrationViolationCode.OUT_OF_ORDER_VERSION,
+                MigrationViolationCode.OUT_OF_ORDER_VERSION);
     }
 
     @Test
@@ -98,8 +99,8 @@ class FlywayMigrationPolicyTest {
 
     private void assertCode(String path, MigrationViolationCode code) {
         assertThatThrownBy(() -> policy.parse(path))
-                .isInstanceOf(MigrationPolicyException.class)
-                .extracting(error -> ((MigrationPolicyException) error).code())
-                .isEqualTo(code);
+            .isInstanceOf(MigrationPolicyException.class)
+            .extracting(error -> ((MigrationPolicyException) error).code())
+            .isEqualTo(code);
     }
 }

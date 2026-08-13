@@ -1,16 +1,16 @@
 package com.yuegang.zhihui.auth.infrastructure;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.crypto.RSASSAVerifier;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.yuegang.zhihui.auth.domain.TokenPrincipal;
-import com.yuegang.zhihui.auth.domain.AccessToken;
 import com.yuegang.zhihui.auth.application.SessionAwareAccessTokenIssuer;
+import com.yuegang.zhihui.auth.domain.AccessToken;
+import com.yuegang.zhihui.auth.domain.TokenPrincipal;
 import com.yuegang.zhihui.common.redis.SessionStateStore;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -23,11 +23,13 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Base64;
 import java.util.Set;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class JwtTokenInfrastructureTest {
-    @TempDir Path keyDirectory;
+    @TempDir
+    Path keyDirectory;
 
     @Test
     void publishesCurrentAndPreviousPublicKeysButSignsOnlyWithActivePrivateKey() throws Exception {
@@ -39,8 +41,8 @@ class JwtTokenInfrastructureTest {
 
         var ring = RsaSigningKeyRing.load(keyDirectory, "2026-07");
         var issuer = new NimbusAccessTokenIssuer(
-                ring, "https://auth.ygh.test", "ygh-api", Duration.ofMinutes(15),
-                Clock.fixed(Instant.parse("2026-07-12T00:00:00Z"), ZoneOffset.UTC));
+            ring, "https://auth.ygh.test", "ygh-api", Duration.ofMinutes(15),
+            Clock.fixed(Instant.parse("2026-07-12T00:00:00Z"), ZoneOffset.UTC));
         var token = issuer.issue(new TokenPrincipal(7, 42, Set.of("USER"), Set.of("order:read")));
         SignedJWT jwt = SignedJWT.parse(token.value());
 
@@ -58,7 +60,7 @@ class JwtTokenInfrastructureTest {
 
         var jwks = JWKSet.parse(ring.publicJwkSet());
         assertThat(jwks.getKeys()).extracting(key -> key.getKeyID())
-                .containsExactly("2026-06", "2026-07");
+            .containsExactly("2026-06", "2026-07");
         assertThat(jwks.getKeys()).allMatch(key -> !key.isPrivate());
     }
 
@@ -68,7 +70,7 @@ class JwtTokenInfrastructureTest {
         writePublic("weak", weak);
         writePrivate("weak", weak);
         assertThatThrownBy(() -> RsaSigningKeyRing.load(keyDirectory, "weak"))
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("weaker");
+            .isInstanceOf(IllegalStateException.class).hasMessageContaining("weaker");
 
         Files.delete(keyDirectory.resolve("weak.public.pem"));
         Files.delete(keyDirectory.resolve("weak.private.pem"));
@@ -77,23 +79,23 @@ class JwtTokenInfrastructureTest {
         writePublic("active", first);
         writePrivate("active", second);
         assertThatThrownBy(() -> RsaSigningKeyRing.load(keyDirectory, "active"))
-                .isInstanceOf(IllegalStateException.class).hasMessageContaining("does not match");
+            .isInstanceOf(IllegalStateException.class).hasMessageContaining("does not match");
     }
 
     @Test
     void rejectsPrivateKeyReadableByGroupOrOthersOnPosix() throws Exception {
         if (Files.getFileAttributeView(keyDirectory,
-                java.nio.file.attribute.PosixFileAttributeView.class) == null) return;
+            java.nio.file.attribute.PosixFileAttributeView.class) == null) return;
         KeyPair active = keyPair(2048);
         writePublic("active", active);
         writePrivate("active", active);
         Files.setPosixFilePermissions(keyDirectory.resolve("active.private.pem"), java.util.Set.of(
-                java.nio.file.attribute.PosixFilePermission.OWNER_READ,
-                java.nio.file.attribute.PosixFilePermission.OWNER_WRITE,
-                java.nio.file.attribute.PosixFilePermission.GROUP_READ));
+            java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+            java.nio.file.attribute.PosixFilePermission.OWNER_WRITE,
+            java.nio.file.attribute.PosixFilePermission.GROUP_READ));
         assertThatThrownBy(() -> RsaSigningKeyRing.load(keyDirectory, "active"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasRootCauseMessage("JWT private key permissions are too broad");
+            .isInstanceOf(IllegalStateException.class)
+            .hasRootCauseMessage("JWT private key permissions are too broad");
     }
 
     @Test
@@ -101,16 +103,26 @@ class JwtTokenInfrastructureTest {
         Instant now = Instant.parse("2026-07-12T00:00:00Z");
         var recorded = new java.util.ArrayList<String>();
         SessionStateStore sessions = new SessionStateStore() {
-            @Override public void register(long accountId, String jwtId, Instant expiresAt, Instant registeredAt) {
+            @Override
+            public void register(long accountId, String jwtId, Instant expiresAt, Instant registeredAt) {
                 recorded.add(accountId + ":" + jwtId + ":" + expiresAt + ":" + registeredAt);
             }
-            @Override public void revoke(long accountId, String jwtId, Instant expiresAt, Instant registeredAt) { }
-            @Override public void disableAccount(long accountId) { }
-            @Override public void enableAccount(long accountId) { }
+
+            @Override
+            public void revoke(long accountId, String jwtId, Instant expiresAt, Instant registeredAt) {
+            }
+
+            @Override
+            public void disableAccount(long accountId) {
+            }
+
+            @Override
+            public void enableAccount(long accountId) {
+            }
         };
         var issuer = new SessionAwareAccessTokenIssuer(
-                ignored -> new AccessToken("signed-value", "jwt-1", now.plusSeconds(900)),
-                sessions, Clock.fixed(now, ZoneOffset.UTC));
+            ignored -> new AccessToken("signed-value", "jwt-1", now.plusSeconds(900)),
+            sessions, Clock.fixed(now, ZoneOffset.UTC));
 
         var issued = issuer.issue(new TokenPrincipal(7, 42, Set.of("USER"), Set.of("order:read")));
 
@@ -133,18 +145,18 @@ class JwtTokenInfrastructureTest {
         writePem(path, "PRIVATE KEY", pair.getPrivate().getEncoded());
         if (Files.getFileAttributeView(path, java.nio.file.attribute.PosixFileAttributeView.class) != null) {
             Files.setPosixFilePermissions(keyDirectory, java.util.Set.of(
-                    java.nio.file.attribute.PosixFilePermission.OWNER_READ,
-                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE,
-                    java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE));
+                java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+                java.nio.file.attribute.PosixFilePermission.OWNER_WRITE,
+                java.nio.file.attribute.PosixFilePermission.OWNER_EXECUTE));
             Files.setPosixFilePermissions(path, java.util.Set.of(
-                    java.nio.file.attribute.PosixFilePermission.OWNER_READ,
-                    java.nio.file.attribute.PosixFilePermission.OWNER_WRITE));
+                java.nio.file.attribute.PosixFilePermission.OWNER_READ,
+                java.nio.file.attribute.PosixFilePermission.OWNER_WRITE));
         }
     }
 
     private void writePem(Path path, String type, byte[] encoded) throws Exception {
         String body = Base64.getMimeEncoder(64, new byte[]{'\n'}).encodeToString(encoded);
         Files.writeString(path, "-----BEGIN " + type + "-----\n" + body
-                + "\n-----END " + type + "-----\n", StandardCharsets.US_ASCII);
+            + "\n-----END " + type + "-----\n", StandardCharsets.US_ASCII);
     }
 }

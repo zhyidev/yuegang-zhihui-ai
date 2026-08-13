@@ -1,7 +1,8 @@
 package com.yuegang.zhihui.knowledge.application;
 
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
-import com.yuegang.zhihui.search.api.*;
+import com.yuegang.zhihui.search.api.DeleteDocumentCommand;
+import com.yuegang.zhihui.search.api.IndexChunkCommand;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestClient;

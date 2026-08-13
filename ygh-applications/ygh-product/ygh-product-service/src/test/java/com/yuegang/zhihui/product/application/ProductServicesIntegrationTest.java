@@ -28,14 +28,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ProductServicesIntegrationTest {
     private static void assertBusinessError(Runnable call, ErrorCode expected) {
         assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
+            error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 
     @Test
     void managesCatalogProductStatusPriceBatchAndTraceability() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
             Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential())
-                    .locations("classpath:db/migration").load().migrate();
+                .locations("classpath:db/migration").load().migrate();
             var dataSource = new DriverManagerDataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential());
             var mapper = new ObjectMapper();
             var catalog = new CatalogService(dataSource, mapper);
@@ -51,7 +51,7 @@ class ProductServicesIntegrationTest {
             assertThat(catalog.brands(false)).hasSize(1);
 
             var created = products.create(new SaveProductRequest(snacks.id(), brand.id(), "荔枝曲奇", "SKU-LYCHEE",
-                    new BigDecimal("29.90"), "CNY", List.of("https://img/1.png"), "TRACE-001", 0, Map.of("净含量", "200g")));
+                new BigDecimal("29.90"), "CNY", List.of("https://img/1.png"), "TRACE-001", 0, Map.of("净含量", "200g")));
             assertThat(created.status()).isEqualTo(ProductStatus.DRAFT);
             assertThat(created.specifications()).containsEntry("净含量", "200g");
             assertThat(products.list(snacks.id(), "荔枝", 1000, false)).containsExactly(created);
@@ -63,14 +63,14 @@ class ProductServicesIntegrationTest {
             assertBusinessError(() -> products.changeStatus(created.skuId(), ProductStatus.OFF_SHELF, created.version()), ErrorCode.BUSINESS_CONFLICT);
 
             var updated = administration.update(created.skuId(), new UpdateProductRequest(snacks.id(), "", "荔枝曲奇礼盒",
-                    "岭南特产", new BigDecimal("35.50"), "CNY", List.of("https://img/2.png", "https://img/3.png"),
-                    "TRACE-002", published.version(), Map.of("净含量", "400g", "包装", "礼盒")));
+                "岭南特产", new BigDecimal("35.50"), "CNY", List.of("https://img/2.png", "https://img/3.png"),
+                "TRACE-002", published.version(), Map.of("净含量", "400g", "包装", "礼盒")));
             assertThat(updated.brandId()).isNull();
             assertThat(updated.images()).containsExactly("https://img/2.png", "https://img/3.png");
             assertThat(updated.price()).isEqualByComparingTo("35.50");
             assertThat(updated.specifications()).containsEntry("包装", "礼盒");
             assertBusinessError(() -> administration.update(created.skuId(), new UpdateProductRequest(snacks.id(), null,
-                    "冲突", null, BigDecimal.ONE, "CNY", List.of(), null, 999)), ErrorCode.BUSINESS_CONFLICT);
+                "冲突", null, BigDecimal.ONE, "CNY", List.of(), null, 999)), ErrorCode.BUSINESS_CONFLICT);
 
             var searchRequests = new CopyOnWriteArrayList<String>();
             var failProductSearch = new AtomicBoolean(false);
@@ -92,8 +92,8 @@ class ProductServicesIntegrationTest {
                     return;
                 }
                 String response = """
-                        {"code":"00000","message":"成功","data":[{"skuId":"%s","score":3.0},{"skuId":"invalid"}],"traceId":"trace","timestamp":"2026-07-13T08:00:00Z"}
-                        """.formatted(created.skuId());
+                    {"code":"00000","message":"成功","data":[{"skuId":"%s","score":3.0},{"skuId":"invalid"}],"traceId":"trace","timestamp":"2026-07-13T08:00:00Z"}
+                    """.formatted(created.skuId());
                 byte[] bytes = response.getBytes(StandardCharsets.UTF_8);
                 exchange.getResponseHeaders().add("Content-Type", "application/json");
                 exchange.sendResponseHeaders(200, bytes.length);
@@ -127,14 +127,14 @@ class ProductServicesIntegrationTest {
             }
 
             var batch = administration.batch(created.skuId(), new SaveProductBatchRequest("B202607", "广东",
-                    "https://proof/1", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 7, 1), "全链路溯源"));
+                "https://proof/1", LocalDate.of(2026, 7, 1), LocalDate.of(2027, 7, 1), "全链路溯源"));
             assertThat(administration.batches(created.skuId())).containsExactly(batch);
             assertBusinessError(() -> administration.batch(created.skuId(), new SaveProductBatchRequest("BAD", null, null,
-                    LocalDate.of(2027, 1, 1), LocalDate.of(2026, 1, 1), null)), ErrorCode.VALIDATION_ERROR);
+                LocalDate.of(2027, 1, 1), LocalDate.of(2026, 1, 1), null)), ErrorCode.VALIDATION_ERROR);
 
             OffsetDateTime occurredAt = OffsetDateTime.of(2026, 7, 2, 10, 30, 0, 0, ZoneOffset.UTC);
             var trace = catalog.addTrace(created.skuId(), new TraceEventRequest("CUSTOMS_CLEARED", "广州南沙", occurredAt,
-                    Map.of("declarationNo", "D001")));
+                Map.of("declarationNo", "D001")));
             assertThat(catalog.trace(created.skuId())).containsExactly(trace);
             assertBusinessError(() -> catalog.trace("0"), ErrorCode.VALIDATION_ERROR);
             assertBusinessError(() -> products.get("invalid", false), ErrorCode.VALIDATION_ERROR);

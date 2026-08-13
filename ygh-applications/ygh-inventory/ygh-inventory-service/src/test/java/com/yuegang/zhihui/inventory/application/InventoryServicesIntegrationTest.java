@@ -23,14 +23,14 @@ class InventoryServicesIntegrationTest {
 
     private static void assertBusinessError(Runnable call, ErrorCode expected) {
         assertThatThrownBy(call::run).isInstanceOfSatisfying(BusinessException.class,
-                error -> assertThat(error.errorCode()).isEqualTo(expected));
+            error -> assertThat(error.errorCode()).isEqualTo(expected));
     }
 
     @Test
     void supportsIdempotentLifecycleExpiryReturnReconciliationAndConcurrentNoOversell() throws Exception {
         try (var mysql = YghTestContainerFactory.mysql().start()) {
             Flyway.configure().dataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential())
-                    .locations("classpath:db/migration").load().migrate();
+                .locations("classpath:db/migration").load().migrate();
             var dataSource = new DriverManagerDataSource(mysql.jdbcUrl(), mysql.username(), mysql.credential());
             var inventory = new InventoryService(dataSource);
             var returns = new InventoryReturnService(dataSource, inventory);

@@ -17,7 +17,7 @@ public record InternalAiProviderConfig( // 定义内部 AI 配置记录类
      */
     public boolean configured() { // 定义逻辑方法
         return apiKey != null && !apiKey.isBlank() // 密钥不能为空且非空白
-                && chatModel != null && !chatModel.isBlank() // 对话模型不能为空且非空白
-                && embeddingModel != null && !embeddingModel.isBlank(); // 向量模型不能为空且非空白
+            && chatModel != null && !chatModel.isBlank() // 对话模型不能为空且非空白
+            && embeddingModel != null && !embeddingModel.isBlank(); // 向量模型不能为空且非空白
     }
 }

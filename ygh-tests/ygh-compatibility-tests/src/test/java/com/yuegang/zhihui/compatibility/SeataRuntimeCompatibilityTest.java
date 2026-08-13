@@ -20,23 +20,23 @@ class SeataRuntimeCompatibilityTest {
         String server = System.getenv().getOrDefault("YGH_SEATA_SERVER", "127.0.0.1:8091");
         String group = "ygh_runtime_tx_group";
         try (var context = new SpringApplicationBuilder(ProbeApplication.class)
-                .web(WebApplicationType.NONE)
-                .properties(
-                        "spring.application.name=ygh-seata-runtime-probe",
-                        "spring.cloud.gateway.enabled=false",
-                        "spring.cloud.stream.enabled=false",
-                        "spring.cloud.nacos.discovery.enabled=false",
-                        "spring.cloud.nacos.config.enabled=false",
-                        "spring.cloud.nacos.config.import-check.enabled=false",
-                        "seata.enabled=true",
-                        "seata.enable-auto-data-source-proxy=false",
-                        "seata.application-id=ygh-seata-runtime-probe",
-                        "seata.tx-service-group=" + group,
-                        "seata.registry.type=file",
-                        "seata.config.type=file",
-                        "seata.service.vgroup-mapping." + group + "=default",
-                        "seata.service.grouplist.default=" + server)
-                .run()) {
+            .web(WebApplicationType.NONE)
+            .properties(
+                "spring.application.name=ygh-seata-runtime-probe",
+                "spring.cloud.gateway.enabled=false",
+                "spring.cloud.stream.enabled=false",
+                "spring.cloud.nacos.discovery.enabled=false",
+                "spring.cloud.nacos.config.enabled=false",
+                "spring.cloud.nacos.config.import-check.enabled=false",
+                "seata.enabled=true",
+                "seata.enable-auto-data-source-proxy=false",
+                "seata.application-id=ygh-seata-runtime-probe",
+                "seata.tx-service-group=" + group,
+                "seata.registry.type=file",
+                "seata.config.type=file",
+                "seata.service.vgroup-mapping." + group + "=default",
+                "seata.service.grouplist.default=" + server)
+            .run()) {
             assertThat(context.isActive()).isTrue();
             var transaction = GlobalTransactionContext.createNew();
             transaction.begin(15_000, "jdk25-runtime-probe");
@@ -56,5 +56,6 @@ class SeataRuntimeCompatibilityTest {
         "org.springframework.cloud.gateway.config.GatewayStreamAutoConfiguration",
         "org.springframework.cloud.gateway.config.GatewayMetricsAutoConfiguration"
     })
-    static class ProbeApplication {}
+    static class ProbeApplication {
+    }
 }

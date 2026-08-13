@@ -1,10 +1,13 @@
 package com.yuegang.zhihui.auth.application;
 
-import com.yuegang.zhihui.auth.api.dto.*;
+import com.yuegang.zhihui.auth.api.dto.AuthenticationResponse;
+import com.yuegang.zhihui.auth.api.dto.RegisterRequest;
+import com.yuegang.zhihui.auth.api.dto.TokenResponse;
 import com.yuegang.zhihui.auth.domain.*;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.redis.SessionStateStore;
+
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Arrays;
@@ -23,9 +26,9 @@ public final class RegistrationUseCase {
     private final Clock clock;
 
     public RegistrationUseCase(LoginAccountRepository accounts, PasswordPolicy passwords,
-            Argon2PasswordHasher passwordHasher, CaptchaService captchas, SnowflakeIdGenerator ids,
-            AccessTokenIssuer accessTokens, OpaqueRefreshTokenService refreshTokens,
-            SessionStateStore sessions, Clock clock) {
+                               Argon2PasswordHasher passwordHasher, CaptchaService captchas, SnowflakeIdGenerator ids,
+                               AccessTokenIssuer accessTokens, OpaqueRefreshTokenService refreshTokens,
+                               SessionStateStore sessions, Clock clock) {
         this.accounts = Objects.requireNonNull(accounts);
         this.passwords = Objects.requireNonNull(passwords);
         this.passwordHasher = Objects.requireNonNull(passwordHasher);
@@ -35,6 +38,10 @@ public final class RegistrationUseCase {
         this.refreshTokens = Objects.requireNonNull(refreshTokens);
         this.sessions = Objects.requireNonNull(sessions);
         this.clock = Objects.requireNonNull(clock);
+    }
+
+    private static BusinessException conflict() {
+        return new BusinessException(ErrorCode.BUSINESS_CONFLICT);
     }
 
     public AuthenticationResponse register(RegisterRequest request) {
@@ -54,7 +61,9 @@ public final class RegistrationUseCase {
                 throw conflict();
             }
             return issue(account);
-        } finally { Arrays.fill(raw, '\0'); }
+        } finally {
+            Arrays.fill(raw, '\0');
+        }
     }
 
     private AuthenticationResponse issue(LoginAccount account) {
@@ -63,24 +72,32 @@ public final class RegistrationUseCase {
         try {
             refresh = refreshTokens.issueInitial(account.accountId());
             access = accessTokens.issue(new TokenPrincipal(account.accountId(), account.userId(),
-                    Set.of(account.accountType()), Set.of()));
+                Set.of(account.accountType()), Set.of()));
             return new AuthenticationResponse(Long.toString(account.userId()), new TokenResponse(
-                    access.value(), refresh.value(), "Bearer", seconds(access.expiresAt()), seconds(refresh.expiresAt())));
+                access.value(), refresh.value(), "Bearer", seconds(access.expiresAt()), seconds(refresh.expiresAt())));
         } catch (RuntimeException failure) {
             if (access != null) {
-                try { sessions.revoke(account.accountId(), access.jwtId(), access.expiresAt(), clock.instant()); }
-                catch (RuntimeException cleanup) { failure.addSuppressed(cleanup); }
+                try {
+                    sessions.revoke(account.accountId(), access.jwtId(), access.expiresAt(), clock.instant());
+                } catch (RuntimeException cleanup) {
+                    failure.addSuppressed(cleanup);
+                }
             }
             if (refresh != null) {
                 char[] token = refresh.value().toCharArray();
-                try { refreshTokens.revoke(token, "REGISTRATION_COMPENSATION"); }
-                catch (RuntimeException cleanup) { failure.addSuppressed(cleanup); }
-                finally { Arrays.fill(token, '\0'); }
+                try {
+                    refreshTokens.revoke(token, "REGISTRATION_COMPENSATION");
+                } catch (RuntimeException cleanup) {
+                    failure.addSuppressed(cleanup);
+                } finally {
+                    Arrays.fill(token, '\0');
+                }
             }
             throw failure;
         }
     }
 
-    private long seconds(java.time.Instant expiry) { return Math.max(1, Duration.between(clock.instant(), expiry).toSeconds()); }
-    private static BusinessException conflict() { return new BusinessException(ErrorCode.BUSINESS_CONFLICT); }
+    private long seconds(java.time.Instant expiry) {
+        return Math.max(1, Duration.between(clock.instant(), expiry).toSeconds());
+    }
 }

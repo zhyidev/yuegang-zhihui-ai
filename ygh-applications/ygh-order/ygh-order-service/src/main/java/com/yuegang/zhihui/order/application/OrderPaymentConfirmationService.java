@@ -5,6 +5,7 @@ import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.order.api.OrderStatus;
 import com.yuegang.zhihui.order.api.OrderView;
 import com.yuegang.zhihui.order.infrastructure.CommerceReconciliationClient;
+
 import java.math.BigDecimal;
 
 public final class OrderPaymentConfirmationService {
@@ -13,9 +14,9 @@ public final class OrderPaymentConfirmationService {
     private final CommerceReconciliationClient reconciliation;
 
     public OrderPaymentConfirmationService(
-            OrderService orders,
-            OrderInventoryFacade inventory,
-            CommerceReconciliationClient reconciliation
+        OrderService orders,
+        OrderInventoryFacade inventory,
+        CommerceReconciliationClient reconciliation
     ) {
         this.orders = orders;
         this.inventory = inventory;
@@ -29,9 +30,9 @@ public final class OrderPaymentConfirmationService {
         }
         var wallet = reconciliation.wallet(orderId);
         if (!wallet.paymentSucceeded()
-                || !Long.toString(userId).equals(wallet.userId())
-                || wallet.paidAmount().compareTo(new BigDecimal(current.totalAmount().toPlainString())) < 0
-                || !current.currency().equals(wallet.currency())) {
+            || !Long.toString(userId).equals(wallet.userId())
+            || wallet.paidAmount().compareTo(new BigDecimal(current.totalAmount().toPlainString())) < 0
+            || !current.currency().equals(wallet.currency())) {
             throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
         }
         inventory.paymentSucceeded("wallet-payment-" + orderId, orderId);

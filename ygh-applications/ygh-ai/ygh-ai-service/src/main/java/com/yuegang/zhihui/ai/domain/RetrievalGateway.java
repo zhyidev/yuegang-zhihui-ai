@@ -1,6 +1,7 @@
 package com.yuegang.zhihui.ai.domain;
 
 import com.yuegang.zhihui.search.api.SearchHit;
+
 import java.util.List;
 import java.util.Set;
 

@@ -1,7 +1,8 @@
 package com.yuegang.zhihui.ai.application;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yuegang.zhihui.ai.api.*;
+import com.yuegang.zhihui.ai.api.EvaluationRunView;
+import com.yuegang.zhihui.ai.api.SaveEvaluationCaseRequest;
 import com.yuegang.zhihui.ai.domain.RetrievalGateway;
 import com.yuegang.zhihui.ai.infrastructure.CommerceToolGateway;
 import com.yuegang.zhihui.common.test.YghTestContainerFactory;

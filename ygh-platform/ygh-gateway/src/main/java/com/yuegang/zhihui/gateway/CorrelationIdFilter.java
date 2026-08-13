@@ -33,9 +33,9 @@ public class CorrelationIdFilter implements GlobalFilter, Ordered {
         String requestId = resolveId(exchange.getRequest().getHeaders().getFirst(GatewayHeaders.REQUEST_ID));
 
         var request = exchange.getRequest().mutate()
-                .header(GatewayHeaders.TRACE_ID, traceId)
-                .header(GatewayHeaders.REQUEST_ID, requestId)
-                .build();
+            .header(GatewayHeaders.TRACE_ID, traceId)
+            .header(GatewayHeaders.REQUEST_ID, requestId)
+            .build();
 
         var correlated = exchange.mutate().request(request).build();
 

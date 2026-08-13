@@ -97,7 +97,7 @@ public class GatewayRequestGuardFilter implements WebFilter, Ordered {
         };
 
         Mono<Void> result = Mono.defer(() ->
-                chain.filter(exchange.mutate().request(guardedRequest).build()));
+            chain.filter(exchange.mutate().request(guardedRequest).build()));
 
         if (bufferBody == null) return result;
 
@@ -119,15 +119,15 @@ public class GatewayRequestGuardFilter implements WebFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         // 判断是否为 multipart 上传请求
         boolean multipart = exchange.getRequest().getHeaders().getContentType() != null
-                && MediaType.MULTIPART_FORM_DATA.isCompatibleWith(
-                exchange.getRequest().getHeaders().getContentType());
+            && MediaType.MULTIPART_FORM_DATA.isCompatibleWith(
+            exchange.getRequest().getHeaders().getContentType());
 
         String path = exchange.getRequest().getPath().pathWithinApplication().value();
 
         // 仅当请求为 POST 且路径在白名单中时，才允许上传
         boolean allowedUpload = multipart
-                && HttpMethod.POST.equals(exchange.getRequest().getMethod())
-                && uploadPaths.contains(path);
+            && HttpMethod.POST.equals(exchange.getRequest().getMethod())
+            && uploadPaths.contains(path);
 
         // 非法上传路径 → 403
         if (multipart && !allowedUpload) {
@@ -155,10 +155,10 @@ public class GatewayRequestGuardFilter implements WebFilter, Ordered {
 
         // Chunked 传输（长度未知）：流式读取，超限即抛异常
         return DataBufferUtils.join(exchange.getRequest().getBody(), Math.toIntExact(limit))
-                .singleOptional()
-                .flatMap(buffer -> replay(exchange, chain, buffer.orElse(null)))
-                .onErrorResume(DataBufferLimitException.class,
-                        ignored -> errorWriter.payloadTooLarge(exchange));
+            .singleOptional()
+            .flatMap(buffer -> replay(exchange, chain, buffer.orElse(null)))
+            .onErrorResume(DataBufferLimitException.class,
+                ignored -> errorWriter.payloadTooLarge(exchange));
     }
 
     /**

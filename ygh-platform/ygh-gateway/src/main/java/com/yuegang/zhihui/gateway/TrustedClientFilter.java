@@ -70,8 +70,8 @@ final class TrustedClientFilter implements GlobalFilter, Ordered {
 
         // 构造待签名的元数据包：包含 IP，追踪ID，请求方法和路径
         var metadata = new InternalRequestSignature.Metadata(
-                clientIp, traceId, requestId, exchange.getRequest().getMethod().name(),
-                exchange.getRequest().getPath().pathWithinApplication().value(), timestamp);
+            clientIp, traceId, requestId, exchange.getRequest().getMethod().name(),
+            exchange.getRequest().getPath().pathWithinApplication().value(), timestamp);
         String signature = signatures.sign(metadata); // 生成 HMAC 签名
 
         var request = exchange.getRequest().mutate().headers(headers -> {

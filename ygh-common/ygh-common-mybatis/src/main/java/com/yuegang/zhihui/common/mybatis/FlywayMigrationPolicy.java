@@ -1,12 +1,6 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 
@@ -17,7 +11,7 @@ import java.util.regex.Pattern;
 public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容规范
 
     private static final Pattern VERSIONED_MIGRATION = Pattern.compile(
-            "^db/migration/V([1-9][0-9]*)_([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\.sql$"
+        "^db/migration/V([1-9][0-9]*)_([a-z][a-z0-9]*(?:_[a-z0-9]+)*)\\.sql$"
     );
 
     public FlywayMigrationPolicy() {
@@ -30,8 +24,8 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
     public static MigrationPolicyException invalid(String path) { // 命名错误工厂
         String displayPath = safeDisplay(path);
         return new MigrationPolicyException(
-                MigrationViolationCode.INVALID_NAME,
-                "migration name must match db/migration/V<positive integer>_<lower snake case>.sql: " + displayPath);
+            MigrationViolationCode.INVALID_NAME,
+            "migration name must match db/migration/V<positive integer>_<lower snake case>.sql: " + displayPath);
     }
 
     private static String safeDisplay(String path) { // 路径脱敏显示，防止字符过长路径破坏日志排版
@@ -49,14 +43,14 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
         String normalized = normalize(resourcePath); // 规范化斜杠
         if (normalized.isBlank() || normalized.contains("../") || normalized.contains("/../")) { //禁止路径穿越攻击
             throw new MigrationPolicyException(
-                    MigrationViolationCode.UNDO_SCRIPT_FORBIDDEN,
-                    "undo migration is forbidden:" + safeDisplay(normalized)
+                MigrationViolationCode.UNDO_SCRIPT_FORBIDDEN,
+                "undo migration is forbidden:" + safeDisplay(normalized)
             );
         }
         if (normalized.startsWith("db/migration/R__")) { // 禁止可重复性执行脚本 （R__) ， 保证所有结构变更均有唯一版本号
             throw new MigrationPolicyException(
-                    MigrationViolationCode.REPEATABLE_SCRIPT_FORBIDDEN,
-                    "repeatable migration is forbidden:" + safeDisplay(normalized)
+                MigrationViolationCode.REPEATABLE_SCRIPT_FORBIDDEN,
+                "repeatable migration is forbidden:" + safeDisplay(normalized)
             );
         }
         var matcher = VERSIONED_MIGRATION.matcher(normalized); // 执行正则匹配
@@ -89,9 +83,9 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
         for (String resourcePath : resourcePaths) { // 遍历所有路径
             if (resourcePath == null) {
                 violations.add(new MigrationViolation(
-                        MigrationViolationCode.INVALID_NAME,
-                        "Invalid resource path: <null>",
-                        "migration path must not be null"
+                    MigrationViolationCode.INVALID_NAME,
+                    "Invalid resource path: <null>",
+                    "migration path must not be null"
                 ));
                 continue;
             }
@@ -100,9 +94,9 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
             if (!seenPath.add(normalized)) {
                 String displayPath = safeDisplay(normalized);
                 violations.add(new MigrationViolation(
-                        MigrationViolationCode.DUPLICATE_VERSION,
-                        displayPath,
-                        "Duplicate migration path: " + displayPath
+                    MigrationViolationCode.DUPLICATE_VERSION,
+                    displayPath,
+                    "Duplicate migration path: " + displayPath
                 ));
                 continue;
             }
@@ -111,9 +105,9 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
                 String existingPath = pathByVersion.putIfAbsent(descriptor.version(), descriptor.resourcePath()); // 检查版本号是否重复
                 if (existingPath != null) {
                     violations.add(new MigrationViolation(
-                            MigrationViolationCode.DUPLICATE_VERSION,
-                            descriptor.resourcePath(),
-                            "Duplicate migration version: " + descriptor.version() + " in " + (existingPath)));
+                        MigrationViolationCode.DUPLICATE_VERSION,
+                        descriptor.resourcePath(),
+                        "Duplicate migration version: " + descriptor.version() + " in " + (existingPath)));
                 }
             } catch (MigrationPolicyException exception) { // 捕获迁移策略异常
 
@@ -135,9 +129,9 @@ public final class FlywayMigrationPolicy { // 强制执行脚本命名和内容�
                 var descriptor = migrationDescriptor(resourcePath); // 解析描述对象
                 if (descriptor.version() <= highestAppliedVersion) { // 如果版本号小于等于已应用的最高版本号，则违规
                     violations.add(new MigrationViolation(
-                            MigrationViolationCode.OUT_OF_ORDER_VERSION,
-                            descriptor.resourcePath(),
-                            "Migration version " + descriptor.version() + " is not greater than highest applied version " + highestAppliedVersion
+                        MigrationViolationCode.OUT_OF_ORDER_VERSION,
+                        descriptor.resourcePath(),
+                        "Migration version " + descriptor.version() + " is not greater than highest applied version " + highestAppliedVersion
                     ));
                 }
             } catch (MigrationPolicyException exception) {

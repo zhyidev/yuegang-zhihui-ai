@@ -1,1 +1,7 @@
-package com.yuegang.zhihui.knowledge.api;import java.time.OffsetDateTime;public record KnowledgeProcessingJobView(String id,String documentId,String taskType,String status,int progress,int retryCount,String failureReason,OffsetDateTime updatedAt){}
+package com.yuegang.zhihui.knowledge.api;
+
+import java.time.OffsetDateTime;
+
+public record KnowledgeProcessingJobView(String id, String documentId, String taskType, String status, int progress,
+                                         int retryCount, String failureReason, OffsetDateTime updatedAt) {
+}

@@ -27,7 +27,7 @@ class TrustedUserContextResolverTest {
         request.addHeader("X-YGH-User-Context-Timestamp", Long.toString(timestamp.toEpochMilli()));
         var signatures = new InternalUserContextSignature(secret, Clock.fixed(NOW, ZoneOffset.UTC), Duration.ofSeconds(30));
         var metadata = new InternalUserContextSignature.Metadata(userId, List.of("CUSTOMER"), List.of(),
-                "trace-123456", "request-123456", "GET", path, timestamp);
+            "trace-123456", "request-123456", "GET", path, timestamp);
         request.addHeader("X-YGH-User-Context-Signature", signatures.sign(metadata));
         return request;
     }
@@ -41,7 +41,7 @@ class TrustedUserContextResolverTest {
         request.removeHeader("X-YGH-User-Id");
         request.addHeader("X-YGH-User-Id", "43");
         assertThatThrownBy(() -> resolver.resolve(request)).isInstanceOfSatisfying(BusinessException.class,
-                e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED));
+            e -> assertThat(e.errorCode()).isEqualTo(ErrorCode.UNAUTHENTICATED));
     }
 
     @Test
@@ -49,8 +49,8 @@ class TrustedUserContextResolverTest {
         byte[] secret = new byte[32];
         var resolver = new TrustedUserContextResolver(secret, Clock.fixed(NOW, ZoneOffset.UTC));
         assertThatThrownBy(() -> resolver.resolve(signed(secret, "42", "/api/v1/users/me", NOW.minusSeconds(31))))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
         assertThatThrownBy(() -> resolver.resolve(new MockHttpServletRequest("GET", "/api/v1/users/me")))
-                .isInstanceOf(BusinessException.class);
+            .isInstanceOf(BusinessException.class);
     }
 }

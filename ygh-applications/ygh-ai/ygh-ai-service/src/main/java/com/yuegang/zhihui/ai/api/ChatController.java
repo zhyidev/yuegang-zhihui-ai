@@ -8,7 +8,6 @@ import com.yuegang.zhihui.common.core.ApiResponse;
 import com.yuegang.zhihui.common.web.TraceIdResolver;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -17,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/ai/chat")
@@ -34,7 +35,7 @@ public final class ChatController {
     ApiResponse<ChatResponse> chat(@Valid @RequestBody ChatRequest body, HttpServletRequest request) {
         AiUserContext user = users.resolveContext(request);
         return ApiResponse.success(service.chat(user.userId(), user.knowledgeVisibilities(), body),
-                TraceIdResolver.resolve(request));
+            TraceIdResolver.resolve(request));
     }
 
     @PostMapping(value = "/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
@@ -45,7 +46,7 @@ public final class ChatController {
             try {
                 ChatResponse response = service.chat(user.userId(), user.knowledgeVisibilities(), body);
                 emitter.send(SseEmitter.event().name("meta").data(Map.of(
-                        "conversationId", response.conversationId(), "messageId", response.messageId())));
+                    "conversationId", response.conversationId(), "messageId", response.messageId())));
                 for (String token : response.answer().split("(?<=\\G.{24})")) {
                     emitter.send(SseEmitter.event().name("delta").data(token));
                 }
@@ -59,19 +60,19 @@ public final class ChatController {
                     errorCode = provider.providerCode();
                     userMessage = provider.userMessage();
                     LOGGER.warn("ai_stream_failed type={} status={} providerCode={} providerMessage={}",
-                            exception.getClass().getSimpleName(), provider.httpStatus(), provider.providerCode(),
-                            provider.providerMessage());
+                        exception.getClass().getSimpleName(), provider.httpStatus(), provider.providerCode(),
+                        provider.providerMessage());
                 } else {
                     LOGGER.warn("ai_stream_failed type={}", exception.getClass().getSimpleName());
                 }
                 try {
                     emitter.send(SseEmitter.event().name("error").data(Map.of(
-                            "code", errorCode,
-                            "message", userMessage)));
+                        "code", errorCode,
+                        "message", userMessage)));
                     emitter.complete();
                 } catch (Exception sendException) {
                     LOGGER.debug("ai_stream_error_event_failed type={}",
-                            sendException.getClass().getSimpleName());
+                        sendException.getClass().getSimpleName());
                     emitter.complete();
                 }
             }
