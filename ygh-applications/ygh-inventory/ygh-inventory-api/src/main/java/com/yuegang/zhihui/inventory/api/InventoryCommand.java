@@ -1,1 +1,6 @@
-package com.yuegang.zhihui.inventory.api;import jakarta.validation.constraints.*;public record InventoryCommand(@NotBlank String requestId,@NotBlank String skuId,@Positive long quantity,@NotBlank String referenceType,@NotBlank String referenceId){}
+package com.yuegang.zhihui.inventory.api;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+public record InventoryCommand(@NotBlank String requestId,@NotBlank String skuId,@Positive long quantity,@NotBlank String referenceType,@NotBlank String referenceId){}

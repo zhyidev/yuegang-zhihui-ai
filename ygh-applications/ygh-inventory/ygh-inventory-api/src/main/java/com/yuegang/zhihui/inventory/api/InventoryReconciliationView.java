@@ -1,1 +1,7 @@
-package com.yuegang.zhihui.inventory.api;import java.time.OffsetDateTime;public record InventoryReconciliationView(String id,String skuId,long expectedAvailable,long actualAvailable,long difference,String status,OffsetDateTime checkedAt){}
+package com.yuegang.zhihui.inventory.api;
+
+import java.time.OffsetDateTime;
+
+public record InventoryReconciliationView(String id, String skuId, long expectedAvailable, long actualAvailable,
+                                          long difference, String status, OffsetDateTime checkedAt) {
+}

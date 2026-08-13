@@ -1,5 +1,18 @@
 package com.yuegang.zhihui.ai.infrastructure;
-import com.fasterxml.jackson.databind.ObjectMapper;import com.yuegang.zhihui.common.core.ApiResponse;import com.yuegang.zhihui.common.security.*;import java.nio.charset.StandardCharsets;import java.security.MessageDigest;import java.time.*;import java.util.*;import org.springframework.web.client.RestClient;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yuegang.zhihui.common.core.ApiResponse;
+import com.yuegang.zhihui.common.security.InternalServiceSignature;
+import com.yuegang.zhihui.common.security.InternalUserContextSignature;
+import org.springframework.web.client.RestClient;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.*;
+
 public final class CommerceToolGateway{
  private final RestClient products,inventory,orders;private final InternalUserContextSignature users;private final InternalServiceSignature services;private final ObjectMapper json;
  public CommerceToolGateway(String productBase,String orderBase,byte[]secret,ObjectMapper json){this(productBase,productBase,orderBase,secret,json);}

@@ -1,21 +1,21 @@
 package com.yuegang.zhihui.admin.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuegang.zhihui.admin.security.AdminUserVerifier;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.security.InternalUserContextSignature;
 import jakarta.servlet.http.HttpServletRequest;
-import org.junit.jupiter.api.Test;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.Test;
 
 class AdminConfigurationAndSecurityTest {
     private static final byte[] KEY = "01234567890123456789012345678901".getBytes();
