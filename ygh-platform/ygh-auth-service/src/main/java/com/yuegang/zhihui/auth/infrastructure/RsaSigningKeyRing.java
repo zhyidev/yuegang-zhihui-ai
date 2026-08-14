@@ -254,7 +254,7 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
         return activeKey;
     } // 获取活动签名私钥
 
-    private Map<String, Object> publicJwkSet() {
+    public Map<String, Object> publicJwkSet() {
         return new JWKSet(publicKeys).toJSONObject();
     } // 获取供外部查询的公钥集 JSON (JWKS)
 
