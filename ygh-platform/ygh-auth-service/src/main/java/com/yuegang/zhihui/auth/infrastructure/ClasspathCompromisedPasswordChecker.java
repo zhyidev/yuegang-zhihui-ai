@@ -22,7 +22,7 @@ public final class ClasspathCompromisedPasswordChecker implements CompromisedPas
     public static final String DEFAULT_RESOURCE = "/security/common-passwords-sha256.bin"; // 默认资源文件路径
     public static final String DATASET_VERSION = "SecLists-2026.1-xato-top-100000"; // 数据集版本信息
     public static final int EXPECTED_ENTRIES = 96_518; // 预期的记录条数
-    public static final String EXPECTED_SHA256 = ""; // 库文件本身的完整性校验哈希 //TODO haxe
+    public static final String EXPECTED_SHA256 = "d27cc6628a51c24255521284ce4c7d50bca1365a8224a42d0b92420df78c8ba6"; // 库文件本身的完整性校验哈希
     private static final int DIGEST_LENGTH = 32; // SHA-256 摘要长度 (32位字节)
     private final byte[] sortedDigests; // 存储已排序的哈希字节数组
 
