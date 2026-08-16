@@ -14,7 +14,7 @@ public record MessageProcessingClaim(
         ) { // 凭证纪录类
     private static final Pattern GROUP = Pattern.compile("[a-z0-9][a-z0-9-]{0,63}"); // 组名正则规则
     private static final Pattern OWNER =
-            Pattern.compile("[A-Za-z0-9][A-Za-z0-9_-]{31,127}"); // 持有者 ID（令牌） 正则规则
+            Pattern.compile("[A-Za-z0-9_-]{32,128}"); // 持有者 ID（令牌） 正则规则
 
     public MessageProcessingClaim { // 紧凑构造函数逻辑
         if (consumerGroup == null || !GROUP.matcher(consumerGroup).matches()) { // 校验组名格式
