@@ -2,6 +2,7 @@ package com.yuegang.zhihui.knowledge.application;
 
 import com.yuegang.zhihui.common.mq.DomainEventPublisher;
 import com.yuegang.zhihui.common.mq.JdbcOutboxDispatcher;
+import com.yuegang.zhihui.common.mq.RocketMqDomainEventPublisher;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +14,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 @ConditionalOnProperty(name = "ygh.mq.enabled", havingValue = "true")
 class KnowledgeOutboxConfiguration {
     @Bean(destroyMethod = "close")
-    DomainEventPublisher knowledgeEventPublisher(@Value("${ygh.mq.nameserver}") String n, @Value("${ygh.mq.topic:YGH_DOMAIN_EVENTS}") String t) {
+    DomainEventPublisher knowledgeEventPublisher(
+            @Value("${ygh.mq.nameserver}") String n,
+            @Value("${ygh.mq.topic:YGH_DOMAIN_EVENTS}") String t) {
         return new RocketMqDomainEventPublisher("ygh-knowledge-producer", n, t);
     }
 
