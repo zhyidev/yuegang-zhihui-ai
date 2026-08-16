@@ -14,7 +14,7 @@ public record EventMetadata(//定义事件元数据记录
 ) {
     private static final String SAFE_ID = "[A-Za-z0-9][A-Za-z0-9._:-]{0,127}"; // ID 安全正则表达式
     private static final String SAFE_TRACE = "[A-Za-z0-9][A-Za-z0-9._-]{0,127}"; // 链路 ID 安全正则
-    private static final String SAFE_PRODUCER = "[a-z0-9][a-z0-9]{0,63}"; // 生产者名称安全正则
+    private static final String SAFE_PRODUCER = "[a-z0-9][a-z0-9-]{0,63}"; // 生产者名称安全正则（允许连字符，如 ygh-order-service）
 
     public EventMetadata { // 紧凑构造函数
         requireMatch(eventId, "eventId", SAFE_ID); // 校验事件 ID 格式
@@ -22,7 +22,7 @@ public record EventMetadata(//定义事件元数据记录
             throw new IllegalArgumentException("eventType must be an uppercase stable code"); // 否则抛出异常
         }
         if (eventVersion < 1) { // 校验版本必须大于等于 1
-            throw new IllegalArgumentException("eventVersion must be an uppercase stable code"); // 否则抛出异常
+            throw new IllegalArgumentException("eventVersion must be at least 1"); // 否则抛出异常
         }
         if (occurredAt == null) {  // 校验发生时间不能为空
             throw new IllegalArgumentException("occurredAt must not be null"); // 否则抛出异常
@@ -34,7 +34,7 @@ public record EventMetadata(//定义事件元数据记录
 
     private static void requireMatch(String value, String fieldName, String pattern) {  // 正则匹配辅助方法
         if (value == null || !value.matches(pattern)) {  // 若值为空或不匹配正则
-            throw new IllegalArgumentException(fieldName + "is malformed");  // 抛出格式错误异常
+            throw new IllegalArgumentException(fieldName + " is malformed");  // 抛出格式错误异常
         }
     }
 

@@ -150,7 +150,7 @@ public class DomainEventTest { // 定义领域事件测试类
             .map(Method::getName) // 获取方法名
             .toList(); // 转为列表
 
-        assertThat(publicStaticFactoryNames).containsExactly("ofDto", "ofMap"); // 断言仅仅包含 ofDto 和ofMap两个工厂方法
+        assertThat(publicStaticFactoryNames).containsExactlyInAnyOrder("ofDto", "ofMap"); // 断言仅包含 ofDto 和 ofMap 两个工厂方法
         assertThat(Arrays.stream(VersionedDomainEvent.class.getDeclaredConstructors()))
             .noneMatch(constructor -> Modifier.isPublic(constructor.getModifiers())); // 断言没有任何构造函数时公开的
 

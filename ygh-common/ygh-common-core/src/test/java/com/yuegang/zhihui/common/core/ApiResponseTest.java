@@ -15,7 +15,7 @@ public class ApiResponseTest { // 定义 API 响应测试类
         var response = ApiResponse.success("payload", "trace-001"); // 创建一个成功的相应对象
 
         assertThat(response.code()).isEqualTo(ErrorCode.SUCCESS.code()); // 断言状态码为SUCCESS，验证状态码是否为成功码
-        assertThat(response.message()).isEqualTo("payload"); // 断言返回的数据内容正确
+        assertThat(response.data()).isEqualTo("payload"); // 断言返回的数据内容正确
         assertThat(response.traceId()).isEqualTo("trace-001"); // 断言追钟 ID 正确
         assertThat(response.timestamp()).isAfterOrEqualTo(before); // 断言时间戳在执行前之后是否相等
 

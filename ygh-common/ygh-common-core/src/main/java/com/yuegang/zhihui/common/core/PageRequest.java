@@ -14,7 +14,7 @@ public record PageRequest(int pageNo, int pageSize) { // 分页记录
             throw new IllegalArgumentException("pageNo must be at least 1");
         }
         if (pageSize < 1 || pageSize > MAX_PAGE_SIZE) { // 每页大小范围校验
-            throw new IllegalArgumentException("pageSize must be between 1 and" + MAX_PAGE_SIZE); // 报错
+            throw new IllegalArgumentException("pageSize must be between 1 and " + MAX_PAGE_SIZE); // 报错
         }
     }
 

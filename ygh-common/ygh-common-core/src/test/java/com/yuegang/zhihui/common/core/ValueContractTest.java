@@ -26,7 +26,7 @@ public class ValueContractTest { // 定义对象契约测试类
             .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ExternalId.of(" ")) // 拒绝纯空格
             .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> ExternalId.of("user-1")) // 拒绝前后空格的字符串
+        assertThatThrownBy(() -> ExternalId.of(" user-1 ")) // 拒绝前后空格的字符串
             .isInstanceOf(IllegalArgumentException.class);
 
     }

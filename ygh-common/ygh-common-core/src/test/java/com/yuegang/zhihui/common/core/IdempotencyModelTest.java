@@ -19,7 +19,7 @@ public class IdempotencyModelTest { //定义幂等模型测试类
     void requestContextIdentifiesOneCallerOperationAndRequestBody() { // 创建一个幂等请求上下文
         var context = new IdempotencyRequestContext( // 创建一个幂等请求上下文
             "idem-wallet-pay-001", // 幂等键
-            "WALLET-PAY", // 操作类型，钱包支付
+            "WALLET_PAY", // 操作类型，钱包支付
             "user-9007199254740993", // 发起人ID
             "sha256:01223456789ascdef", REQUESTED_AT); // 时间
 
@@ -39,7 +39,7 @@ public class IdempotencyModelTest { //定义幂等模型测试类
         assertThatThrownBy(() -> new IdempotencyRequestContext( //尝试传入空格作为请求指纹
             "idem-1", "WALLET_PAY", "user-1", "", REQUESTED_AT)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new IdempotencyRequestContext( // 尝试传入空的事件戳
-            "idem-1", "WALLET_PAY", "user-1", "sha256:abc", REQUESTED_AT)).isInstanceOf(IllegalArgumentException.class);
+            "idem-1", "WALLET_PAY", "user-1", "sha256:abc", null)).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

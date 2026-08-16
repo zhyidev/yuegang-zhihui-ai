@@ -9,10 +9,10 @@ public class PageRequestTest { // 定义分页请求测试分页
     @Test
         // 标记为测试方法
     void defaultsArePageOneAndTwenTyRows() {
-        assertThat(PageRequest.defaults()).isEqualTo(new PageRequest(1, 20))// 断言默认对象符合规则
-            .isInstanceOf(IllegalArgumentException.class); //应该抛出异常
+        assertThat(PageRequest.defaults()).isEqualTo(new PageRequest(1, 20));// 断言默认对象符合规则
     }
 
+    @Test
     void rejectPageSizeAboveOneHundred() { //测试是否拒绝每页大小超过 100 的请求
         assertThatThrownBy(() -> new PageRequest(1, 101)) // 尝试设置101行
             .isInstanceOf(IllegalArgumentException.class) //应该抛出异常
