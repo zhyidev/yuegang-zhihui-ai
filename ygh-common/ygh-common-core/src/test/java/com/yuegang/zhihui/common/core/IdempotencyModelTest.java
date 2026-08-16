@@ -3,10 +3,9 @@ package com.yuegang.zhihui.common.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.jupiter.api.Test;
-
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import org.junit.jupiter.api.Test;
 
 public class IdempotencyModelTest { // 定义幂等模型测试类
 

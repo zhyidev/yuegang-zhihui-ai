@@ -3,9 +3,8 @@ package com.yuegang.zhihui.common.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
+import org.junit.jupiter.api.Test;
 
 public class ValueContractTest { // 定义对象契约测试类
     @Test
@@ -30,9 +29,8 @@ public class ValueContractTest { // 定义对象契约测试类
 
     @Test
     // 标记为测试方法
-    void
-            moneyUsesExactBigDecimalScaleAndTheOnlySupportCurrency() { // 测试金额是否使用精确的 Scale （小数位）
-                                                                       // 和唯一支持的货币
+    void moneyUsesExactBigDecimalScaleAndTheOnlySupportCurrency() { // 测试金额是否使用精确的 Scale （小数位）
+        // 和唯一支持的货币
         var money = Money.cny(new BigDecimal("99.80")); // 创建 99.80 人民币对象
 
         assertThat(money.amount())

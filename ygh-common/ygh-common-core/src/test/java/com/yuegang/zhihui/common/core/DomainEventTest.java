@@ -3,13 +3,12 @@ package com.yuegang.zhihui.common.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
+import org.junit.jupiter.api.Test;
 
 public class DomainEventTest { // 定义领域事件测试类
 
@@ -159,9 +158,8 @@ public class DomainEventTest { // 定义领域事件测试类
 
     @Test
     // 标记为测试方法
-    void
-            linkedHashMapPayloadRetainItsDeclaredMapTypeWithoutClassCaseFailure() { // 测试保持声明的 Map
-                                                                                    // 类型不发生强制转换失败
+    void linkedHashMapPayloadRetainItsDeclaredMapTypeWithoutClassCaseFailure() { // 测试保持声明的 Map
+        // 类型不发生强制转换失败
         var payload = new LinkedHashMap<String, Object>(); // 创建有序 Map
         payload.put("orderId", "order-1");
 
