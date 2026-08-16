@@ -37,7 +37,7 @@ public class SpringDataRedisLockCommands implements RedisLockCommands {
                         RENEW_IF_OWNER,
                         List.of(key),
                         owner,
-                        Long.toString(lease.getSeconds())); // 执行续约锁脚本
+                        Long.toString(lease.toMillis())); // 执行续约锁脚本
         return result != null && result > 0; // 返回是否续约成功
     }
 
