@@ -2,14 +2,15 @@
 
 ## 1. 目标
 
-在不升级笔记本硬件的前提下，最大化利用 2 vCPU、3.5GB 内存的 Rocky Linux 虚拟机，同时保持 Windows 本机可正常运行 IDEA、前端和必要的重型 Docker 依赖。所有非常驻组件必须按场景启停，不以“全量同时运行”作为资源受限 DEV 的目标。
+在不升级笔记本硬件的前提下，最大化利用 2 vCPU、3.5GB 内存的 Rocky Linux 虚拟机，同时保持 Windows 本机可正常运行
+IDEA、前端和必要的重型 Docker 依赖。所有非常驻组件必须按场景启停，不以“全量同时运行”作为资源受限 DEV 的目标。
 
 ## 2. 已确认资源
 
-| 节点 | 地址 | CPU | 内存 | 磁盘 |
-|---|---|---:|---:|---:|
-| Windows 开发机 | VMware VMnet8 `192.168.154.1` | 16 逻辑处理器 | 15.2GB | F 盘约 610GB 可用 |
-| Rocky Linux 10 VM | 服务地址 `192.168.154.10`；DHCP 管理地址当前为 `.129` | 2 vCPU | 3.5GB | 根分区约 12GB 可用 |
+| 节点              | 地址                                                  |           CPU |   内存 |               磁盘 |
+|-------------------|-------------------------------------------------------|--------------:|-------:|-------------------:|
+| Windows 开发机    | VMware VMnet8 `192.168.154.1`                         | 16 逻辑处理器 | 15.2GB |  F 盘约 610GB 可用 |
+| Rocky Linux 10 VM | 服务地址 `192.168.154.10`；DHCP 管理地址当前为 `.129` |        2 vCPU |  3.5GB | 根分区约 12GB 可用 |
 
 虚拟机能够访问 Windows 宿主机 `192.168.154.1`。
 
@@ -34,23 +35,24 @@
 
 ### 4.1 虚拟机常驻组件
 
-| 组件 | 内存上限 |
-|---|---:|
-| MySQL | 640MB |
-| Redis | 128MB |
-| Nacos | JVM 堆 384MB，容器上限 768MB |
-| PGVector（按需） | 384MB |
+| 组件             |                     内存上限 |
+|------------------|-----------------------------:|
+| MySQL            |                        640MB |
+| Redis            |                        128MB |
+| Nacos            | JVM 堆 384MB，容器上限 768MB |
+| PGVector（按需） |                        384MB |
 
-虚拟机至少保留 700MB 给操作系统与 Docker。启动 PGVector 前可用内存低于 700MB 时脚本必须中止。RocketMQ、Seata 和 Elasticsearch 不迁入该 3.5GB 虚拟机常驻运行。
+虚拟机至少保留 700MB 给操作系统与 Docker。启动 PGVector 前可用内存低于 700MB 时脚本必须中止。RocketMQ、Seata 和
+Elasticsearch 不迁入该 3.5GB 虚拟机常驻运行。
 
 ### 4.2 本机
 
-| 项目 | 上限 |
-|---|---:|
-| Docker Desktop/WSL2 | 3GB |
-| Docker Desktop CPU | 4 个逻辑处理器 |
-| Docker Desktop Swap | 1GB |
-| IDEA JVM Heap | 2GB—2.5GB |
+| 项目                |           上限 |
+|---------------------|---------------:|
+| Docker Desktop/WSL2 |            3GB |
+| Docker Desktop CPU  | 4 个逻辑处理器 |
+| Docker Desktop Swap |            1GB |
+| IDEA JVM Heap       |      2GB—2.5GB |
 
 ## 5. 网络约束
 

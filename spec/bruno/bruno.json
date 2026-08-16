@@ -1,1 +1,9 @@
-{"version":"1","name":"Yuegang Zhihui AI Backend","type":"collection","ignore":["node_modules",".git"]}
+{
+  "version": "1",
+  "name": "Yuegang Zhihui AI Backend",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
