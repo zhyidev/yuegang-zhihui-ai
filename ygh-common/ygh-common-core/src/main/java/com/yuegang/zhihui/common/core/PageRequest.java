@@ -14,7 +14,8 @@ public record PageRequest(int pageNo, int pageSize) { // 分页记录
             throw new IllegalArgumentException("pageNo must be at least 1");
         }
         if (pageSize < 1 || pageSize > MAX_PAGE_SIZE) { // 每页大小范围校验
-            throw new IllegalArgumentException("pageSize must be between 1 and " + MAX_PAGE_SIZE); // 报错
+            throw new IllegalArgumentException(
+                    "pageSize must be between 1 and " + MAX_PAGE_SIZE); // 报错
         }
     }
 
@@ -22,8 +23,7 @@ public record PageRequest(int pageNo, int pageSize) { // 分页记录
         return new PageRequest(DEFAULT_PAGE_NO, DEFAULT_PAGE_SIZE); // 返回 1, 20
     }
 
-    public long offset() { //计算数据库查询所需的偏移量（offset）
+    public long offset() { // 计算数据库查询所需的偏移量（offset）
         return Math.multiplyExact((long) pageNo - 1L, pageSize);
     }
-
 }
