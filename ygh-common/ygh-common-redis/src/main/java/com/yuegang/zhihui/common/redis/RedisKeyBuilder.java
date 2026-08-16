@@ -10,7 +10,7 @@ public class RedisKeyBuilder { //类开始定义
 
     private static void requireNameSpaceSegment(String segment, String name) { // 构造方法，强制段校验
         Objects.requireNonNull(segment, name + " must not be null"); // 段内容不为空
-        if (NAMESPACE_SEGMENT.matcher(segment).matches()) {
+        if (!NAMESPACE_SEGMENT.matcher(segment).matches()) {
             throw new IllegalArgumentException(name + " must match" + NAMESPACE_SEGMENT.pattern()); // 格式错误抛出异常
 
         }

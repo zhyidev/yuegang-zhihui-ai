@@ -37,7 +37,7 @@ class JdbcMessageConsumptionStoreIntegrationTest {
     }
 
     private static VersionedDomainEvent<TestPayload> event(String eventId) {
-        return VersionedDomainEvent.of(
+        return VersionedDomainEvent.ofDto(
             new EventMetadata(
                 eventId,
                 "ORDER_CREATED",

@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class MqMessageHeadersTest {
 
     private static VersionedDomainEvent<TestPayload> event(String eventId) {
-        return VersionedDomainEvent.of(
+        return VersionedDomainEvent.ofDto(
             new EventMetadata(
                 eventId,
                 "ORDER_CREATED",
