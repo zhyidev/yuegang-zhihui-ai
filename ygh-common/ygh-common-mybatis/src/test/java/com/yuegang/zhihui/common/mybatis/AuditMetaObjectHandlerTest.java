@@ -1,14 +1,13 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import org.apache.ibatis.reflection.SystemMetaObject;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.apache.ibatis.reflection.SystemMetaObject;
+import org.junit.jupiter.api.Test;
 
 class AuditMetaObjectHandlerTest {
 
@@ -16,9 +15,7 @@ class AuditMetaObjectHandlerTest {
     private static final Instant SECOND = Instant.parse("2026-07-11T12:00:00Z");
 
     private static AuditMetaObjectHandler handler(String auditor, Instant instant) {
-        return new AuditMetaObjectHandler(
-            () -> auditor,
-            Clock.fixed(instant, ZoneOffset.UTC));
+        return new AuditMetaObjectHandler(() -> auditor, Clock.fixed(instant, ZoneOffset.UTC));
     }
 
     private static TestEntity auditedAt(String auditor, Instant instant) {
@@ -69,10 +66,9 @@ class AuditMetaObjectHandlerTest {
     void blankAuditorFailsFastInsteadOfWritingUntraceableRows() {
         var entity = new TestEntity();
 
-        assertThatThrownBy(() -> handler(" ", FIRST)
-            .insertFill(SystemMetaObject.forObject(entity)))
-            .isInstanceOf(IllegalStateException.class)
-            .hasMessageContaining("auditor");
+        assertThatThrownBy(() -> handler(" ", FIRST).insertFill(SystemMetaObject.forObject(entity)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("currentAuditor");
     }
 
     @Test
@@ -84,6 +80,5 @@ class AuditMetaObjectHandlerTest {
         handler.updateFill(SystemMetaObject.forObject(plain));
     }
 
-    private static final class TestEntity extends AuditableEntity {
-    }
+    private static final class TestEntity extends AuditableEntity {}
 }
