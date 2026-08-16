@@ -1,6 +1,5 @@
 package com.yuegang.zhihui.common.redis;
 
-import io.lettuce.core.api.sync.RedisKeyCommands;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
@@ -17,14 +16,12 @@ public class YghRedisAutoConfiguration { // 类点=定义开始
     @ConditionalOnMissingBean // 仅当容器中没有此类型的 Bean 时生效
     public RedisKeyBuilder redisKeyBuilder() { // 注册键构造器
         return new RedisKeyBuilder(); // 返回实例
-
     }
 
     @Bean // 注册
     @ConditionalOnMissingBean // 防止键重构定义
     public TtlJitterPolicy ttlJitterPolicy() { // 注册过期时间抖动策略
         return new TtlJitterPolicy(); // 返回实例
-
     }
 
     @Bean // 注册
@@ -32,51 +29,50 @@ public class YghRedisAutoConfiguration { // 类点=定义开始
     @ConditionalOnMissingBean // 默认实现
     public RedisLockCommands redisLockCommands(StringRedisTemplate redis) { // 注册锁原子命令执行器
         return new SpringDataRedisLockCommands(redis); // 返回基于 Spring Data 的实现
-
     }
 
     @Bean // 注册
     @ConditionalOnBean(StringRedisTemplate.class) // 依赖基础的 Redis 设施
     @ConditionalOnMissingBean // 默认实现
-    public LockOwnerTokenGenerator lockOwnerTokenGenerator() { //注册锁所有者令牌生成器
+    public LockOwnerTokenGenerator lockOwnerTokenGenerator() { // 注册锁所有者令牌生成器
         return new SecureLockOwnerTokenGenerator(); // 返回安全随机数生成实现
     }
 
     @Bean // 注册
-    @ConditionalOnBean({StringRedisTemplate.class, RedisKeyCommands.class}) // 必须具备上述依赖
+    @ConditionalOnBean({StringRedisTemplate.class, RedisLockCommands.class}) // 必须具备上述依赖
     @ConditionalOnMissingBean // 默认实现
     public RedisDistributedLock redisDistributedLock( // 注册分布式锁核心门面
-                                                      RedisLockCommands commands, // 注入指令集
-                                                      RedisKeyBuilder keys, // 注入键工具
-                                                      LockOwnerTokenGenerator ownerTokenGenerator // 祖册令牌表
-    ) {
+            RedisLockCommands commands, // 注入指令集
+            RedisKeyBuilder keys, // 注入键工具
+            LockOwnerTokenGenerator ownerTokenGenerator // 祖册令牌表
+            ) {
         return new RedisDistributedLock(commands, keys, ownerTokenGenerator); // 返回封装好的分布式锁对象
     }
 
-    @Bean  // 注册 Bean
+    @Bean // 注册 Bean
     @ConditionalOnMissingBean // 默认实现
     public SessionRedisKeys sessionRedisKeys( // 注册Session 专用键生成器
-                                              RedisKeyBuilder keyBuilder, // 依赖基础键工具
-
-                                              @Value("${ygh.redis.environment:dev}") String environment // 注入环境变量，默认为 dev
-    ) {
+            RedisKeyBuilder keyBuilder, // 依赖基础键工具
+            @Value("${ygh.redis.environment:dev}") String environment // 注入环境变量，默认为 dev
+            ) {
         return new SessionRedisKeys(keyBuilder, environment); // 返回 Session 键生成器实例
     }
 
     @Bean // 注册 Bean
-    @ConditionalOnBean(RedisKeyCommands.class) // 仅在非相应时环境注册存储器
+    @ConditionalOnBean({StringRedisTemplate.class, SessionRedisKeys.class}) // 仅在存在模板与键生成器时注册存储器
     @ConditionalOnMissingBean // 默认实现
-    public RedisSessionStateStore redisSessionStateStore(StringRedisTemplate redisTemplate, SessionRedisKeys keys) { // 注册 Session 状态仓库
+    public RedisSessionStateStore redisSessionStateStore(
+            StringRedisTemplate redisTemplate, SessionRedisKeys keys) { // 注册 Session 状态仓库
         return new RedisSessionStateStore(redisTemplate, keys); // 返回实例
-
     }
 
     @Bean // 注册
     @ConditionalOnBean(ReactiveStringRedisTemplate.class) // 仅在响应式 WebFlux 环境下注册校验器
     @ConditionalOnMissingBean // 默认实现
     public ReactiveRedisSessionValidator reactiveRedisSessionValidator( // 注册响应式 Session 校验器
-                                                                        ReactiveStringRedisTemplate reactiveStringRedisTemplate, SessionRedisKeys keys // 注入响应式模板
-    ) {
+            ReactiveStringRedisTemplate reactiveStringRedisTemplate,
+            SessionRedisKeys keys // 注入响应式模板
+            ) {
         return new ReactiveRedisSessionValidator(reactiveStringRedisTemplate, keys); // 返回实例
     }
 }

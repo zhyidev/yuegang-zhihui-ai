@@ -1,24 +1,28 @@
 package com.yuegang.zhihui.common.redis;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.Objects;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.script.RedisScript;
 
-import java.time.Duration;
-import java.util.List;
-import java.util.Objects;
-
 public class SpringDataRedisLockCommands implements RedisLockCommands {
 
-    static final RedisScript<Long> RELEASE_IF_OWNER = new DefaultRedisScript<>("if redis.call('get',KEYS[1]) == ARGV[1] then " + "return redis.call('del',KEYS[1]) " + "else return 0 end", Long.class);
+    static final RedisScript<Long> RELEASE_IF_OWNER =
+            new DefaultRedisScript<>(
+                    "if redis.call('get', KEYS[1]) == ARGV[1] then "
+                            + "return redis.call('del', KEYS[1]) "
+                            + "else return 0 end",
+                    Long.class);
     // 语义：如果值匹配则删除，否者返回0（原子操作）
 
-
-    static final RedisScript<Long> RENEW_IF_OWNER = new DefaultRedisScript<>( // 定义续约锁脚本
-        "if redis.call('get',KEYS[1] == ARGB[1] then " +
-            "return redis.call('expire',KEYS[1],ARGV[2]) " +
-            "else return 0 end", Long.class
-    ); // 返回类型为 Long
+    static final RedisScript<Long> RENEW_IF_OWNER =
+            new DefaultRedisScript<>( // 定义续约锁脚本
+                    "if redis.call('get', KEYS[1]) == ARGV[1] then "
+                            + "return redis.call('pexpire', KEYS[1], ARGV[2]) "
+                            + "else return 0 end",
+                    Long.class); // 返回类型为 Long
 
     private final StringRedisTemplate redis; // 声明 redis 模板
 
@@ -28,7 +32,12 @@ public class SpringDataRedisLockCommands implements RedisLockCommands {
 
     @Override // 加锁命令
     public boolean renewIfOwner(String key, String owner, Duration lease) {
-        Long result = redis.execute(RENEW_IF_OWNER, List.of(key), owner, Long.toString(lease.getSeconds())); // 执行续约锁脚本
+        Long result =
+                redis.execute(
+                        RENEW_IF_OWNER,
+                        List.of(key),
+                        owner,
+                        Long.toString(lease.getSeconds())); // 执行续约锁脚本
         return result != null && result > 0; // 返回是否续约成功
     }
 
