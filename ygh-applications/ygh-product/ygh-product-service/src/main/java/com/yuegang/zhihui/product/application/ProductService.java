@@ -171,7 +171,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
             arguments.add(requestedStatus.name());
         }
         // 排序规则：按更新时间排序，再按 ID 降序；最后应用分页大小限制
-        sql.append(" ORDER BY p.update_at DESC,s.id DESC LIMIT ?");
+        sql.append(" ORDER BY p.updated_at DESC,s.id DESC LIMIT ?");
         arguments.add(size);
 
         // 执行 SQL 查询获取 ID 列表，并遍历列表调用 get 方法获取详细视图数据
@@ -183,7 +183,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
     public ProductView get(String sku, boolean publicOnly) { // 根据 SKU ID 获取单个产品全量详情的方法
         // 构建联表查询语句：SKU + SPU
         String sql =
-                "SELECT s.pu_id,s.id,p.category_id,p.brand_id,p.name,s.sku_code,s.price,s.currency,s.status,s.traceability_code,s.version FROM product_sku s JOIN product_spu ON p.id=s.spu_id WHERE s.id=?"
+                "SELECT s.spu_id,s.id,p.category_id,p.brand_id,p.name,s.sku_code,s.price,s.currency,s.status,s.traceability_code,s.version FROM product_sku s JOIN product_spu p ON p.id=s.spu_id WHERE s.id=?"
                         + (publicOnly
                                 ? " AND s.status='PUBLISHED' AND p.status='PUBLISHED' "
                                 : ""); // 根据参数决定是否应用状态过滤
@@ -235,7 +235,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
                     // 同步更新 SKU 和 SPU 的状态，并使用 version 进行乐观锁检查
                     int changed =
                             jdbc.update(
-                                    "UPDATE product_sku s JOIN product_spu p ON p.ids=s.spu_id SET s.status=?,p.status=?,s.version=s.version+1,p.status=? WHERE s.id=? AND s.version=?",
+                                    "UPDATE product_sku s JOIN product_spu p ON p.id=s.spu_id SET s.status=?,p.status=?,s.version=s.version+1,p.status=? WHERE s.id=? AND s.version=?",
                                     productStatus.name(),
                                     productStatus.name(),
                                     skuId,
