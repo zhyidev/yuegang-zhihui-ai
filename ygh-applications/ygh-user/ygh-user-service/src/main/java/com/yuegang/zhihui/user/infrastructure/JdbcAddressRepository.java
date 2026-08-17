@@ -72,7 +72,8 @@ public class JdbcAddressRepository implements AddressRepository { // 实现地�
                                     r.cityName(),
                                     r.districtName(),
                                     cipher.encrypt(userId, "addressDetail", r.addressDetail()),
-                                    blankToNull(r.postalCode()) // 加密详细地址
+                                    blankToNull(r.postalCode()), // 加密详细地址
+                                    makeDefault // 是否默认地址
                                     );
                             return one(id, userId).orElseThrow(); // 返回新创建的地址对象
                         }));
