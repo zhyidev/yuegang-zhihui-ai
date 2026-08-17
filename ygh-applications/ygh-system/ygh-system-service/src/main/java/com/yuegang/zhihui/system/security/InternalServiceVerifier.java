@@ -4,7 +4,6 @@ import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import jakarta.servlet.http.HttpServletRequest;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -22,11 +21,10 @@ public final class InternalServiceVerifier { // 定义最终类：内部服务�
         String v = r.getHeader(n); // 根据名称获取头信息
         if (v == null || v.isBlank()) throw fail(); // 如果头信息不存在或为空白，则判定为失败
         return v;
-
     }
 
     private static BusinessException fail() {
-        return new BusinessException(ErrorCode.UNAUTHENTICATED);// 返回"未认定"状态的业务异常
+        return new BusinessException(ErrorCode.UNAUTHENTICATED); // 返回"未认定"状态的业务异常
     }
 
     public void verify(HttpServletRequest r, String expected) { // 核心方法：验证请求是否来自预期的服务
@@ -36,14 +34,15 @@ public final class InternalServiceVerifier { // 定义最终类：内部服务�
             // 获取请求头中的时间戳并解析为 Instant 瞬时对象
             Instant t = Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-Service-Timestamp")));
             // 构造签名元数据：包含服务名、请求方法（GET/POST等）、请求路径以及时间戳
-            var m = new InternalServiceSignature.Metadata(service, r.getMethod(), r.getRequestURI(), t);
+            var m =
+                    new InternalServiceSignature.Metadata(
+                            service, r.getMethod(), r.getRequestURI(), t);
             // 调用签名工具验证请求头中的签名（X-YGH-Service-Signature）是否有效
-            if (!signature.verify(m, h(r, "X-YGH-Service -Signature"))) throw fail();
+            if (!signature.verify(m, h(r, "X-YGH-Service-Signature"))) throw fail();
         } catch (BusinessException e) { // 如果捕获到其他运行期异常
             throw e; // 直接向上抛出
         } catch (RuntimeException e) { // 如果捕获到其他运行，异常
             throw fail(); // 统一封装为验证失败（未认证）异常抛出
         }
     }
-
 }
