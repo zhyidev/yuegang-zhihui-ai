@@ -68,7 +68,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
                             command.name());
                     // 向产品 SKU 表插入详细规格、价格、货币、溯源码等信息，状态为 'DRAFT'
                     jdbc.update(
-                            "INSERT INTO produt_sku(id,spu_id,sku_code,price,currency,traceability_code,status) VALUES(?,?,?,?,?,?,'DRAFT')",
+                            "INSERT INTO product_sku(id,spu_id,sku_code,price,currency,traceability_code,status) VALUES(?,?,?,?,?,?,'DRAFT')",
                             sku,
                             spu,
                             command.skuCode(),
