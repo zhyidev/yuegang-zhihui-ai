@@ -258,7 +258,8 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
 
     // 辅助方法：全量替换产品的规格参数
     void replaceSpecifications(long skuId, Map<String, String> values) {
-        jdbc.update("DELETE FROM prouct_specification WHERE sku_id=?", skuId); // 首先物理删除该 SKU 的所有旧规格
+        jdbc.update(
+                "DELETE FROM product_specification WHERE sku_id=?", skuId); // 首先物理删除该 SKU 的所有旧规格
         int sort = 0; // 排序计数器
         //
         for (var entry :
