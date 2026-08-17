@@ -77,6 +77,7 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
                         bindInsert(s, userId, request);
                         s.executeUpdate(); // 执行数据插入操作
                     }
+                    c.commit(); // 提交插入事务
                 } else { // 场景：更新现有资料
                     if (current != request.version()) {
                         c.rollback();

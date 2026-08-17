@@ -102,8 +102,8 @@ public class JdbcAddressRepository implements AddressRepository { // 实现地�
                     """,
                                     blankToNull(r.label()),
                                     cipher.encrypt(
-                                            userId, "recipientName", r.recipientName()), // 更新重新加密
-                                    cipher.encrypt(userId, "recipientPhone", r.recipientPhone()),
+                                            userId, "recipient_name", r.recipientName()), // 更新重新加密
+                                    cipher.encrypt(userId, "recipient_phone", r.recipientPhone()),
                                     cipher.keyVersion(),
                                     r.countryCode(),
                                     blankToNull(r.provinceCode()),
