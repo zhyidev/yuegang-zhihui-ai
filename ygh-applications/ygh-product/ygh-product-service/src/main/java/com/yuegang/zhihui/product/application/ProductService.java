@@ -134,7 +134,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
             sql.append(" AND s.status='PUBLISHED' AND p.status='PUBLISHED'"); // 若仅公开数据，限定状态为
         // 'PUBLISHED'
         if (category != null && !category.isBlank()) { // 如果指定了分类
-            sql.append(" ADN p.category_id=?"); // （原文拼写ADN，未做修改）
+            sql.append(" AND p.category_id=?"); // 按分类ID过滤
             arguments.add(id(category));
         }
 
