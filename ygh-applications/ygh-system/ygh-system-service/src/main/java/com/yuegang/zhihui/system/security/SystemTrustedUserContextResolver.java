@@ -45,7 +45,7 @@ public final class SystemTrustedUserContextResolver { // 定义最终类，受�
                             u,
                             roles,
                             perms,
-                            h(r, "X-YGH-Trace-Id"),
+                            h(r, "X-Trace-Id"),
                             h(r, "X-Request-Id"),
                             r.getMethod(),
                             r.getRequestURI(),
