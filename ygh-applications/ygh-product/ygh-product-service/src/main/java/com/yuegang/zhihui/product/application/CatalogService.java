@@ -123,9 +123,13 @@ public final class CatalogService { // 定义目录服务最终类
                 Timestamp.from(r.occurredAt().toInstant()),
                 write(r.details()));
         // 返回新创建的溯源事件视图
-        // return new TraceEventView(Long.toString(id), sku, r.type(), r.location(), r.occurredAt(),
-        // r.details());
-        return null;
+        return new TraceEventView(
+                Long.toString(id),
+                Long.toString(skuId),
+                r.type(),
+                r.location(),
+                r.occurredAt(),
+                r.details());
     }
 
     public List<TraceEventView> trace(String sku) { // 获取指定 SKU 的溯源链路
