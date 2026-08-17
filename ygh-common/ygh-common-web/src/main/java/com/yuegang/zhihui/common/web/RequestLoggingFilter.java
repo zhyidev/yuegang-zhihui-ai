@@ -4,17 +4,16 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jboss.logging.MDC;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jboss.logging.MDC;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * 记录安全的请求元数据，不读取查询参数或请求体。
@@ -36,12 +35,12 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
         this.sink = sink; // 赋值
     }
 
-    @Override    // 标记重写
+    @Override // 标记重写
     protected void doFilterInternal(
-        HttpServletRequest request, // 请求
-        HttpServletResponse response, // 响应
-        FilterChain filterChain // 链
-    ) throws ServletException, IOException { // 异常声明
+            HttpServletRequest request, // 请求
+            HttpServletResponse response, // 响应
+            FilterChain filterChain // 链
+            ) throws ServletException, IOException { // 异常声明
         long startedAt = System.nanoTime(); // 纳秒精度起始时间
         String traceId = resolveOrCreateTraceId(request); // 解析或创建 TraceId
         String requestId = resolveOrCreateRequestId(request); // 解析或创建 RequestId
@@ -60,18 +59,27 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             throw exception; // 抛出
         } finally { // 开启结案块
             long durationMs = Math.max(0, (System.nanoTime() - startedAt) / 1_000_000); // 计算执行毫秒数
-            int status = failed ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR : response.getStatus(); // 计算最终状态码
-            publishSafely(new RequestLogEvent( // 构造日志事件并发布
-                traceId, requestId, request.getMethod(), request.getRequestURI(), // 填入元数据
-                status, durationMs, safeHeaders(request)
-            )); // 填入消耗时间和脱敏后抛头信息
+            int status =
+                    failed
+                            ? HttpServletResponse.SC_INTERNAL_SERVER_ERROR
+                            : response.getStatus(); // 计算最终状态码
+            publishSafely(
+                    new RequestLogEvent( // 构造日志事件并发布
+                            traceId,
+                            requestId,
+                            request.getMethod(),
+                            request.getRequestURI(), // 填入元数据
+                            status,
+                            durationMs,
+                            safeHeaders(request))); // 填入消耗时间和脱敏后抛头信息
             MDC.remove("traceId"); // 清理 MDC 中的 TraceId
             MDC.remove("requestId"); // 清理 MDC 中的 RequestId
         }
     }
 
     private String resolveOrCreateTraceId(HttpServletRequest request) { // 获取 ID 逻辑
-        Object attribute = request.getAttribute(TraceIdResolver.TRACE_ID_ATTRIBUTE); // 先看 Request 属性
+        Object attribute =
+                request.getAttribute(TraceIdResolver.TRACE_ID_ATTRIBUTE); // 先看 Request 属性
         if (attribute instanceof String value && isSafeIdentifier(value)) return value; // 若合法则返回
         String header = request.getHeader(TraceIdResolver.TRACE_ID_HEADER); // 再看请求头
         return isSafeIdentifier(header) ? header : newIdentifier(); // 头合法则用头，否则生成全新的
@@ -92,30 +100,31 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
             return Map.of(); // 返回空 Map
         }
         LinkedHashMap<String, String> headers = new LinkedHashMap<>(); // 创建有序容器
-        headers.put("user-Agent", sanitizeUserAgent(userAgent)); // 脱敏并限制长度后放入
+        headers.put("User-Agent", sanitizeUserAgent(userAgent)); // 脱敏并限制长度后放入
         return headers;
     }
 
     private String sanitizeUserAgent(String userAgent) { // UA 字符串清理逻辑
-        String withoutControlCharacters = CONTROL_CHARACTERS.matcher(userAgent).replaceAll(""); // 去除控制字符 (防注入)
+        String withoutControlCharacters =
+                CONTROL_CHARACTERS.matcher(userAgent).replaceAll(""); // 去除控制字符 (防注入)
         String normalized = withoutControlCharacters.toLowerCase(Locale.ROOT); // 转小写
         if (normalized.contains("token") // 包含敏感关键字检查
-            || normalized.contains("secret")
-            || normalized.contains("password")
-            || normalized.contains("cookie")
-            || normalized.contains("authorization")) { //命中
+                || normalized.contains("secret")
+                || normalized.contains("password")
+                || normalized.contains("cookie")
+                || normalized.contains("authorization")) { // 命中
             return REDACTED; // 强制脱敏
         }
-        return withoutControlCharacters.substring(// 拦截处理，防止日志过长
-            0, Math.min(withoutControlCharacters.length(), MAX_CORRELATION_ID_LENGTH)); // 返回
+        return withoutControlCharacters.substring( // 拦截处理，防止日志过长
+                0, Math.min(withoutControlCharacters.length(), MAX_USER_AGENT_LENGTH)); // 返回
     }
 
     private boolean isSafeIdentifier(String value) { // ID 格式校验
         return value != null // 不为空
-            && !value.isBlank() // 不为空白
-            && !"unavailable".equals(value) // 不是保留关键字
-            && value.length() <= MAX_CORRELATION_ID_LENGTH // 长度不超限
-            && SAFE_CORRELATION_ID.matcher(value).matches(); // 正则匹配
+                && !value.isBlank() // 不为空白
+                && !"unavailable".equals(value) // 不是保留关键字
+                && value.length() <= MAX_CORRELATION_ID_LENGTH // 长度不超限
+                && SAFE_CORRELATION_ID.matcher(value).matches(); // 正则匹配
     }
 
     private void publishSafely(RequestLogEvent event) { // 安全发布，不影响业务请求
@@ -129,6 +138,4 @@ public class RequestLoggingFilter extends OncePerRequestFilter {
     private String newIdentifier() { // 生成随机 ID
         return UUID.randomUUID().toString().replace("-", ""); // 去掉横线中的 UUID
     }
-
-
 }

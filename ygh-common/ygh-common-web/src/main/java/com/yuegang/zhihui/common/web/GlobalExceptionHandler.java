@@ -246,7 +246,7 @@ public class GlobalExceptionHandler { // 类定义
             case SUCCESS -> null;
             case VALIDATION_ERROR -> null;
             case RESOURCE_NOT_FOUND -> null;
-            case BUSINESS_CONFLICT -> null;
+            case BUSINESS_CONFLICT -> exception.getMessage(); // 业务冲突透出业务方自定义消息
             case UNAUTHENTICATED,
                     PERMISSION_DENIED,
                     RATE_LIMITED,
