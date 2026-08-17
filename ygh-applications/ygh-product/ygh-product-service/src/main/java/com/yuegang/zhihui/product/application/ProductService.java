@@ -235,7 +235,7 @@ public final class ProductService { // 定义产品核心服务类，使用 fina
                     // 同步更新 SKU 和 SPU 的状态，并使用 version 进行乐观锁检查
                     int changed =
                             jdbc.update(
-                                    "UPDATE product_sku s JOIN product_spu p ON p.id=s.spu_id SET s.status=?,p.status=?,s.version=s.version+1,p.status=? WHERE s.id=? AND s.version=?",
+                                    "UPDATE product_sku s JOIN product_spu p ON p.id=s.spu_id SET s.status=?,p.status=?,s.version=s.version+1 WHERE s.id=? AND s.version=?",
                                     productStatus.name(),
                                     productStatus.name(),
                                     skuId,
