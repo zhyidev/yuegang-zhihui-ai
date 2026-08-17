@@ -46,7 +46,8 @@ public final class JdbcAuthorizationRepository
                 new LinkedHashSet<>(
                         jdbc.queryForList(
                                 "SELECT DISTINCT p.code FROM system_user_role ur JOIN system_role_permission rp ON rp.role_id=ur.role_id JOIN system_permission p ON p.id=rp.permission_id AND p.enabled=TRUE JOIN system_role r ON r.id=ur.role_id AND r.enabled=TRUE WHERE ur.user_id=? ORDER BY p.code",
-                                String.class));
+                                String.class,
+                                user));
         // 返回脑包含用户ID、角色集、权限集及当前版本号的完整权限快照
         return new AuthoritySnapshot(Long.toString(user), roles, permissions, v);
     }
