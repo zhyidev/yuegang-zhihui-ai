@@ -214,12 +214,12 @@ public class JdbcAddressRepository implements AddressRepository { // 实现地�
                 rs.getString("label"),
                 cipher.decrypt(
                         owner,
-                        "recipientName",
+                        "recipient_name",
                         keyVersion,
                         rs.getBytes("recipient_name_ciphertext")), // 解密姓名
                 cipher.decrypt(
                         owner,
-                        "recipientPhone",
+                        "recipient_phone",
                         keyVersion,
                         rs.getBytes("recipient_phone_ciphertext")), // 解密电话
                 rs.getString("country_code"),

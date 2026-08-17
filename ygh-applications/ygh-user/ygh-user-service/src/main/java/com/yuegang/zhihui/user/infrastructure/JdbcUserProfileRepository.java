@@ -72,7 +72,7 @@ public final class JdbcUserProfileRepository implements UserProfileRepository {
                                     """
                         INSERT IGNORE INTO
                         user_profile(user_id,display_name,avatar_url,phone_ciphertext,email_ciphertext,
-                        contact_pii_key_version,locale,timezone,profile_completed,version) VALUES(?,?,?,?,?,?,?,?,?,TRUE, 0)
+                        contact_pii_key_version,locale,timezone,profile_completed,version) VALUES(?,?,?,?,?,?,?,?,TRUE,0)
                         """)) {
                         bindInsert(s, userId, request);
                         s.executeUpdate(); // 执行数据插入操作
