@@ -35,7 +35,7 @@
     <jacoco.maven.plugin.version>0.8.15</jacoco.maven.plugin.version>
     <maven.antrun.plugin.version>3.2.0</maven.antrun.plugin.version>
     <spring.boot.maven.plugin.version>4.0.7</spring.boot.maven.plugin.version>
-    <cyclonedx.maven.plugin.version>2.9.2</cyclonedx.maven.plugin.version>
+    <cyclonedx.maven.plugin.version>2.9.3</cyclonedx.maven.plugin.version>
     <jacoco.minimum.line.coverage>0.70</jacoco.minimum.line.coverage>
     <jacoco.minimum.branch.coverage>0.60</jacoco.minimum.branch.coverage>
     <flatten.maven.plugin.version>1.7.2</flatten.maven.plugin.version>
