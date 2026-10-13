@@ -6,15 +6,11 @@ import com.yuegang.zhihui.auth.api.dto.PasswordResetRequest;
 import com.yuegang.zhihui.auth.api.dto.PasswordResetRequestedResponse;
 import com.yuegang.zhihui.auth.domain.Argon2PasswordHasher;
 import com.yuegang.zhihui.auth.domain.LoginAccountRepository;
+import com.yuegang.zhihui.auth.domain.PasswordDigest;
 import com.yuegang.zhihui.auth.domain.PasswordPolicy;
 import com.yuegang.zhihui.auth.domain.PrincipalNormalizer;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.core.ErrorCode;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
-
-import javax.sql.DataSource;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -26,6 +22,10 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
+import javax.sql.DataSource;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 final class PasswordResetService {
     private static final Duration TTL = Duration.ofMinutes(15);
@@ -39,7 +39,14 @@ final class PasswordResetService {
     private final Clock clock;
     private final SecureRandom random = new SecureRandom();
 
-    PasswordResetService(LoginAccountRepository accounts, CaptchaService captchas, PasswordPolicy policy, Argon2PasswordHasher hasher, PasswordResetNotificationClient notifications, DataSource dataSource, Clock clock) {
+    PasswordResetService(
+            LoginAccountRepository accounts,
+            CaptchaService captchas,
+            PasswordPolicy policy,
+            Argon2PasswordHasher hasher,
+            PasswordResetNotificationClient notifications,
+            DataSource dataSource,
+            Clock clock) {
         this.accounts = accounts;
         this.captchas = captchas;
         this.policy = policy;
@@ -52,7 +59,10 @@ final class PasswordResetService {
 
     private static String digest(String token) {
         try {
-            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8)));
+            return HexFormat.of()
+                    .formatHex(
+                            MessageDigest.getInstance("SHA-256")
+                                    .digest(token.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException impossible) {
             throw new IllegalStateException(impossible);
         }
@@ -60,45 +70,79 @@ final class PasswordResetService {
 
     PasswordResetRequestedResponse request(PasswordResetRequest request) {
         captchas.verify(request.captchaChallengeId(), request.captchaAnswer());
-        accounts.findByPrincipal(PrincipalNormalizer.normalize(request.principal())).ifPresent(account -> {
-            byte[] value = new byte[32];
-            random.nextBytes(value);
-            String token = Base64.getUrlEncoder().withoutPadding().encodeToString(value);
-            Arrays.fill(value, (byte) 0);
-            long id = random.nextLong() & Long.MAX_VALUE;
-            Instant expires = clock.instant().plus(TTL);
-            jdbc.update("DELETE FROM auth_password_reset WHERE account_id=? AND (consumed_at IS NOT NULL OR expires_at<=?)", account.accountId(), Timestamp.from(clock.instant()));
-            jdbc.update("INSERT INTO auth_password_reset(id,account_id,token_hash,expires_at) VALUES(?,?,?,?)", id, account.accountId(), digest(token), Timestamp.from(expires));
-            try {
-                notifications.deliver(account.userId(), token, TTL.toMinutes());
-            } catch (RuntimeException ignored) {
-                jdbc.update("DELETE FROM auth_password_reset WHERE id=?", id);
-            }
-        });
+        accounts.findByPrincipal(PrincipalNormalizer.normalize(request.principal()))
+                .ifPresent(
+                        account -> {
+                            byte[] value = new byte[32];
+                            random.nextBytes(value);
+                            String token =
+                                    Base64.getUrlEncoder().withoutPadding().encodeToString(value);
+                            Arrays.fill(value, (byte) 0);
+                            long id = random.nextLong() & Long.MAX_VALUE;
+                            Instant expires = clock.instant().plus(TTL);
+                            jdbc.update(
+                                    "DELETE FROM auth_password_reset WHERE account_id=? AND (consumed_at IS NOT NULL OR expires_at<=?)",
+                                    account.accountId(),
+                                    Timestamp.from(clock.instant()));
+                            jdbc.update(
+                                    "INSERT INTO auth_password_reset(id,account_id,token_hash,expires_at) VALUES(?,?,?,?)",
+                                    id,
+                                    account.accountId(),
+                                    digest(token),
+                                    Timestamp.from(expires));
+                            try {
+                                notifications.deliver(account.userId(), token, TTL.toMinutes());
+                            } catch (RuntimeException ignored) {
+                                jdbc.update("DELETE FROM auth_password_reset WHERE id=?", id);
+                            }
+                        });
         return new PasswordResetRequestedResponse(TTL.toSeconds());
     }
 
     OperationResponse confirm(PasswordResetConfirmRequest request) {
         char[] raw = request.newPassword().toCharArray();
         try {
-            if (!policy.validate(raw).valid()) throw new BusinessException(ErrorCode.VALIDATION_ERROR);
+            if (!policy.validate(raw).valid())
+                throw new BusinessException(ErrorCode.VALIDATION_ERROR);
             String tokenHash = digest(request.resetToken());
-            return tx.execute(status -> {
-                var row = jdbc.query("SELECT id,account_id,expires_at,consumed_at FROM auth_password_reset WHERE token_hash=? FOR UPDATE", r -> r.next() ? new Reset(r.getLong(1), r.getLong(2), r.getTimestamp(3).toInstant(), r.getTimestamp(4)) : null, tokenHash);
-                if (row == null || row.consumedAt() != null || !row.expiresAt().isAfter(clock.instant()))
-                    throw new BusinessException(ErrorCode.UNAUTHENTICATED);
-                PasswordDigest encoded = hasher.hash(raw);
-                if (jdbc.update("UPDATE auth_credential SET password_hash=?,password_algorithm=?,password_version=?,changed_at=NOW(6) WHERE account_id=?", encoded.hash(), encoded.algorithm(), encoded.version(), row.accountId()) != 1)
-                    throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
-                jdbc.update("UPDATE auth_password_reset SET consumed_at=NOW(6) WHERE id=? AND consumed_at IS NULL", row.id());
-                jdbc.update("UPDATE auth_refresh_token SET revoked_at=COALESCE(revoked_at,NOW(6)),revoke_reason=COALESCE(revoke_reason,'PASSWORD_RESET') WHERE account_id=?", row.accountId());
-                return new OperationResponse(true);
-            });
+            return tx.execute(
+                    status -> {
+                        var row =
+                                jdbc.query(
+                                        "SELECT id,account_id,expires_at,consumed_at FROM auth_password_reset WHERE token_hash=? FOR UPDATE",
+                                        r ->
+                                                r.next()
+                                                        ? new Reset(
+                                                                r.getLong(1),
+                                                                r.getLong(2),
+                                                                r.getTimestamp(3).toInstant(),
+                                                                r.getTimestamp(4))
+                                                        : null,
+                                        tokenHash);
+                        if (row == null
+                                || row.consumedAt() != null
+                                || !row.expiresAt().isAfter(clock.instant()))
+                            throw new BusinessException(ErrorCode.UNAUTHENTICATED);
+                        PasswordDigest encoded = hasher.hash(raw);
+                        if (jdbc.update(
+                                        "UPDATE auth_credential SET password_hash=?,password_algorithm=?,password_version=?,changed_at=NOW(6) WHERE account_id=?",
+                                        encoded.hash(),
+                                        encoded.algorithm(),
+                                        encoded.version(),
+                                        row.accountId())
+                                != 1) throw new BusinessException(ErrorCode.BUSINESS_CONFLICT);
+                        jdbc.update(
+                                "UPDATE auth_password_reset SET consumed_at=NOW(6) WHERE id=? AND consumed_at IS NULL",
+                                row.id());
+                        jdbc.update(
+                                "UPDATE auth_refresh_token SET revoked_at=COALESCE(revoked_at,NOW(6)),revoke_reason=COALESCE(revoke_reason,'PASSWORD_RESET') WHERE account_id=?",
+                                row.accountId());
+                        return new OperationResponse(true);
+                    });
         } finally {
             Arrays.fill(raw, '\0');
         }
     }
 
-    private record Reset(long id, long accountId, Instant expiresAt, Timestamp consumedAt) {
-    }
+    private record Reset(long id, long accountId, Instant expiresAt, Timestamp consumedAt) {}
 }

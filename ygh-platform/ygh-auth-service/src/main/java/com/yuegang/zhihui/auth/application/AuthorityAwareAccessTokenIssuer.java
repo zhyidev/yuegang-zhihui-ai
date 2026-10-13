@@ -3,6 +3,7 @@ package com.yuegang.zhihui.auth.application;
 import com.yuegang.zhihui.auth.domain.AccessToken;
 import com.yuegang.zhihui.auth.domain.AccessTokenIssuer;
 import com.yuegang.zhihui.auth.domain.AuthorityProvider;
+import com.yuegang.zhihui.auth.domain.TokenPrincipal;
 
 public final class AuthorityAwareAccessTokenIssuer implements AccessTokenIssuer {
     private final AccessTokenIssuer delegate;
@@ -15,6 +16,7 @@ public final class AuthorityAwareAccessTokenIssuer implements AccessTokenIssuer 
 
     public AccessToken issue(TokenPrincipal p) {
         var a = provider.find(p.userId());
-        return delegate.issue(new TokenPrincipal(p.accountId(), p.userId(), a.roles(), a.permissions()));
+        return delegate.issue(
+                new TokenPrincipal(p.accountId(), p.userId(), a.roles(), a.permissions()));
     }
 }

@@ -1,20 +1,19 @@
 package com.yuegang.zhihui.common.mybatis;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.yuegang.zhihui.common.core.PageRequest;
-import org.junit.jupiter.api.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.yuegang.zhihui.common.core.PageRequest;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.Test;
 
 class MybatisPageAdapterTest {
 
     @Test
     void createsOneBasedCountingMybatisPageFromPublicContract() {
-        var page = MybatisPageAdapter.toMybatisPage(new PageRequest(3, 100));
+        var page = MybatisPageAdapter.toPage(new PageRequest(3, 100));
 
         assertThat(page.getCurrent()).isEqualTo(3);
         assertThat(page.getSize()).isEqualTo(100);
@@ -69,21 +68,20 @@ class MybatisPageAdapterTest {
 
         assertThat(response.records()).containsExactly("A");
         assertThatThrownBy(() -> response.records().add("C"))
-            .isInstanceOf(UnsupportedOperationException.class);
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     @Test
     void nullInputsFailFastAtTheAdapterBoundary() {
         var source = new Page<String>(1, 20, 0);
 
-        assertThatThrownBy(() -> MybatisPageAdapter.toMybatisPage(null))
-            .isInstanceOf(NullPointerException.class);
+        assertThatThrownBy(() -> MybatisPageAdapter.toPage(null))
+                .isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> MybatisPageAdapter.toPageResponse(null, value -> value))
-            .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(NullPointerException.class);
         assertThatThrownBy(() -> MybatisPageAdapter.toPageResponse(source, null))
-            .isInstanceOf(NullPointerException.class);
+                .isInstanceOf(NullPointerException.class);
     }
 
-    private record EntityRow(String value) {
-    }
+    private record EntityRow(String value) {}
 }

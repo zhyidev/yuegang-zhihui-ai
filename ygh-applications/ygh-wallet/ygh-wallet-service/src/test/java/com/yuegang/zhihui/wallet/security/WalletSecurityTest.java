@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.wallet.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.common.security.InternalServiceSignature;
 import com.yuegang.zhihui.common.security.InternalUserContextSignature;

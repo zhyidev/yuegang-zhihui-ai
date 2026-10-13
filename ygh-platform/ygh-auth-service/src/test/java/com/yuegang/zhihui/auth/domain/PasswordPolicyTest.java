@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.auth.domain;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import com.yuegang.zhihui.auth.infrastructure.ClasspathCompromisedPasswordChecker;
 import org.junit.jupiter.api.Test;
 

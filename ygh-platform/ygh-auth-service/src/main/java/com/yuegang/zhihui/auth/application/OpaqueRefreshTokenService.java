@@ -1,10 +1,10 @@
 package com.yuegang.zhihui.auth.application;
 
 import com.yuegang.zhihui.auth.domain.NewRefreshToken;
+import com.yuegang.zhihui.auth.domain.RefreshRotationResult;
 import com.yuegang.zhihui.auth.domain.RefreshRotationStatus;
 import com.yuegang.zhihui.auth.domain.RefreshTokenPair;
 import com.yuegang.zhihui.auth.domain.RefreshTokenRepository;
-
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -23,12 +23,15 @@ public final class OpaqueRefreshTokenService {
     private final Clock clock;
     private final Duration lifetime;
 
-    public OpaqueRefreshTokenService(RefreshTokenRepository repository, Clock clock, Duration lifetime) {
+    public OpaqueRefreshTokenService(
+            RefreshTokenRepository repository, Clock clock, Duration lifetime) {
         this.repository = Objects.requireNonNull(repository, "repository must not be null");
         this.clock = Objects.requireNonNull(clock, "clock must not be null");
         this.lifetime = Objects.requireNonNull(lifetime, "lifetime must not be null");
-        if (lifetime.compareTo(Duration.ofDays(1)) < 0 || lifetime.compareTo(Duration.ofDays(30)) > 0) {
-            throw new IllegalArgumentException("refresh-token lifetime must be between 1 and 30 days");
+        if (lifetime.compareTo(Duration.ofDays(1)) < 0
+                || lifetime.compareTo(Duration.ofDays(30)) > 0) {
+            throw new IllegalArgumentException(
+                    "refresh-token lifetime must be between 1 and 30 days");
         }
         this.random = new SecureRandom();
     }
@@ -43,8 +46,11 @@ public final class OpaqueRefreshTokenService {
     public RotatedRefreshToken rotate(char[] presentedToken) {
         String hash = hash(presentedToken);
         GeneratedToken replacement = generate();
-        RefreshRotationResult result = repository.rotate(hash, replacement.stored(), clock.instant());
-        return new RotatedRefreshToken(result, result.status() == RefreshRotationStatus.ROTATED ? replacement.pair() : null);
+        RefreshRotationResult result =
+                repository.rotate(hash, replacement.stored(), clock.instant());
+        return new RotatedRefreshToken(
+                result,
+                result.status() == RefreshRotationStatus.ROTATED ? replacement.pair() : null);
     }
 
     public void revoke(char[] presentedToken, String reason) {
@@ -65,8 +71,8 @@ public final class OpaqueRefreshTokenService {
             long id = random.nextLong(1, Long.MAX_VALUE);
             try {
                 return new GeneratedToken(
-                    new RefreshTokenPair(raw, expiresAt),
-                    new NewRefreshToken(id, hash(rawCharacters), issuedAt, expiresAt));
+                        new RefreshTokenPair(raw, expiresAt),
+                        new NewRefreshToken(id, hash(rawCharacters), issuedAt, expiresAt));
             } finally {
                 Arrays.fill(rawCharacters, '\0');
             }
@@ -100,8 +106,7 @@ public final class OpaqueRefreshTokenService {
         }
     }
 
-    private record GeneratedToken(RefreshTokenPair pair, NewRefreshToken stored) {
-    }
+    private record GeneratedToken(RefreshTokenPair pair, NewRefreshToken stored) {}
 
     public record RotatedRefreshToken(RefreshRotationResult result, RefreshTokenPair replacement) {
         @Override

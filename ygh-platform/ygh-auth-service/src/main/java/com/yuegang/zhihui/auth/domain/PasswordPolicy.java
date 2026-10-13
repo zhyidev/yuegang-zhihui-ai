@@ -8,20 +8,25 @@ import java.util.Set;
  * 密码强度策略
  */
 public class PasswordPolicy { // 密码复杂性校验策略类
-    private static final int MIN_LENGTH = 15; // 系统推荐最小长度
-    private static final int MAX_LENGTH = 128; // 最大长度
+    public static final int MIN_LENGTH = 15; // 系统推荐最小长度
+    public static final int MAX_LENGTH = 128; // 最大长度
 
     private final int minimumLength; // 配置的最小长度
     private final int maximumLength; // 配置的最大长度
     private final CompromisedPasswordChecker compromisedPasswordChecker; // 泄露库检查器
 
-    public PasswordPolicy(int minimumLength, int maximumLength, CompromisedPasswordChecker compromisedPasswordChecker) {
+    public PasswordPolicy(
+            int minimumLength,
+            int maximumLength,
+            CompromisedPasswordChecker compromisedPasswordChecker) {
         if (minimumLength < 1 || maximumLength < minimumLength) {
             throw new IllegalArgumentException("password length bounds are invalid");
         }
         this.minimumLength = minimumLength;
         this.maximumLength = maximumLength;
-        this.compromisedPasswordChecker = Objects.requireNonNull(compromisedPasswordChecker, "compromisedPasswordChecker must not be null");
+        this.compromisedPasswordChecker =
+                Objects.requireNonNull(
+                        compromisedPasswordChecker, "compromisedPasswordChecker must not be null");
     }
 
     public PasswordValidationResult validate(char[] password) { // 核心：执行密码校验 n
@@ -48,5 +53,4 @@ public class PasswordPolicy { // 密码复杂性校验策略类
 
         return new PasswordValidationResult(violations); // 返回校验结果集
     }
-
 }

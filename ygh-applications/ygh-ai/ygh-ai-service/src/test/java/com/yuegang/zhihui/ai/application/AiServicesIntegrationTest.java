@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.ai.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yuegang.zhihui.ai.api.ChatRequest;
 import com.yuegang.zhihui.ai.api.FeedbackRequest;
@@ -51,7 +52,7 @@ class AiServicesIntegrationTest {
             assertThat(conversations.messages(7, response.conversationId())).hasSize(2).anySatisfy(message -> assertThat(message.citations()).singleElement().satisfies(citation -> {
                 assertThat(citation.documentId()).isEqualTo("10");
                 assertThat(citation.documentVersion()).isEqualTo(1);
-                assertThat(citation.sourceUpdateAt()).isEqualTo(evidence.sourceUpdatedAt());
+                assertThat(citation.sourceUpdatedAt()).isEqualTo(evidence.sourceUpdatedAt());
             }));
             conversations.feedback(7, new FeedbackRequest(response.messageId(), true, "有帮助"));
             conversations.feedback(7, new FeedbackRequest(response.messageId(), false, "需改进"));

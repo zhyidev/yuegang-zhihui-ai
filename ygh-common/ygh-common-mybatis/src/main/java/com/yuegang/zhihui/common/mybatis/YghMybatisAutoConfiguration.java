@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.handlers.MetaObjectHandler;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.yuegang.zhihui.common.core.PageRequest;
+import java.time.Clock;
+import java.util.List;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -13,9 +15,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-
-import java.time.Clock;
-import java.util.List;
 
 /**
  * 共享的 Mybatis-Plus 审计和受限分页基础设施自动配置类
@@ -31,7 +30,8 @@ public class YghMybatisAutoConfiguration {
 
     @Bean // 注册审计填充处理器
     @ConditionalOnMissingBean(MetaObjectHandler.class) // 如果用户定义，则使用默认审计处理器
-    public AuditMetaObjectHandler auditMetaObjectHandler(AuditorProvider auditorProvider, Clock auditClock) {
+    public AuditMetaObjectHandler auditMetaObjectHandler(
+            AuditorProvider auditorProvider, Clock auditClock) {
         return new AuditMetaObjectHandler(auditorProvider, auditClock);
     }
 
@@ -39,7 +39,8 @@ public class YghMybatisAutoConfiguration {
     @ConditionalOnMissingBean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
         var pagination = new PaginationInnerInterceptor(); // 初始化分页拦截器
-        pagination.setMaxLimit((long) PageRequest.DEFAULT_PAGE_SIZE); // 核心：强制限制单次查询上线（如 100 条），防止 DOM
+        pagination.setMaxLimit(
+                (long) PageRequest.DEFAULT_PAGE_SIZE); // 核心：强制限制单次查询上线（如 100 条），防止 DOM
         pagination.setOverflow(false); // 禁止分页溢出处理
 
         var interceptor = new MybatisPlusInterceptor();
@@ -48,23 +49,29 @@ public class YghMybatisAutoConfiguration {
     }
 
     @Bean // 启动检查，确保系统中存在受限的分页配置，严禁开发者通过覆盖配置解除安全限制
-    public SmartInitializingSingleton mybatisPaginationGuard(List<MybatisPlusInterceptor> interceptors) {
+    public SmartInitializingSingleton mybatisPaginationGuard(
+            List<MybatisPlusInterceptor> interceptors) {
         return () -> {
             if (interceptors.size() != 1) { // 强制要求只能有一个拦截器
                 throw new IllegalStateException("exactly one MybatisPlusInterceptor is required");
             }
-            var paginationInterceptors = interceptors.getFirst().getInterceptors().stream()
-                .filter(PaginationInnerInterceptor.class::isInstance)
-                .map(PaginationInnerInterceptor.class::cast)
-                .toList();
+            var paginationInterceptors =
+                    interceptors.getFirst().getInterceptors().stream()
+                            .filter(PaginationInnerInterceptor.class::isInstance)
+                            .map(PaginationInnerInterceptor.class::cast)
+                            .toList();
             // 校验分页设置是否符合 PageRequest.MAX_SIZE 规定的上限
-            boolean boundedPagination = paginationInterceptors.size() == 1
-                && paginationInterceptors.getFirst().getMaxLimit() != null
-                && paginationInterceptors.getFirst().getMaxLimit() >= 1
-                && paginationInterceptors.getFirst().getMaxLimit() <= PageRequest.MAX_PAGE_SIZE
-                && !paginationInterceptors.getFirst().isOverflow();
+            boolean boundedPagination =
+                    paginationInterceptors.size() == 1
+                            && paginationInterceptors.getFirst().getMaxLimit() != null
+                            && paginationInterceptors.getFirst().getMaxLimit() >= 1
+                            && paginationInterceptors.getFirst().getMaxLimit()
+                                    <= PageRequest.MAX_PAGE_SIZE
+                            && !paginationInterceptors.getFirst().isOverflow();
             if (!boundedPagination) {
-                throw new IllegalStateException("MybatisPlusInterceptor must include pagination limited to" + PageRequest.MAX_PAGE_SIZE);
+                throw new IllegalStateException(
+                        "MybatisPlusInterceptor must include pagination limited to "
+                                + PageRequest.MAX_PAGE_SIZE);
             }
         };
     }
@@ -93,12 +100,10 @@ public class YghMybatisAutoConfiguration {
     @Bean // 注册迁移历史记录器
     @Primary // 标记为首选策略，替换 Spring Boot 默认的迁移流程
     public FlywayMigrationStrategy yghFlywayMigrationStrategy(
-        FlywayMigrationPolicy migrationPolicy,
-        FlywayConfigurationGuard configurationGuard,
-        FlywayHistoryValidator historyValidator
-    ) {
-        return new YghFlywayMigrationStrategy(migrationPolicy, configurationGuard, historyValidator);
+            FlywayMigrationPolicy migrationPolicy,
+            FlywayConfigurationGuard configurationGuard,
+            FlywayHistoryValidator historyValidator) {
+        return new YghFlywayMigrationStrategy(
+                migrationPolicy, configurationGuard, historyValidator);
     }
-
-
 }

@@ -1,5 +1,6 @@
 package com.yuegang.zhihui.search.application;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import com.sun.net.httpserver.HttpServer;
 import com.yuegang.zhihui.common.core.BusinessException;
 import com.yuegang.zhihui.search.api.IndexChunkCommand;
