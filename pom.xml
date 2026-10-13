@@ -39,7 +39,7 @@
     <jacoco.minimum.line.coverage>0.70</jacoco.minimum.line.coverage>
     <jacoco.minimum.branch.coverage>0.60</jacoco.minimum.branch.coverage>
     <flatten.maven.plugin.version>1.7.2</flatten.maven.plugin.version>
-    <spotless.maven.plugin.version>3.9.0</spotless.maven.plugin.version>
+    <spotless.maven.plugin.version>3.10.1</spotless.maven.plugin.version>
   </properties>
 
   <build>
