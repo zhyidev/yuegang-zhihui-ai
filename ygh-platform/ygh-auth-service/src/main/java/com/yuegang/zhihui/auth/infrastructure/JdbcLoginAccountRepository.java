@@ -45,6 +45,7 @@ public class JdbcLoginAccountRepository implements LoginAccountRepository {
         String principal = PrincipalNormalizer.normalize(normalizedPrincipal); // 再次规范化
         try (var connection = dataSource.getConnection(); // 链接
              var statement = connection.prepareStatement(FIND_SQL)) { // 预处理
+            statement.setString(1,principal); // 设置参数
             try (var rows = statement.executeQuery()) {
                 return read(rows);
             } // 读取结果

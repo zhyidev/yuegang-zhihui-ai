@@ -45,7 +45,7 @@ public final class RedisCaptchaChallengeStore implements CaptchaChallengeStore {
     @Override
     public boolean consume(String challengeId, String presentedAnswerHash) { // 验证并销毁
         // 执行 Lua 脚本实现单次有效消费，防止通过重试暴力破解同一验证码
-        return Long.valueOf(1L).equals(redis.execute(CONSUME, List.of(challengeId), presentedAnswerHash));
+        return Long.valueOf(1L).equals(redis.execute(CONSUME, List.of(key(challengeId)), presentedAnswerHash));
     }
 
     private String key(String challengeId) {

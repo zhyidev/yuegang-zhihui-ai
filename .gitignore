@@ -1,6 +1,6 @@
 # Local secrets and runtime data
 **/.env
-**/.env.*
+ygh-web/apps/ygh-web-mall/.env.local
 !**/.env.example
 **/secrets/*
 !**/secrets/.gitkeep

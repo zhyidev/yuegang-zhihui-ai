@@ -31,7 +31,7 @@ public final class HttpSystemAuthorityProvider implements AuthorityProvider { //
         var m = new InternalServiceSignature.Metadata("ygh-auth-service", "GET", path, now); // 构建签名数据
         ApiResponse<AuthoritySnapshot> response = client.get().uri(path) // 发起 GET 请求
             .header("X-YGH-Service", "ygh-auth-service") // 设置服务名头
-            .header("X-YGH-Timestamp", Long.toString(now.toEpochMilli())) // 设置时间戳头
+            .header("X-YGH-Service-Timestamp", Long.toString(now.toEpochMilli())) // 设置时间戳头
             .header("X-YGH-Service-Signature", signature.sign(m)) // 接收响应并转换
             .retrieve().body(new ParameterizedTypeReference<>() {
             }); // 接收响应并转换

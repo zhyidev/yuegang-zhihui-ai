@@ -1,7 +1,7 @@
 node_modules/
 dist/
 .env
-.env.*
+apps/ygh-web-mall/.env.local
 !.env.example
 coverage/
 playwright-report/

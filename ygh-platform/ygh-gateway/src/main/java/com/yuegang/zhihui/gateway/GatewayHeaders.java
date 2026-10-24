@@ -46,7 +46,7 @@ interface GatewayHeaders {
     /**
      * 客户端 IP 时间戳，用于签名防重放
      */
-    String CLIENT_IP_TIMESTAMP = "X-Client-IP-Timestamp";
+    String CLIENT_IP_TIMESTAMP = "X-YGH-Client-IP-Timestamp";
 
     /**
      * 客户端 IP 签名，HMAC 防篡改

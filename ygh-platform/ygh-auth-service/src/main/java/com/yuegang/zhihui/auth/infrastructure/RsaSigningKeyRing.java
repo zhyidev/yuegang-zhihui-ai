@@ -75,10 +75,11 @@ public final class RsaSigningKeyRing { // 定义 RSA 签名密钥环类
             if (!privateKey.getModulus().equals(activePublic.toRSAPublicKey().getModulus())) {
                 throw new IllegalStateException("active JWT key pair does not match");
             }
-            // 进一步通过公指数校验匹配度（如果是 CRT 密钥）
-            if (!(privateKey instanceof RSAPrivateKey crtKey) || !crtKey.getPrivateExponent().equals(activePublic.toRSAPublicKey().getPublicExponent())) {
-                throw new IllegalStateException("active JWT pair exponent does not match");
-            }
+//             进一步通过公指数校验匹配度（如果是 CRT 密钥）
+//            if (!(privateKey instanceof RSAPrivateKey crtKey) || !crtKey.getPrivateExponent().equals(activePublic.toRSAPublicKey().getPublicExponent())) {
+//                throw new IllegalStateException("active JWT pair exponent does not match");
+//            }
+            // 密钥对真实性由下方 verifyKeyPair()（SHA256withRSA 签名+验签）保证
             verifyKeyPair(privateKey, activePublic.toRSAPublicKey()); // 核心验证: 通过一次模拟签名/验签确认密钥对有效
             RSAKey active = new RSAKey.Builder(activePublic).privateKey(privateKey).build(); // 组装完整私钥 JWK
             return new RsaSigningKeyRing(active, publicKeys); // 返回密钥环
