@@ -60,7 +60,7 @@ public final class NimbusAccessTokenIssuer implements AccessTokenIssuer { // 实
             .claim("roles", principal.roles().stream().sorted().toList()) // 附加有序角色列表
             .claim("permissions", principal.permissions().stream().sorted().toList()).build(); // 附加有序权限列表
         var key = keyRing.activeSigningKey(); // 获取密钥环中当前激活的私钥
-        var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.PS256) // 创建头部的 JWT，指定 RS256 算法
+        var jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.RS256) // 创建头部的 JWT，指定 RS256 算法
             .keyID(key.getKeyID()).type(JOSEObjectType.JWT).build(), claims); // 关键 Key ID 和类型
         try {
             jwt.sign(new RSASSASigner(key.toRSAPrivateKey())); // 使用私钥进行数字签名

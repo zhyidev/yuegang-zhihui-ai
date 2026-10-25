@@ -63,7 +63,7 @@ public final class ChatController {
                         exception.getClass().getSimpleName(), provider.httpStatus(), provider.providerCode(),
                         provider.providerMessage());
                 } else {
-                    LOGGER.warn("ai_stream_failed type={}", exception.getClass().getSimpleName());
+                    LOGGER.warn("ai_stream_failed type={} message={}", exception.getClass().getSimpleName(),exception.getMessage(),exception);
                 }
                 try {
                     emitter.send(SseEmitter.event().name("error").data(Map.of(

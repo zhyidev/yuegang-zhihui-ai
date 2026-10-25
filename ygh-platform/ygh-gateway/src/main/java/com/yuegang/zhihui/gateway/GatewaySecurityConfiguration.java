@@ -120,11 +120,11 @@ public class GatewaySecurityConfiguration {
                 // 1. 放行健康检查、文档和 Swagger 路径
                 .pathMatchers("/actuator/health/**", "/v3/api-docs/**", "/swagger/**", "/livez", "/readyz").permitAll()
                 // 2. 放行认证相关的注册、登录、刷新令牌接口
-                .pathMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "api/v1/auth/refresh", "api/v1/auth/password-rest/**").permitAll()
+                .pathMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/refresh", "/api/v1/auth/password-reset/**").permitAll()
                 // 3. 放行图形验证码
                 .pathMatchers(HttpMethod.GET, "/api/v1/auth/captcha").permitAll()
                 // 4. 放行只读性的公共业务接口（商品、类目、知识检索等）
-                .pathMatchers(HttpMethod.GET, "/api/v1/product/**", "/api/v1/product-categories", "/api/v1/knowledge/dpcumets/**", "/apt/v1/knowledge/search").permitAll()
+                .pathMatchers(HttpMethod.GET, "/api/v1/products", "/api/v1/products/**", "/api/v1/product-categories", "/api/v1/knowledge/documents/**", "/api/v1/knowledge/search").permitAll()
                 // 5. 限制：仅限员工和管理员访问的业务
                 .pathMatchers("/api/v1/organization/**", "/api/v1/training/**").hasAnyRole("EMPLOYEE", "ADMIN")
                 // 6. 限制：仅限超级管理员访问的后台管理接口

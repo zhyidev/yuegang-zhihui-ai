@@ -39,6 +39,7 @@ public class NotificationService { // 定义核心服务类
         while (m.find()) { // 发展占位符
             String value = v.get(m.group(1)); // 从传入变量映射中获取真实值
             if (value == null) throw new BusinessException(ErrorCode.VALIDATION_ERROR); // 变量缺失抛出校验异常
+            m.appendReplacement(b, java.util.regex.Matcher.quoteReplacement(value)); // 将变量值写入结果
         }
         m.appendTail(b); // 追加剩余文本
         return b.toString(); // 返回渲染后的文本
@@ -73,7 +74,7 @@ public class NotificationService { // 定义核心服务类
         if (exists != null) return exists;//若已存在，直接返回现有视图
 
         // 查询通知模板内容
-        var t = jdbc.query("SELECT title_template,content_template FROM notification_template WHERE code=? AND enable=TRUE",
+        var t = jdbc.query("SELECT title_template,content_template FROM notification_template WHERE code=? AND enabled=TRUE",
             r -> {
                 if (!r.next()) throw new BusinessException(ErrorCode.RESOURCE_NOT_FOUND); // 模板资源不存在或被禁用则报错
                 return new String[]{r.getString(1), r.getString(2)}; // 返回标题和内容的模板
@@ -81,7 +82,7 @@ public class NotificationService { // 定义核心服务类
 
         long message = next(); // 生成新的分布式消息 ID
         // 插入消息记录，状态初始化为 'PENDING' (待分发)
-        jdbc.update("INSERT INTO notification_message(id, event_id, user_id, template_code, title, cpntent, status, next_retry_at) VALUES(?,?,?,?,?,?,'PENDING','NOW(6)')",
+        jdbc.update("INSERT INTO notification_message(id, event_id, user_id, template_code, title, content, status, next_retry_at) VALUES(?,?,?,?,?,?,'PENDING',NOW(6))",
             message, c.eventId(), user, c.templateCode(), render(t[0], c.variables()), render(t[1], c.variables()));
         audit(message, "CREATED", null, null); // 记录审计日志：创建通知成功
         return get(message);      // 返回消息的详细视图
@@ -96,7 +97,7 @@ public class NotificationService { // 定义核心服务类
         for (long message : ids) { // 遍历处理每条待发记录
             try {
                 // 模拟分发过程，成功后更新状态为 'SENT'
-                if (jdbc.update("UPDATE notification_message SET statu='SENT',sent_at=NOW(6),next_retry_at=NULL,last_error=NULL WHERE id=?"
+                if (jdbc.update("UPDATE notification_message SET status='SENT',sent_at=NOW(6),next_retry_at=NULL,last_error=NULL WHERE id=?"
                     , message) == 1) {
                     audit(message, "SENT", null, null); // 记录审计日志
                     sent++;
@@ -172,7 +173,7 @@ public class NotificationService { // 定义核心服务类
     }
 
     private void audit(long message, String action, Long operator, String detail) { // 内部方法：记录投递审计日志
-        jdbc.update("INSERT INTO notification_delivery_audit(id,message_id,action,operaor_user_id,detail) VALUES(?,?,?,?,?)",
+        jdbc.update("INSERT INTO notification_delivery_audit(id,message_id,action,operator_user_id,detail) VALUES(?,?,?,?,?)",
             next(), message, action, operator, detail);
     }
 

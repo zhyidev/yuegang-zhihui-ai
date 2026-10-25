@@ -23,7 +23,7 @@ public final class JdbcRefreshTokenRepository implements RefreshTokenRepository 
     @Override
     public void insertInitial(long accountId, String family, NewRefreshToken token) { // 插入首个刷新令牌（启动令牌族）
         try (Connection connection = dataSource.getConnection()) {
-
+        insert(connection, accountId, family, null, token); // 复用已有的 insert 方法， parent 为 null
         } catch (SQLException failure) {
             throw new AccountSecurityPersistenceException("initial refresh token cannot be stored", failure); // 抛出异常
         }
@@ -61,7 +61,7 @@ public final class JdbcRefreshTokenRepository implements RefreshTokenRepository 
                 try (PreparedStatement update = connection.prepareStatement("""
                         UPDATE auth_refresh_token SET replaced_by_token_id = ?, last_used_at = ?,
                         revoked_at = ?, revoke_reason = 'ROTATED'
-                        WHERE id = ? AND revoked_at IS NULL AND replaced_by_token_id
+                        WHERE id = ? AND revoked_at IS NULL AND replaced_by_token_id IS NULL
                         """)) {
                     update.setLong(1, replacement.id()); // 设置被谁替换
                     setInstant(update, 2, now); // 最后使用时间
@@ -123,7 +123,7 @@ public final class JdbcRefreshTokenRepository implements RefreshTokenRepository 
 
     private void revokeFamily(Connection connection, long accountId, String family, Instant now, String reason) throws SQLException { // 撤销
         try (PreparedStatement update = connection.prepareStatement("""
-                UPDATE auth_refresh_token SET revoked_at = COALESCE(revoke_at, ?),
+                UPDATE auth_refresh_token SET revoked_at = COALESCE(revoked_at, ?),
                 revoke_reason = CASE WHEN revoke_reason IS NULL OR revoke_reason = 'ROTATED' THEN ? ELSE revoke_reason END
                 WHERE account_id = ? AND token_family = ?
                 """)) { // COALESCE 防止覆盖已有的特定撤销时间，保留最严重的被撤销路由

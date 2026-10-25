@@ -36,7 +36,7 @@ public final class NotificationTemplateService { // 定义模板服务类
 
     public List<NotificationTemplateView> list() { // 查询所有的通知模板列表
         // 按照模板编码 code 进行排序返回视图列表
-        return jdbc.query("SELECT code,title_template,context_template,channel,enabled,version FROM notification_template ORDER BY code",
+        return jdbc.query("SELECT code,title_template,content_template,channel,enabled,version FROM notification_template ORDER BY code",
             (row, n) -> map(row));
     }
 

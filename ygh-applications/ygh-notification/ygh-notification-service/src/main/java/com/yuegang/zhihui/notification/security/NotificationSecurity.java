@@ -70,7 +70,7 @@ public final class NotificationSecurity { // 定义安全校验类
             var roles = v(r.getHeader("X-YGH-Roles")); // 获取解析角色列表
             var perms = v(r.getHeader("X-YGH-Permissions"));// 获取并解析权限列表
             // 构建用户上下文元数据
-            var m = new InternalUserContextSignature.Metadata(u, roles, perms, h(r, "X-Trace-Id"), h(r, "X-Request_Id"), r.getMethod(), r.getRequestURI(), Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-User-Context-Timestamp"))));
+            var m = new InternalUserContextSignature.Metadata(u, roles, perms, h(r, "X-Trace-Id"), h(r, "X-Request-Id"), r.getMethod(), r.getRequestURI(), Instant.ofEpochMilli(Long.parseLong(h(r, "X-YGH-User-Context-Timestamp"))));
             // 验证用户上下文签名是否由受信任的网关生成
             if (!users.verify(m, h(r, "X-YGH-User-Context-Signature"))) throw f(); //返回解析后的上下文记录
             return new Context(Long.parseLong(u), roles, perms);
